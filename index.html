@@ -1,0 +1,2740 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Political Process - Chile | Simulador Electoral y Político</title>
+    <meta name="description" content="Simulador de estrategia política, elecciones populares y gestión pública en la República de Chile." />
+    <!-- Tailwind CSS CDN para renderizado clásico instantáneo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- D3.js v7 para simulaciones electorales y hemiciclos interactivos -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap');
+
+      body {
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+        background-color: #242A35;
+        color: #1E293B;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        user-select: none;
+      }
+
+      .font-mono-num {
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Clásica Pestaña de Carpeta de The Political Process */
+      .folder-tab {
+        background-color: #DCD4C0;
+        border: 1px solid #7D735F;
+        border-bottom: none;
+        color: #4A4436;
+        transition: all 0.1s ease;
+      }
+      .folder-tab:hover {
+        background-color: #E8E0CE;
+        color: #1E293B;
+      }
+      .folder-tab.active {
+        background-color: #FAF8F5 !important;
+        border-color: #665C47 !important;
+        border-bottom: 2px solid #FAF8F5 !important;
+        color: #0F172A !important;
+        font-weight: 800;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.06);
+        z-index: 20;
+      }
+
+      /* Subpestañas contextuales */
+      .subfolder-tab {
+        background-color: #EFE8DA;
+        border: 1px solid #9C917A;
+        color: #554D3D;
+      }
+      .subfolder-tab:hover {
+        background-color: #F8F3EA;
+      }
+      .subfolder-tab.active {
+        background-color: #FFFFFF !important;
+        border-color: #0047AB !important;
+        color: #003399 !important;
+        font-weight: 800;
+      }
+
+      /* Scrollbars retro compactos */
+      ::-webkit-scrollbar {
+        width: 7px;
+        height: 7px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #EBE5D8;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #A89E88;
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #7D735F;
+      }
+    </style>
+  </head>
+  <body class="h-screen w-screen flex flex-col overflow-hidden bg-[#242A35]">
+
+    <!-- ========================================================================= -->
+    <!-- PÁGINA COMPLETA 1: CREACIÓN DE PERSONAJE (IDENTIDAD, ATRIBUTOS Y FACCIÓN) -->
+    <!-- ========================================================================= -->
+    <div id="screen-page-1-identity" class="fixed inset-0 bg-[#242A35] z-50 flex flex-col overflow-hidden text-slate-800">
+      <!-- Barra superior estilizada de la página 1 -->
+      <header class="h-12 bg-[#FAF8F5] border-b-2 border-[#7D735F] px-4 flex items-center justify-between shrink-0 shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">🇨🇱</span>
+          <div>
+            <h1 class="font-extrabold text-sm text-slate-900 uppercase tracking-tight">The Political Process - Chile</h1>
+            <span class="text-[11px] font-mono text-stone-500">Paso 1 de 2: Identidad, Atributos de Liderazgo & Militancia Partidaria</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.loadGameQuick()" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded border border-stone-300">
+            📂 Cargar Guardado
+          </button>
+        </div>
+      </header>
+
+      <!-- Contenedor central a 2 columnas con scroll independiente -->
+      <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#EBE5D8] flex justify-center">
+        <div class="w-full max-w-5xl space-y-4">
+
+          <!-- Alerta de validación en caso de faltar campos -->
+          <div id="p1-validation-alert" class="hidden p-3 bg-rose-50 border-2 border-rose-600 text-rose-950 text-xs font-bold rounded shadow"></div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            
+            <!-- Columna Izquierda: Datos Básicos y Atributos de Rol (5 Cols) -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Tarjeta Identidad Básica -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <h2 class="font-extrabold text-xs text-slate-900 uppercase border-b pb-1.5 flex items-center justify-between">
+                  <span>1. Datos Personales</span>
+                  <span class="text-[10px] font-mono text-stone-500">Cédula Cívica</span>
+                </h2>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Nombre Completo *</label>
+                  <div class="flex gap-1.5">
+                    <input type="text" id="p1-name" placeholder="Ej. Gabriel Silva / Macarena Soto" value="" class="flex-1 p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-900" />
+                    <button onclick="window.p1RandomName()" title="Generar Nombre Típico Chileno" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 text-xs font-bold rounded border border-stone-400">🎲</button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-900 uppercase">Edad de Inicio *</label>
+                    <span id="p1-age-disp" class="text-xs font-mono font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">25 años</span>
+                  </div>
+                  <input type="range" id="p1-age" min="18" max="85" value="25" oninput="window.p1HandleAgeChange(this.value)" class="w-full cursor-pointer accent-[#0047AB]" />
+                  <div id="p1-age-status-box" class="mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight">
+                    Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Oficio o Profesión *</label>
+                  <select id="p1-profession" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800"></select>
+                </div>
+              </div>
+
+              <!-- Tarjeta Atributos de Liderazgo Político (Distribución de Puntos) -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">2. Atributos de Liderazgo Político</h2>
+                  <span id="p1-points-pool-disp" class="text-xs font-mono font-bold px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded border border-emerald-300">Puntos Disponibles: 5</span>
+                </div>
+                <p class="text-[11px] text-stone-600">Distribuye tus puntos para especializar tu estilo de conducción política en debates, campaña y gestión pública.</p>
+
+                <!-- Oratoria / Retórica -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">🎙️ Oratoria & Debate: <span id="attr-oratory-val" class="text-blue-900 font-mono font-bold">60</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('oratory', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('oratory', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-oratory-bar" class="h-full bg-blue-600" style="width: 60%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Efectividad en franjas televisivas, debates y puntos de prensa.</span>
+                </div>
+
+                <!-- Carisma / Conexión Popular -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">✨ Carisma & Tracción Popular: <span id="attr-charisma-val" class="text-amber-800 font-mono font-bold">55</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('charisma', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('charisma', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-charisma-bar" class="h-full bg-amber-500" style="width: 55%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Facilidad para ganar reconocimiento en puerta a puerta y actos masivos.</span>
+                </div>
+
+                <!-- Capacidad de Negociación -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">🤝 Negociación & Cocina Política: <span id="attr-negotiation-val" class="text-purple-800 font-mono font-bold">50</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('negotiation', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('negotiation', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-negotiation-bar" class="h-full bg-purple-600" style="width: 50%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Menor costo en Puntos Políticos para alianzas, pactos y votos en el Congreso.</span>
+                </div>
+
+                <!-- Gestión y Eficiencia Pública -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">📊 Capacidad de Gestión & Probidad: <span id="attr-management-val" class="text-emerald-800 font-mono font-bold">55</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('management', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('management', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-management-bar" class="h-full bg-emerald-600" style="width: 55%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Menor desgaste en cargos ejecutivos y resistencia a escándalos de probidad.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna Derecha: Militancia Partidaria y Facción Interna (7 Cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Partidos Chilenos Reales -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">3. Partido Político o Militancia *</h2>
+                  <span id="p1-selected-party-badge" class="text-xs font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">IND - Independiente</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="p1-parties-grid">
+                  <!-- Rellenado dinámicamente -->
+                </div>
+              </div>
+
+              <!-- Facción Interna Dinámica según el Partido Elegido -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">4. Facción Interna / Sensibilidad Política</h2>
+                  <span id="p1-faction-badge" class="text-[10px] font-mono font-bold text-stone-600">Sensibilidad Base</span>
+                </div>
+                <p class="text-[11px] text-stone-600">Cada partido cuenta con corrientes y facciones internas que determinan con qué líderes tienes mayor afinidad inicial y qué votantes te respaldan con mayor fuerza.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="p1-factions-grid">
+                  <!-- Rellenado dinámicamente al cambiar el partido -->
+                </div>
+              </div>
+
+              <!-- Botón Siguiente a Página 2 -->
+              <div class="flex justify-end pt-2">
+                <button onclick="window.goToPage2Territory()" class="w-full sm:w-auto px-6 py-2.5 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-black text-xs rounded shadow-md cursor-pointer transition flex items-center justify-center gap-2">
+                  <span>Continuar a Territorio y Punto de Partida ▶</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- PÁGINA COMPLETA 2: TERRITORIO, POLÍTICAS Y PUNTO DE PARTIDA               -->
+    <!-- ========================================================================= -->
+    <div id="screen-page-2-territory" class="hidden fixed inset-0 bg-[#242A35] z-50 flex flex-col overflow-hidden text-slate-800">
+      <!-- Barra superior estilizada de la página 2 -->
+      <header class="h-12 bg-[#FAF8F5] border-b-2 border-[#7D735F] px-4 flex items-center justify-between shrink-0 shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">🗳️</span>
+          <div>
+            <h1 class="font-extrabold text-sm text-slate-900 uppercase tracking-tight">The Political Process - Chile</h1>
+            <span class="text-[11px] font-mono text-stone-500">Paso 2 de 2: Territorio SERVEL, Cargo Inicial & Plataforma Política</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.backToPage1Identity()" class="px-3 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded border border-stone-400">
+            ◀ Volver a Identidad
+          </button>
+        </div>
+      </header>
+
+      <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#EBE5D8] flex justify-center">
+        <div class="w-full max-w-5xl space-y-4">
+
+          <div id="p2-validation-alert" class="hidden p-3 bg-rose-50 border-2 border-rose-600 text-rose-950 text-xs font-bold rounded shadow"></div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            
+            <!-- Columna Izquierda: Año Inicial, Cascada SERVEL y Cargo Inicial (5 Cols) -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Selector de Año de Inicio del Ciclo -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <h2 class="font-extrabold text-xs text-slate-900 uppercase border-b pb-1.5 flex items-center justify-between">
+                  <span>1. Año de Inicio del Ciclo Electoral</span>
+                  <span class="text-[10px] font-mono text-stone-500">Cronograma SERVEL</span>
+                </h2>
+                <div>
+                  <label class="block text-[11px] uppercase font-bold text-stone-700 mb-1">Elige en qué año arranca tu carrera *</label>
+                  <select id="p2-start-year" onchange="window.p2HandleYearChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
+                    <option value="2024" selected>2024 - Ciclo Municipal y Regional (Alcaldes, Concejales, Gobernadores)</option>
+                    <option value="2025">2025 - Ciclo Presidencial y Parlamentario (La Moneda, Diputados, Senadores)</option>
+                    <option value="2026">2026 - Gobernanza Plena (Mitad de Período Constitucional, Leyes y Alianzas)</option>
+                  </select>
+                </div>
+                <div id="p2-year-description" class="p-2.5 bg-blue-50 border border-blue-200 text-blue-900 rounded text-[11px] leading-snug">
+                  📅 <strong>Año 2024:</strong> Las elecciones municipales y de gobernadores regionales se celebran en la Semana 44. Podrás formalizar tu candidatura en la Semana 8 ante el SERVEL.
+                </div>
+              </div>
+
+              <!-- Selectores en Cascada Funcionales (Sin predefinición automática) -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <h2 class="font-extrabold text-xs text-slate-900 uppercase border-b pb-1.5 flex items-center justify-between">
+                  <span>2. Territorio Electoral (Padrón SERVEL)</span>
+                  <span class="text-[10px] font-mono text-stone-500">Libertad Total</span>
+                </h2>
+
+                <div class="space-y-2.5">
+                  <div>
+                    <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Región *</label>
+                    <select id="p2-region" onchange="window.p2HandleRegionChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
+                      <option value="" disabled selected>-- Selecciona una Región --</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Distrito Electoral *</label>
+                    <select id="p2-district" onchange="window.p2HandleDistrictChange(this.value)" disabled class="w-full p-2 border border-stone-300 bg-stone-100 rounded text-xs font-bold text-slate-800 cursor-pointer">
+                      <option value="" disabled selected>-- Primero selecciona una región --</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Comuna de Domicilio *</label>
+                    <select id="p2-commune" onchange="window.p2HandleCommuneChange(this.value)" disabled class="w-full p-2 border border-stone-300 bg-stone-100 rounded text-xs font-bold text-slate-800 cursor-pointer">
+                      <option value="" disabled selected>-- Primero selecciona un distrito --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="p-2.5 bg-stone-100 rounded border border-stone-200 text-xs font-mono space-y-1">
+                  <div>Domicilio Establecido: <strong id="p2-preview-domicile" class="text-amber-800 italic">Sin territorio asignado (Elige Región, Distrito y Comuna)</strong></div>
+                  <div class="text-[10px] text-stone-500">No tienes comuna predeterminada. El territorio que elijas definirá tu circunscripción SERVEL y padrón inicial.</div>
+                </div>
+              </div>
+
+              <!-- Cargo Inicial con Validación Constitucional -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <h2 class="font-extrabold text-xs text-slate-900 uppercase border-b pb-1.5 flex items-center justify-between">
+                  <span>3. Cargo Inicial al Arrancar la Partida</span>
+                  <span class="text-[10px] font-mono text-stone-500">Punto de Partida</span>
+                </h2>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Elige tu rol de inicio *</label>
+                  <select id="p2-initial-office" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
+                    <option value="none" selected>Ciudadano sin Cargo (Recomendado - Carrera política desde cero)</option>
+                    <option value="concejal">Concejal Municipal (Requiere 18+ años)</option>
+                    <option value="alcalde">Alcalde/Alcaldesa (Requiere 18+ años)</option>
+                    <option value="diputado">Diputado/a de la República (Requiere 21+ años)</option>
+                    <option value="gobernador">Gobernador/a Regional (Requiere 21+ años)</option>
+                    <option value="senador">Senador/a de la República (Requiere 35+ años)</option>
+                    <option value="presidente">Presidente/a de la República (Requiere 35+ años)</option>
+                  </select>
+                </div>
+
+                <div class="p-2.5 bg-stone-50 border rounded text-[11px] text-stone-600 leading-snug">
+                  💡 <strong>Libertad Absoluta:</strong> Si inicias como Ciudadano sin cargo, partes con tu expediente limpio y total autonomía para construir tu liderazgo territorial o nacional.
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna Derecha: Políticas Prioritarias y Compás Ideológico (7 Cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Plataforma y Políticas Prioritarias (Exactamente 3) -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <div>
+                    <h2 class="font-extrabold text-xs text-slate-900 uppercase">3. Tus 3 Ejes Programáticos Prioritarios *</h2>
+                    <span class="text-[10px] text-stone-500 font-mono">Selecciona exactamente 3 políticas</span>
+                  </div>
+                  <span id="p2-policies-count-badge" class="text-xs font-mono font-bold px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded border border-amber-300">0 / 3 Seleccionadas</span>
+                </div>
+
+                <!-- Presets Rápidos -->
+                <div class="space-y-1">
+                  <span class="text-[10px] uppercase font-bold text-stone-600">Presets Programáticos Rápidos:</span>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="p2-presets-container"></div>
+                </div>
+
+                <!-- Catálogo de Políticas -->
+                <div class="space-y-1 pt-2 border-t">
+                  <div class="max-h-60 overflow-y-auto border border-stone-300 rounded bg-white p-2 space-y-1.5" id="p2-policies-catalog"></div>
+                </div>
+              </div>
+
+              <!-- Compás Ideológico 2D de Resumen -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-3 rounded shadow-xs flex items-center justify-between">
+                <div>
+                  <h3 class="font-extrabold text-xs text-slate-900 uppercase">Orientación Programática Estimada</h3>
+                  <span class="text-xs text-stone-600" id="p2-ideology-summary-text">Estatismo / Socialdemocracia moderada</span>
+                </div>
+                <div class="w-20 h-20 bg-white border border-stone-400 relative flex items-center justify-center font-mono text-[7px] text-stone-400">
+                  <div class="absolute w-px h-full bg-stone-300"></div>
+                  <div class="absolute h-px w-full bg-stone-300"></div>
+                  <div id="p2-compass-dot" class="w-3 h-3 rounded-full bg-blue-700 border-2 border-white absolute shadow"></div>
+                </div>
+              </div>
+
+              <!-- Botones Finales de Arranque -->
+              <div class="flex justify-between items-center pt-2">
+                <button onclick="window.backToPage1Identity()" class="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-slate-800 font-bold text-xs rounded border border-stone-400 cursor-pointer">
+                  ◀ Volver a Identidad
+                </button>
+                <button onclick="window.finishFullCharacterCreation()" class="px-8 py-3 bg-emerald-700 hover:bg-emerald-800 active:bg-emerald-900 text-white font-black text-sm rounded shadow-lg cursor-pointer flex items-center gap-2 transition transform active:scale-98">
+                  <span>¡Iniciar Carrera Política en Chile! 🇨🇱🚀</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- FILA 1: BARRA DE ESTADO SUPERIOR INDEPENDIENTE (BLANCA / LIMPIA)           -->
+    <!-- ========================================================================= -->
+    <header id="app-row-1-statusbar" class="h-11 bg-white border-b border-[#7D735F] px-3 flex items-center justify-between shrink-0 shadow-xs z-30">
+      <!-- Izquierda: Métricas compactas del personaje y país -->
+      <div class="flex items-center gap-3 text-xs overflow-hidden">
+        <div class="flex items-center gap-1.5 font-bold text-slate-800 shrink-0">
+          <span class="text-stone-500">👤 Político:</span>
+          <span id="stat-player-name" class="text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Gabriel Silva (25 años)</span>
+          <span id="stat-player-party" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 border border-stone-300 font-bold">IND</span>
+          <span id="stat-player-office" class="text-[11px] text-stone-600 font-medium">Ciudadano sin Cargo</span>
+        </div>
+
+        <div class="h-4 w-px bg-stone-300 shrink-0"></div>
+
+        <div class="hidden lg:flex items-center gap-3 text-[11px] shrink-0 font-mono-num">
+          <span title="Padrón Electoral Activo">👥 <strong id="stat-padron">15.4M</strong></span>
+          <span title="Capital Político para negociaciones y campaña">⭐ <strong id="stat-pp" class="text-blue-800">25 PP</strong></span>
+          <span title="Aprobación Ciudadana Nivel Base">👍 <strong id="stat-approval" class="text-emerald-700">52.0%</strong></span>
+          <span title="Tensión y Polarización Social">🔥 <strong id="stat-tension" class="text-amber-700">35%</strong></span>
+        </div>
+      </div>
+
+      <!-- Derecha: ÚNICA ubicación autorizada para reloj, badge y control de turnos -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Reloj de Calendario -->
+        <div class="flex items-center gap-1.5 px-2.5 py-0.5 bg-[#FAF7F0] border border-[#B3A992] rounded text-xs font-mono">
+          <span class="text-stone-400">📅</span>
+          <span id="clock-date-disp" class="font-extrabold text-slate-900">Semana 1 / 52, Enero 2024</span>
+        </div>
+
+        <!-- Badge de Próxima Elección -->
+        <div id="clock-election-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300">
+          Elecciones Municipales (Sem 44, 2024)
+        </div>
+
+        <!-- Botón +4 Semanas (Mes) -->
+        <button id="btn-hdr-advance-4" onclick="window.advanceTurn(4)" title="Avanzar 4 semanas completas" class="px-2.5 py-1 text-xs font-bold bg-[#E6D595] hover:bg-[#DDD095] active:bg-[#C9BA7E] text-slate-900 border border-[#7D735F] rounded shadow-2xs cursor-pointer select-none">
+          ⏩ +4 Sem
+        </button>
+
+        <!-- Botón Siguiente Turno (1 Semana) -->
+        <button id="btn-hdr-advance-1" onclick="window.advanceTurn(1)" title="Avanzar 1 semana de simulación" class="px-3 py-1 text-xs font-black bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white border border-[#002266] rounded shadow-2xs cursor-pointer select-none">
+          Siguiente Turno ▶
+        </button>
+
+        <!-- Menú Hamburguesa / Gestión de Sesión -->
+        <div class="relative inline-block text-left">
+          <button id="btn-hdr-menu" onclick="window.toggleSessionMenu(event)" class="px-2.5 py-1 text-xs font-bold bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-400 rounded cursor-pointer select-none">
+            ☰ Menú
+          </button>
+          <div id="dropdown-session-menu" class="hidden absolute right-0 mt-1 w-52 bg-white border-2 border-stone-600 shadow-2xl rounded z-50 py-1 text-xs font-bold text-stone-800">
+            <button onclick="window.openNewGameWizard()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>🆕 Nueva Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Crear</span>
+            </button>
+            <button onclick="window.saveGameQuick()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>💾 Guardar Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Navegador</span>
+            </button>
+            <button onclick="window.loadGameQuick()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>📂 Cargar Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Restaurar</span>
+            </button>
+            <div class="border-t border-stone-200 my-1"></div>
+            <button onclick="window.exportGameJson()" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between">
+              <span>📤 Exportar a Archivo JSON</span>
+            </button>
+            <button onclick="document.getElementById('import-json-input').click()" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between">
+              <span>📥 Importar desde JSON</span>
+            </button>
+            <input type="file" id="import-json-input" class="hidden" accept=".json" onchange="window.importGameJson(event)" />
+            <div class="border-t border-stone-200 my-1"></div>
+            <button onclick="window.resetGameConfirm()" class="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-rose-700 flex items-center justify-between">
+              <span>⚠️ Reiniciar Fábrica</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================================= -->
+    <!-- FILA 2: LAS 8 PESTAÑAS PRINCIPALES ESTILO CARPETA CLÁSICA (#E6D595)        -->
+    <!-- ========================================================================= -->
+    <nav id="app-row-2-maintabs" class="h-9 bg-[#C9BEA7] border-b-2 border-[#665C47] px-3 flex items-end gap-1 shrink-0 overflow-x-auto shadow-inner select-none z-20">
+      <button class="folder-tab active px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-campaign" onclick="window.switchMainView('view-campaign')">
+        📢 Campaña (Campaign)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-office" onclick="window.switchMainView('view-office')">
+        🏛️ Cargo (Office)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-congress" onclick="window.switchMainView('view-congress')">
+        ⚖️ Congreso (Hemiciclo)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-politicians" onclick="window.switchMainView('view-politicians')">
+        👥 Políticos (Politicians)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-elections" onclick="window.switchMainView('view-elections')">
+        🗳️ Elecciones (SERVEL)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-metrics" onclick="window.switchMainView('view-metrics')">
+        📈 Métricas País
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-profile" onclick="window.switchMainView('view-profile')">
+        👤 Perfil e Historial
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-news" onclick="window.switchMainView('view-news')">
+        📰 Noticias (News)
+      </button>
+    </nav>
+
+    <!-- ========================================================================= -->
+    <!-- FILA 3: SUB-PESTAÑAS CONTEXTUALES DE CAMPAÑA Y OTRAS SECCIONES             -->
+    <!-- ========================================================================= -->
+    <div id="app-row-3-subtabs" class="h-8 bg-[#EFE8DA] border-b border-[#A89E88] px-3 flex items-center gap-1.5 shrink-0 overflow-x-auto text-xs z-10">
+      <!-- Subpestañas para Campaña -->
+      <div id="subtabs-campaign" class="flex items-center gap-1">
+        <button class="subfolder-tab active px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('summary')">Resumen</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('events')">Eventos</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('marketing')">Marketing</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('opponents')">Oponentes</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('contacts')">Contactos</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('polls')">Encuestas</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('finance')">Finanzas</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('staff')">Staff</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('policies')">★ Políticas (Tus 3 Ejes)</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCampaignSubpanel('volunteers')">Voluntarios</button>
+      </div>
+
+      <!-- Subpestañas para Congreso -->
+      <div id="subtabs-congress" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCongressSubpanel('hemiciclo')">🏛️ Hemiciclo de Sala</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchCongressSubpanel('history')">📜 Historial Legislativo y Legado</button>
+      </div>
+
+      <!-- Subpestañas para Políticos -->
+      <div id="subtabs-politicians" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchPoliticiansSubpanel('directory')">👥 Directorio de Figuras & Protegidos</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchPoliticiansSubpanel('alliances')">🤝 Pactos Electorales & Simulador D'Hondt (D3)</button>
+      </div>
+
+      <!-- Subpestañas para Cargo -->
+      <div id="subtabs-office" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchOfficeSubpanel('overview')">🏛️ Situación del Cargo & Gestión</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchOfficeSubpanel('lobby')">🤝 Lobby y Relaciones Institucionales</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchOfficeSubpanel('bills')">📜 Proyectos Promulgados</button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- ÁREA DE CONTENIDO PRINCIPAL (PANEL DIVIDIDO THE POLITICAL PROCESS)         -->
+    <!-- ========================================================================= -->
+    <main class="flex-1 bg-[#FAF8F5] overflow-y-auto p-3">
+
+      <!-- ==================== VISTA 1: CAMPAÑA (CAMPAIGN) ==================== -->
+      <div id="view-campaign" class="main-view h-full">
+
+        <!-- Subpanel: Resumen (Panel Dividido Clásico con Mapa SVG) -->
+        <div id="campaign-panel-summary" class="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full">
+
+          <!-- COLUMNA IZQUIERDA: MÉTRICAS, ENTUSIASMO Y OPINIÓN PÚBLICA -->
+          <div class="space-y-3">
+            <!-- Tarjetas de Fondos y Reconocimiento -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-white border border-[#A89E88] p-2.5 rounded shadow-2xs">
+                <span class="text-[10px] font-bold uppercase text-stone-500 block">Fondos de Campaña</span>
+                <span id="card-funds-disp" class="text-xl font-mono-num font-extrabold text-emerald-800">$10.000.000</span>
+                <span class="text-[10px] text-stone-500 block">Aportes legales SERVEL</span>
+              </div>
+              <div class="bg-white border border-[#A89E88] p-2.5 rounded shadow-2xs">
+                <span class="text-[10px] font-bold uppercase text-stone-500 block">Reconocimiento Comunal</span>
+                <span id="card-recognition-disp" class="text-xl font-mono-num font-extrabold text-blue-900">25.0%</span>
+                <span class="text-[10px] text-stone-500 block">Conocimiento del candidato</span>
+              </div>
+            </div>
+
+            <!-- Entusiasmo de los Votantes por Bloque Político -->
+            <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-1">
+                <h3 class="font-extrabold text-xs text-slate-900 uppercase">Entusiasmo del Electorado Territorial</h3>
+                <span class="text-[10px] font-mono text-stone-500">Base Activa</span>
+              </div>
+
+              <!-- Izquierda -->
+              <div class="space-y-0.5">
+                <div class="flex justify-between text-[11px]">
+                  <span class="font-bold text-rose-800">Izquierda (PC / FA / PS)</span>
+                  <span id="enth-left-val" class="font-mono-num font-bold">45%</span>
+                </div>
+                <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                  <div id="enth-left-bar" class="h-full bg-rose-600 transition-all duration-300" style="width: 45%;"></div>
+                </div>
+              </div>
+
+              <!-- Centro -->
+              <div class="space-y-0.5">
+                <div class="flex justify-between text-[11px]">
+                  <span class="font-bold text-amber-700">Centro (DC / Demócratas / Amarillos)</span>
+                  <span id="enth-center-val" class="font-mono-num font-bold">40%</span>
+                </div>
+                <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                  <div id="enth-center-bar" class="h-full bg-amber-500 transition-all duration-300" style="width: 40%;"></div>
+                </div>
+              </div>
+
+              <!-- Derecha -->
+              <div class="space-y-0.5">
+                <div class="flex justify-between text-[11px]">
+                  <span class="font-bold text-blue-800">Derecha (Chile Vamos / Republicanos)</span>
+                  <span id="enth-right-val" class="font-mono-num font-bold">35%</span>
+                </div>
+                <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                  <div id="enth-right-bar" class="h-full bg-blue-700 transition-all duration-300" style="width: 35%;"></div>
+                </div>
+              </div>
+
+              <!-- Independientes -->
+              <div class="space-y-0.5">
+                <div class="flex justify-between text-[11px]">
+                  <span class="font-bold text-slate-700">Independientes y Moderados</span>
+                  <span id="enth-ind-val" class="font-mono-num font-bold">42%</span>
+                </div>
+                <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                  <div id="enth-ind-bar" class="h-full bg-slate-600 transition-all duration-300" style="width: 42%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tabla de Efecto en la Opinión Pública (-10% a +10%) -->
+            <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-1">
+                <h3 class="font-extrabold text-xs text-slate-900 uppercase">Efecto en la Opinión Pública de tus Políticas</h3>
+                <span class="text-[10px] font-mono text-stone-500">Saldo Neto (-10% a +10%)</span>
+              </div>
+              <div class="max-h-56 overflow-y-auto border border-stone-200 rounded">
+                <table class="w-full text-xs text-left border-collapse">
+                  <thead class="bg-stone-100 text-stone-700 font-mono text-[10px] uppercase sticky top-0 border-b border-stone-300">
+                    <tr>
+                      <th class="py-1 px-2">Tema País</th>
+                      <th class="py-1 px-2 text-center">Relevancia</th>
+                      <th class="py-1 px-2">Barra de Impacto</th>
+                      <th class="py-1 px-2 text-right">Efecto</th>
+                    </tr>
+                  </thead>
+                  <tbody id="public-opinion-table-body" class="divide-y divide-stone-100 font-mono-num"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUMNA DERECHA: HORAS, DEMOGRAFÍA, MAPA SVG DE POLÍGONOS CONTIGUOS -->
+          <div class="space-y-3 flex flex-col justify-between">
+            <!-- Horas Restantes y Descanso -->
+            <div class="bg-white border border-[#A89E88] p-2.5 rounded shadow-2xs flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-bold uppercase text-stone-500 block">Horas de Campaña Semanales</span>
+                <span id="card-hours-disp" class="text-xl font-mono-num font-extrabold text-blue-900">60 / 60 hrs</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="window.restPlayerHours()" class="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs rounded border border-amber-300 cursor-pointer">
+                  💤 Descansar (+Salud)
+                </button>
+              </div>
+            </div>
+
+            <!-- Gráfico y Demografía -->
+            <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs flex items-center justify-between">
+              <div class="space-y-1 text-xs">
+                <span class="text-[10px] font-bold uppercase text-stone-500 block">Composición del Padrón Comunal</span>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-rose-600 inline-block"></span> Jóvenes (18-34): <strong>34%</strong></div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> Adultos (35-59): <strong>42%</strong></div>
+                <div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-blue-700 inline-block"></span> Adultos Mayores (60+): <strong>24%</strong></div>
+              </div>
+              <div class="w-20 h-20 relative flex items-center justify-center">
+                <svg viewBox="0 0 36 36" class="w-full h-full transform -rotate-90">
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#E2E8F0" stroke-width="4"></circle>
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#E11D48" stroke-width="4" stroke-dasharray="34 100"></circle>
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#D97706" stroke-width="4" stroke-dasharray="42 100" stroke-dashoffset="-34"></circle>
+                  <circle cx="18" cy="18" r="14" fill="transparent" stroke="#1D4ED8" stroke-width="4" stroke-dasharray="24 100" stroke-dashoffset="-76"></circle>
+                </svg>
+              </div>
+            </div>
+
+            <!-- MAPA SVG DE POLÍGONOS CONTIGUOS DE LA COMUNA SELECCIONADA -->
+            <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2 flex-1 flex flex-col justify-between">
+              <div class="flex justify-between items-center border-b border-stone-200 pb-1">
+                <h3 id="map-territory-title" class="font-extrabold text-xs text-slate-900 uppercase">
+                  RESUMEN DE MAIPÚ (DISTRITO 8 - REGIÓN METROPOLITANA)
+                </h3>
+                <span id="map-sector-inspected" class="text-[10px] font-mono text-blue-800 font-bold">12 Barrios Contiguos</span>
+              </div>
+
+              <!-- Canvas SVG del Mapa de Polígonos Contiguos -->
+              <div class="w-full h-64 bg-[#F2EDE2] border border-[#C5BBAA] rounded relative flex items-center justify-center overflow-hidden">
+                <svg id="svg-contiguous-map" viewBox="0 0 500 320" class="w-full h-full cursor-pointer select-none"></svg>
+                <div id="map-hover-tooltip" class="hidden absolute top-2 right-2 bg-slate-900/90 text-white text-[11px] p-2 rounded shadow-lg pointer-events-none font-mono"></div>
+              </div>
+
+              <!-- Botón Inferior: Predecir Elección -->
+              <div class="pt-2 flex justify-between items-center border-t border-stone-200">
+                <span class="text-[11px] text-stone-500 font-mono">Proyección electoral local basada en encuestas y territorio</span>
+                <button onclick="window.openPredictElectionModal()" class="px-4 py-2 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-extrabold text-xs rounded shadow-2xs cursor-pointer select-none">
+                  📊 PREDECIR ELECCIÓN
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Subpanel: Eventos -->
+        <div id="campaign-panel-events" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Agenda Territorial & Puerta a Puerta</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">🚪 Puerta a Puerta Masivo</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Recorre ferias libres y villas conversando con vecinos.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 12 Horas</span>
+              </div>
+              <button onclick="window.executeCampaignAction('puerta_a_puerta')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Realizar Recorrido
+              </button>
+            </div>
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">☕ Cabildo y Once Vecinal</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Reunión con juntas de vecinos y clubes de adultos mayores.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 10 Horas + $200.000</span>
+              </div>
+              <button onclick="window.executeCampaignAction('cabildo')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Convocar Cabildo
+              </button>
+            </div>
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">🎙️ Punto de Prensa Comunal</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Rueda de prensa y radios comunitarias locales.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 8 Horas</span>
+              </div>
+              <button onclick="window.executeCampaignAction('prensa')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Atender Medios
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subpanel: Marketing -->
+        <div id="campaign-panel-marketing" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Estrategia Publicitaria & Franja</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="border p-3 rounded bg-stone-50 space-y-2">
+              <strong class="text-xs text-slate-900 block">Lanzar Campaña Digital (Meta / TikTok / YouTube)</strong>
+              <p class="text-[11px] text-stone-600">Aumenta el reconocimiento entre el electorado menor de 40 años.</p>
+              <div class="text-xs font-mono">Costo: $1.500.000 CLP | +3.5% Reconocimiento</div>
+              <button onclick="window.launchAdCampaign('digital')" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Contratar Pauta Digital
+              </button>
+            </div>
+            <div class="border p-3 rounded bg-stone-50 space-y-2">
+              <strong class="text-xs text-slate-900 block">Palomas y Gigantografías en Vía Pública</strong>
+              <p class="text-[11px] text-stone-600">Presencia en grandes avenidas, paraderos y esquinas clave.</p>
+              <div class="text-xs font-mono">Costo: $2.500.000 CLP | +5.0% Reconocimiento</div>
+              <button onclick="window.launchAdCampaign('palomas')" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Instalar Propaganda
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subpanel: Oponentes -->
+        <div id="campaign-panel-opponents" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Contendientes y Rivales en Carrera</h3>
+          <div id="opponents-list-container" class="space-y-2"></div>
+        </div>
+
+        <!-- Subpanel: Contactos -->
+        <div id="campaign-panel-contacts" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Red de Contactos y Líderes de Opinión</h3>
+          <div id="contacts-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+        </div>
+
+        <!-- Subpanel: Encuestas -->
+        <div id="campaign-panel-polls" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase">Sondeos y Estudios Electorales (CADEM / Criteria / Pulso)</h3>
+            <button onclick="window.commissionPoll()" class="px-3 py-1 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+              📊 Encargar Sondeo Privado ($1.000.000 CLP)
+            </button>
+          </div>
+          <div id="polls-history-container" class="space-y-2"></div>
+        </div>
+
+        <!-- Subpanel: Finanzas -->
+        <div id="campaign-panel-finance" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Tesorería y Cuenta Electoral SERVEL</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Fondos Actuales</span>
+              <div id="finance-total-funds" class="text-xl font-mono-num font-extrabold text-emerald-800">$10.000.000</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Cena de Recaudación</span>
+              <button onclick="window.fundraiseAction()" class="mt-2 w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
+                Organizar Cena (+$$)
+              </button>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Aporte Propio</span>
+              <button onclick="window.personalContribution()" class="mt-2 w-full py-1 bg-stone-700 hover:bg-stone-800 text-white font-bold text-xs rounded cursor-pointer">
+                Inyectar Fondos Personales
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subpanel: Staff (Gestión Profunda de Comando de Campaña) -->
+        <div id="campaign-panel-staff" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-4">
+          <div class="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase">Comando de Campaña & Asesores Estratégicos</h3>
+              <p class="text-xs text-stone-600">Contrata profesionales con experiencia electoral. Cada miembro exige un sueldo semanal que se descuenta en cada turno y aporta bonos pasivos a tu candidatura.</p>
+            </div>
+            <span id="staff-summary-badge" class="px-3 py-1 rounded text-xs font-mono font-bold bg-blue-50 text-blue-900 border border-blue-200">
+              0 / 4 Cargos Cubiertos
+            </span>
+          </div>
+
+          <!-- Métricas de Planilla y Bonos Activos del Comando -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-stone-50 p-3 rounded border border-stone-200 text-xs">
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Gasto Semanal en Sueldos</span>
+              <div id="staff-metric-payroll" class="text-base font-mono font-extrabold text-rose-800">$0 CLP / sem</div>
+              <span class="text-[10px] text-stone-400">Deducido en cada turno</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Horas Extra Disponibles</span>
+              <div id="staff-metric-hours" class="text-base font-mono font-extrabold text-blue-900">+0 hrs / sem</div>
+              <span class="text-[10px] text-stone-400">Capacidad ejecutiva total</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Reconocimiento Semanal</span>
+              <div id="staff-metric-recog" class="text-base font-mono font-extrabold text-emerald-800">+0.0% / sem</div>
+              <span class="text-[10px] text-stone-400">Exposición en medios y redes</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Voluntarios Nuevos</span>
+              <div id="staff-metric-volunteers" class="text-base font-mono font-extrabold text-amber-800">+0 brigadistas / sem</div>
+              <span class="text-[10px] text-stone-400">Movilización territorial</span>
+            </div>
+          </div>
+
+          <!-- Filtro de Categorías de Staff -->
+          <div class="flex items-center gap-1.5 border-b pb-2 overflow-x-auto text-xs">
+            <span class="text-stone-500 font-bold uppercase text-[10px] shrink-0">Filtrar por Área:</span>
+            <button onclick="window.filterStaffRole('all')" id="staff-tab-all" class="staff-role-filter px-2.5 py-1 rounded bg-[#0047AB] text-white font-bold text-xs cursor-pointer">Todos</button>
+            <button onclick="window.filterStaffRole('manager')" id="staff-tab-manager" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">👔 Jefatura de Campaña</button>
+            <button onclick="window.filterStaffRole('communications')" id="staff-tab-communications" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">📢 Comunicaciones & Prensa</button>
+            <button onclick="window.filterStaffRole('field')" id="staff-tab-field" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">🚩 Despliegue Territorial</button>
+            <button onclick="window.filterStaffRole('legal')" id="staff-tab-legal" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">⚖️ SERVEL & Probidad</button>
+          </div>
+
+          <!-- Grilla de Tarjetas de Asesores -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="staff-hire-container"></div>
+        </div>
+
+        <!-- Subpanel: Políticas (Tus 3 Ejes Prioritarios) -->
+        <div id="campaign-panel-policies" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase">Tus 3 Políticas Prioritarias de Campaña</h3>
+            <span class="text-xs text-stone-500 font-mono">Definen tu plataforma territorial ante los electores</span>
+          </div>
+          <div id="player-core-policies-container" class="space-y-2"></div>
+        </div>
+
+        <!-- Subpanel: Voluntarios -->
+        <div id="campaign-panel-volunteers" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Brigadas de Voluntarios & Apoderados de Mesa</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Brigadistas Activos</span>
+              <div id="volunteers-count-disp" class="text-2xl font-mono-num font-extrabold text-blue-900">120</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Reclutar Brigada</span>
+              <button onclick="window.recruitVolunteers()" class="mt-2 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Convocatoria en Redes
+              </button>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Capacitar Apoderados</span>
+              <button onclick="window.trainVolunteers()" class="mt-2 w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
+                Capacitación Electoral
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== VISTA 2: CARGO (OFFICE) ==================== -->
+      <div id="view-office" class="main-view hidden h-full">
+        <div id="office-panel-overview" class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900 uppercase" id="office-title-disp">Ciudadano sin Cargo</h3>
+              <span class="text-xs text-stone-500 font-mono" id="office-status-subtitle">Sin funciones institucionales activas</span>
+            </div>
+            <span class="px-2.5 py-1 rounded text-xs font-mono font-bold bg-stone-100 border border-stone-300" id="office-term-badge">Período 2024 - 2028</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Aprobación Institucional</span>
+              <div class="text-2xl font-mono-num font-black text-emerald-700" id="office-approval-disp">52.0%</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Gestión de Presupuesto</span>
+              <div class="text-2xl font-mono-num font-black text-blue-900" id="office-budget-disp">$0 CLP</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Leyes & Decretos Firmados</span>
+              <div class="text-2xl font-mono-num font-black text-purple-900" id="office-bills-disp">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="office-panel-lobby" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Audiencias de Lobby & Grupos de Interés</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="lobby-audiences-container"></div>
+        </div>
+
+        <div id="office-panel-bills" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Registro de Leyes y Decretos Promulgados</h3>
+          <div id="office-passed-bills-container" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 3: CONGRESO (HEMICICLO & HISTORIAL) ==================== -->
+      <div id="view-congress" class="main-view hidden h-full space-y-3">
+        <!-- SUBPANEL 1: HEMICICLO DE SALA -->
+        <div id="congress-panel-hemiciclo" class="space-y-3">
+          <div class="bg-white border border-[#A89E88] p-2.5 rounded shadow-2xs flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-900 uppercase">Cámara Activa:</span>
+              <div class="inline-flex rounded border border-stone-400 bg-stone-100 p-0.5">
+                <button id="btn-cong-camara-dip" onclick="window.setCongressChamber('diputados')" class="px-2.5 py-1 text-xs font-bold rounded bg-[#0047AB] text-white">Diputadas y Diputados (155)</button>
+                <button id="btn-cong-camara-sen" onclick="window.setCongressChamber('senado')" class="px-2.5 py-1 text-xs font-bold rounded text-stone-700 hover:bg-stone-200">Senado (50)</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-mono">
+              <span>Mayoría Simple: <strong class="text-blue-800" id="cong-quorum-simple-disp">78 Votos</strong></span>
+              <span>Quórum 4/7: <strong class="text-purple-800" id="cong-quorum-47-disp">89 Votos</strong></span>
+              <span>Tu Escaño: <strong class="text-emerald-800" id="cong-player-seat-disp">Sin Escaño</strong></span>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="window.simulateCongressFloorVote()" class="px-2.5 py-1 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                ⚡ Votación en Sala
+              </button>
+              <button onclick="window.negotiateCongressCocina()" class="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs rounded cursor-pointer">
+                🤝 Cocina Política (5 PP)
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs flex flex-col items-center">
+            <div class="w-full flex justify-between items-center text-[10px] font-mono text-stone-500 pb-1 border-b mb-2">
+              <span class="text-rose-700 font-bold">🔴 Izquierda (FA/PC/PS)</span>
+              <span class="text-stone-700 font-bold">◀ Distribución de Fuerzas Parlamentarias ▶</span>
+              <span class="text-blue-900 font-bold">🔵 Derecha (Chile Vamos/Republicanos)</span>
+            </div>
+            <div class="w-full flex justify-center overflow-hidden">
+              <svg id="svg-congress-hemiciclo" viewBox="0 0 640 320" class="w-full max-h-[300px] select-none"></svg>
+            </div>
+            <div class="w-full mt-2 pt-2 border-t flex justify-between text-xs font-mono">
+              <span class="text-emerald-700 font-bold">A Favor: <span id="hemiciclo-count-yes">0</span></span>
+              <span class="text-rose-700 font-bold">En Contra: <span id="hemiciclo-count-no">0</span></span>
+              <span class="text-stone-500 font-bold">Abstención: <span id="hemiciclo-count-abs">0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBPANEL 2: HISTORIAL LEGISLATIVO & LEGADO -->
+        <div id="congress-panel-history" class="hidden space-y-3">
+          <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h3 class="font-extrabold text-xs text-slate-900 uppercase">Registro Cronológico de Leyes Promulgadas</h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="text-stone-500">Área:</span>
+                <select id="hist-filter-area" onchange="window.renderLegislativeHistory()" class="border px-2 py-0.5 rounded text-xs font-bold">
+                  <option value="all">Todas las Áreas</option>
+                  <option value="crime">Seguridad & Orden</option>
+                  <option value="taxes">Impuestos & Hacienda</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left border-collapse">
+                <thead class="bg-stone-100 text-stone-700 font-mono text-[10px] uppercase border-b">
+                  <tr>
+                    <th class="py-2 px-3">Ley & Título Oficial</th>
+                    <th class="py-2 px-2 text-center">Fecha</th>
+                    <th class="py-2 px-2 text-center">Rango</th>
+                    <th class="py-2 px-2 text-center">Quórum</th>
+                    <th class="py-2 px-2 text-center">Votación (Sí/No/Abs)</th>
+                    <th class="py-2 px-3">Impacto Estructural País</th>
+                    <th class="py-2 px-2 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="legislative-history-table-body" class="divide-y divide-stone-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 4: POLÍTICOS & PACTOS (D'HONDT D3.JS) ==================== -->
+      <div id="view-politicians" class="main-view hidden h-full space-y-3">
+        <!-- SUBPANEL 1: DIRECTORIO DE POLÍTICOS -->
+        <div id="politicians-panel-directory" class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-extrabold text-xs text-slate-900 uppercase">Directorio Nacional de Figuras Políticas</h3>
+            <div class="flex items-center gap-2 text-xs">
+              <span class="text-stone-500">Bloque:</span>
+              <select id="pol-filter-bloc" onchange="window.renderPoliticiansDirectory()" class="border px-2 py-0.5 rounded text-xs font-bold">
+                <option value="all">Todas las Coaliciones</option>
+                <option value="Oficialismo">Oficialismo (FA/PC/PS)</option>
+                <option value="Centro">Centro (DC/Demócratas/Amarillos)</option>
+                <option value="Chile Vamos">Chile Vamos (RN/UDI/Evópoli)</option>
+                <option value="Derecha / Rep">Republicanos & Libertarios</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead class="bg-stone-100 text-stone-700 font-mono text-[10px] uppercase border-b">
+                <tr>
+                  <th class="py-2 px-3">Nombre</th>
+                  <th class="py-2 px-2">Partido</th>
+                  <th class="py-2 px-2">Cargo</th>
+                  <th class="py-2 px-2 text-center">Edad</th>
+                  <th class="py-2 px-2 text-center">Econ / Orden</th>
+                  <th class="py-2 px-2 text-center">Afinidad</th>
+                  <th class="py-2 px-2 text-center">Aprobación</th>
+                  <th class="py-2 px-2 text-right">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="politicians-table-body" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SUBPANEL 2: PACTOS ELECTORALES & SIMULADOR D'HONDT CON D3.JS -->
+        <div id="politicians-panel-alliances" class="hidden space-y-4">
+          
+          <!-- SIMULADOR DINÁMICO DE ESCAÑOS DISTRITALES CON D3.JS -->
+          <div class="bg-white border-2 border-[#0047AB] p-4 rounded shadow-md space-y-3">
+            <div class="flex flex-wrap justify-between items-center border-b border-blue-200 pb-2">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-blue-800 block">Herramienta de Simulación Proporcional</span>
+                <h3 class="font-black text-sm text-slate-900" id="dhondt-sim-district-header">
+                  Simulador D'Hondt con D3.js: Distribución de Escaños en Distrito 8 (8 Escaños)
+                </h3>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="dhondt-sim-player-status" class="px-2.5 py-0.5 rounded text-xs font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">
+                  Arrastre Proyectado: ✓ Electo en Lista
+                </span>
+                <button onclick="window.resetDHondtSliders()" class="px-2 py-0.5 text-xs font-bold bg-stone-100 hover:bg-stone-200 border rounded">
+                  Restablecer
+                </button>
+              </div>
+            </div>
+
+            <!-- Grid: Visualización D3 del Hemiciclo Distrital + Sliders de Porcentaje -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+              
+              <!-- Gráfico D3 del Hemiciclo Distrital (5 Cols) -->
+              <div class="lg:col-span-5 flex flex-col items-center justify-center p-3 bg-stone-50 rounded border border-stone-200">
+                <span class="text-[11px] font-mono text-stone-600 mb-1 font-bold">Repartición de Escaños del Distrito</span>
+                <div id="d3-dhondt-hemicircle" class="w-full h-48 flex items-center justify-center">
+                  <!-- Renderizado reactivo con D3.js -->
+                </div>
+                <div id="dhondt-cifra-repartidora-disp" class="mt-2 text-xs font-mono font-bold text-slate-800 bg-white px-3 py-1 rounded border shadow-2xs">
+                  Cifra Repartidora de Corte: 38.500 Votos
+                </div>
+              </div>
+
+              <!-- Sliders de Voto por Lista / Pacto (7 Cols) -->
+              <div class="lg:col-span-7 space-y-2.5">
+                <p class="text-[11px] text-stone-600">Ajusta los porcentajes de votación de cada lista para simular cómo opera la cifra repartidora y el arrastre de candidatos en tu territorio:</p>
+
+                <!-- Slider Oficialismo -->
+                <div class="space-y-0.5">
+                  <div class="flex justify-between text-xs font-bold">
+                    <span class="text-rose-800">1. Contigo Chile Mejor (FA/PC/PS): <span id="dh-pct-ofic">38%</span></span>
+                    <span id="dh-seats-ofic" class="font-mono text-slate-900 bg-rose-50 px-2 rounded border border-rose-200">3 Escaños</span>
+                  </div>
+                  <input type="range" id="dh-slider-ofic" min="5" max="60" value="38" oninput="window.updateDHondtSimulation()" class="w-full cursor-pointer accent-[#DC2626]" />
+                </div>
+
+                <!-- Slider Chile Vamos -->
+                <div class="space-y-0.5">
+                  <div class="flex justify-between text-xs font-bold">
+                    <span class="text-blue-800">2. Chile Vamos (RN/UDI/Evópoli): <span id="dh-pct-cv">32%</span></span>
+                    <span id="dh-seats-cv" class="font-mono text-slate-900 bg-blue-50 px-2 rounded border border-blue-200">3 Escaños</span>
+                  </div>
+                  <input type="range" id="dh-slider-cv" min="5" max="60" value="32" oninput="window.updateDHondtSimulation()" class="w-full cursor-pointer accent-[#1D4ED8]" />
+                </div>
+
+                <!-- Slider Republicanos -->
+                <div class="space-y-0.5">
+                  <div class="flex justify-between text-xs font-bold">
+                    <span class="text-slate-900">3. Republicanos & Libertarios: <span id="dh-pct-rep">18%</span></span>
+                    <span id="dh-seats-rep" class="font-mono text-slate-900 bg-slate-100 px-2 rounded border border-slate-300">1 Escaño</span>
+                  </div>
+                  <input type="range" id="dh-slider-rep" min="2" max="40" value="18" oninput="window.updateDHondtSimulation()" class="w-full cursor-pointer accent-[#0F172A]" />
+                </div>
+
+                <!-- Slider Centro -->
+                <div class="space-y-0.5">
+                  <div class="flex justify-between text-xs font-bold">
+                    <span class="text-amber-800">4. Centro Democrático (DC/DEM): <span id="dh-pct-cent">12%</span></span>
+                    <span id="dh-seats-cent" class="font-mono text-slate-900 bg-amber-50 px-2 rounded border border-amber-200">1 Escaño</span>
+                  </div>
+                  <input type="range" id="dh-slider-cent" min="2" max="30" value="12" oninput="window.updateDHondtSimulation()" class="w-full cursor-pointer accent-[#D97706]" />
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- CATÁLOGO DE PACTOS ELECTORALES NACIONALES -->
+          <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+            <div class="border-b pb-2">
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase">Pactos Electorales Formales ante el SERVEL</h3>
+              <p class="text-xs text-stone-600">Al pertenecer a un pacto formal, sumas votos de lista bajo el sistema proporcional chileno. Puedes suscribir o renunciar según tu afinidad ideológica.</p>
+            </div>
+            <div id="electoral-pacts-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 5: ELECCIONES (SERVEL) ==================== -->
+      <div id="view-elections" class="main-view hidden h-full space-y-3">
+        <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase">Calendario Oficial de Elecciones SERVEL</h3>
+              <span class="text-xs text-stone-500 font-mono" id="elections-cycle-subtitle">Ciclo Cuatrienal Chileno</span>
+            </div>
+            <button onclick="window.openDeclareCandidacyModal()" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-extrabold text-xs rounded shadow-2xs cursor-pointer">
+              🗳️ Declarar Candidatura / Postular a Cargo
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3" id="elections-calendar-cards"></div>
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 6: MÉTRICAS PAÍS ==================== -->
+      <div id="view-metrics" class="main-view hidden h-full space-y-3">
+        <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Macroeconomía y Variables Sociales de Chile</h3>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="macro-metrics-grid"></div>
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 7: PERFIL E HISTORIAL ==================== -->
+      <div id="view-profile" class="main-view hidden h-full space-y-3">
+        <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase">Hoja de Vida y Carrera Pública</h3>
+              <span class="text-xs text-stone-500 font-mono" id="profile-domicile-disp">Domicilio Electoral: Maipú (Distrito 8)</span>
+            </div>
+            <button onclick="window.openChangeDomicileModal()" class="px-3 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-xs rounded border border-stone-400 cursor-pointer">
+              📍 Cambiar Domicilio Electoral
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <strong class="text-xs uppercase text-slate-900 block">Atributos Políticos del Candidato</strong>
+              <div id="profile-attributes-list" class="space-y-1.5 text-xs font-mono"></div>
+            </div>
+            <div class="space-y-2">
+              <strong class="text-xs uppercase text-slate-900 block">Compás Ideológico 2D</strong>
+              <div class="w-full h-44 bg-stone-50 border relative flex items-center justify-center font-mono text-[9px] text-stone-400">
+                <div class="absolute w-px h-full bg-stone-300"></div>
+                <div class="absolute h-px w-full bg-stone-300"></div>
+                <span class="absolute top-1">Orden (+100)</span>
+                <span class="absolute bottom-1">Libertades (-100)</span>
+                <span class="absolute left-1">Estatismo (-100)</span>
+                <span class="absolute right-1">Mercado (+100)</span>
+                <div id="compass-player-dot" class="w-3.5 h-3.5 rounded-full bg-blue-700 border-2 border-white absolute shadow"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== VISTA 8: NOTICIAS (NEWS) ==================== -->
+      <div id="view-news" class="main-view hidden h-full space-y-3">
+        <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Titulares de la Prensa Nacional</h3>
+          <div id="news-feed-container" class="space-y-2"></div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL AUXILIAR: FORMULARIO OFICIAL SERVEL DE DECLARACIÓN DE CANDIDATURA   -->
+    <!-- ========================================================================= -->
+    <div id="modal-declare-candidacy" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 select-none">
+      <div class="bg-[#FAF8F5] border-2 border-[#7D735F] w-full max-w-lg rounded shadow-2xl p-4 space-y-3">
+        <div class="border-b pb-2 flex justify-between items-center">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase">Declaración Oficial de Candidatura SERVEL</h3>
+          <button onclick="document.getElementById('modal-declare-candidacy').classList.add('hidden')" class="font-bold text-stone-500 hover:text-black">✕</button>
+        </div>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-900 uppercase mb-1">1. Cargo al que postulas:</label>
+            <select id="decl-office-select" onchange="window.handleDeclOfficeChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold"></select>
+          </div>
+
+          <div id="decl-territory-container">
+            <label class="block text-xs font-bold text-slate-900 uppercase mb-1">2. Territorio Electoral:</label>
+            <select id="decl-territory-select" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold"></select>
+          </div>
+
+          <div class="p-2.5 bg-stone-100 border rounded text-xs font-mono space-y-1">
+            <div>Requisito de Edad: <strong id="decl-req-age">18 años</strong></div>
+            <div>Costo SERVEL: <strong id="decl-req-cost">10 PP | $1.000.000 CLP</strong></div>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-2 pt-2 border-t">
+          <button onclick="document.getElementById('modal-declare-candidacy').classList.add('hidden')" class="px-3 py-1 bg-stone-200 text-stone-800 font-bold text-xs rounded">Cancelar</button>
+          <button onclick="window.confirmCandidacyDeclaration()" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-extrabold text-xs rounded shadow-xs">Formalizar ante el SERVEL</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MODAL AUXILIAR: NOCHE ELECTORAL SERVEL EN VIVO                            -->
+    <!-- ========================================================================= -->
+    <div id="modal-election-night" class="hidden fixed inset-0 bg-slate-900/90 z-50 flex items-center justify-center p-3 select-none">
+      <div class="bg-[#FAF8F5] border-2 border-[#7D735F] w-full max-w-3xl rounded shadow-2xl p-4 space-y-3 flex flex-col max-h-[92vh] overflow-hidden">
+        <div class="bg-[#0047AB] text-white p-2.5 rounded flex items-center justify-between shrink-0">
+          <div>
+            <h2 class="font-black text-sm uppercase">🏛️ SERVEL: Escrutinio Definitivo en Vivo</h2>
+            <span class="text-[11px] font-mono text-blue-200" id="en-title-subtitle">Elecciones Populares</span>
+          </div>
+          <span class="text-xs font-mono font-bold bg-white text-blue-900 px-2 py-0.5 rounded" id="en-pct-counted">0.0% Mesas Escrutadas</span>
+        </div>
+
+        <div class="flex-1 overflow-y-auto space-y-3" id="en-results-body"></div>
+
+        <div class="pt-2 border-t flex justify-between items-center shrink-0">
+          <button id="en-btn-advance" onclick="window.advanceElectionScrutiny()" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-extrabold text-xs rounded shadow-xs cursor-pointer">
+            ▶ Avanzar Conteo de Mesas (+25%)
+          </button>
+          <button id="en-btn-finish" onclick="window.closeElectionNight()" class="hidden px-4 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-black text-xs rounded shadow-xs cursor-pointer">
+            ✓ Aceptar Proclamación del TRICEL
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MASTER SCRIPT: MOTOR JAVASCRIPT CON D3.JS Y 2 PÁGINAS DE CREACIÓN         -->
+    <!-- ========================================================================= -->
+    <script>
+      // =========================================================================
+      // DICCIONARIOS Y CATÁLOGOS GEOGRÁFICOS DE CHILE
+      // =========================================================================
+      const CHILE_GEO = {
+        rm: {
+          name: 'Región Metropolitana de Santiago',
+          districts: {
+            'Distrito 8': { seats: 8, communes: ['Maipú', 'Pudahuel', 'Cerrillos', 'Estación Central', 'Quilicura', 'Colina', 'Lampa', 'Tiltil'] },
+            'Distrito 9': { seats: 7, communes: ['Recoleta', 'Independencia', 'Conchalí', 'Huechuraba', 'Renca', 'Cerro Navia', 'Lo Prado', 'Quinta Normal'] },
+            'Distrito 10': { seats: 8, communes: ['Santiago Centro', 'Providencia', 'Ñuñoa', 'Macul', 'San Joaquín', 'La Granja'] },
+            'Distrito 11': { seats: 6, communes: ['Las Condes', 'Vitacura', 'Lo Barnechea', 'La Reina', 'Peñalolén'] },
+            'Distrito 12': { seats: 7, communes: ['Puente Alto', 'La Florida', 'La Pintana', 'Pirque', 'San José de Maipo'] },
+            'Distrito 13': { seats: 5, communes: ['El Bosque', 'La Cisterna', 'San Ramón', 'San Miguel', 'Lo Espejo', 'Pedro Aguirre Cerda'] },
+            'Distrito 14': { seats: 6, communes: ['San Bernardo', 'Buin', 'Paine', 'Melipilla', 'Talagante', 'Peñaflor', 'Padre Hurtado'] }
+          }
+        },
+        valpo: {
+          name: 'Región de Valparaíso',
+          districts: {
+            'Distrito 6': { seats: 8, communes: ['Quilpué', 'Villa Alemana', 'Quillota', 'San Felipe', 'Los Andes', 'La Calera', 'Limache'] },
+            'Distrito 7': { seats: 8, communes: ['Valparaíso', 'Viña del Mar', 'Concón', 'San Antonio', 'Casablanca', 'Cartagena', 'Algarrobo'] }
+          }
+        }
+      };
+
+      const CHILE_PARTIES = [
+        { id: 'PC', name: 'Partido Comunista', bloc: 'Oficialismo', color: '#DC2626', factions: ['Sindical y Juvenil', 'Institucional y Cuadros'] },
+        { id: 'FA', name: 'Frente Amplio', bloc: 'Oficialismo', color: '#E11D48', factions: ['Tercerismo Universitario', 'Desbordar lo Posible / Ecologista'] },
+        { id: 'PS', name: 'Partido Socialista', bloc: 'Oficialismo', color: '#991B1B', factions: ['Renovación Socialdemócrata', 'Izquierda Socialista Histórica'] },
+        { id: 'PPD', name: 'Partido por la Democracia', bloc: 'Oficialismo', color: '#B91C1C', factions: ['Laica Reformista', 'Progresismo Ciudadano'] },
+        { id: 'DC', name: 'Democracia Cristiana', bloc: 'Centro', color: '#2563EB', factions: ['Comunitaria Histórica', 'Centro Progresista'] },
+        { id: 'DEM', name: 'Demócratas Chile', bloc: 'Centro', color: '#3B82F6', factions: ['Ex-Concertación Moderada', 'Centro Pragmatico'] },
+        { id: 'AMARILLOS', name: 'Amarillos por Chile', bloc: 'Centro', color: '#F59E0B', factions: ['Institucional Republicana', 'Diálogo Transversal'] },
+        { id: 'EVOPOLI', name: 'Evolución Política', bloc: 'Chile Vamos', color: '#0284C7', factions: ['Liberalismo Social', 'Modernización Económica'] },
+        { id: 'RN', name: 'Renovación Nacional', bloc: 'Chile Vamos', color: '#1D4ED8', factions: ['Derecha Territorial y Social', 'Conservadurismo Tradicional'] },
+        { id: 'UDI', name: 'Unión Demócrata Indep.', bloc: 'Chile Vamos', color: '#1E3A8A', factions: ['Gremialismo Clásico', 'Renovación Liberal de Derecha'] },
+        { id: 'PREP', name: 'Partido Republicano', bloc: 'Derecha / Rep', color: '#172554', factions: ['Identidad Republicana', 'Soberanía y Orden'] },
+        { id: 'PSC', name: 'Partido Social Cristiano', bloc: 'Derecha / Rep', color: '#4338CA', factions: ['Valórica Tradicional', 'Acción Social Comunitaria'] },
+        { id: 'PNL', name: 'Partido Nacional Libertario', bloc: 'Derecha / Rep', color: '#0F172A', factions: ['Minarquismo Radical', 'Libertad Económica Total'] },
+        { id: 'PDG', name: 'Partido de la Gente', bloc: 'Centro', color: '#059669', factions: ['Democracia Digital', 'Clase Media Emprendedora'] },
+        { id: 'IND', name: 'Independiente Fuera de Pacto', bloc: 'Independientes', color: '#64748B', factions: ['Ciudadano Independiente', 'Dirigente Social sin Partido'] }
+      ];
+
+      const POLICIES_CATALOG = [
+        { id: 'p1', name: 'Militarización de Infraestructura Crítica y Fronteras', issue: 'Seguridad', deltaCrime: -8.0, deltaTension: 3.0 },
+        { id: 'p2', name: 'Cárceles de Alta Seguridad y Aislamiento de Bandas', issue: 'Seguridad', deltaCrime: -7.5, deltaTension: 1.0 },
+        { id: 'p3', name: 'Expulsión Administrativa Express en 48 Horas de Irregulares', issue: 'Seguridad', deltaCrime: -5.0, deltaTension: 4.0 },
+        { id: 'p4', name: 'Rebaja del Impuesto Corporativo a 23% para Inversión', issue: 'Economía', deltaGrowth: 0.6, deltaTension: -1.0 },
+        { id: 'p5', name: 'Fast-Track de Permisología para Grandes Proyectos', issue: 'Economía', deltaGrowth: 0.5, deltaTension: -2.0 },
+        { id: 'p6', name: 'Sueldo Mínimo de $650.000 con Subsidio Estatal a PyMEs', issue: 'Economía', deltaGrowth: -0.3, deltaTension: -4.0 },
+        { id: 'p7', name: '6% Previsional Completo a Cuentas Individuales Heredables', issue: 'Pensiones', deltaGrowth: 0.3, deltaTension: 2.0 },
+        { id: 'p8', name: 'Fondo Solidario Mixto Estatal para Pensiones', issue: 'Pensiones', deltaGrowth: -0.2, deltaTension: -5.0 },
+        { id: 'p9', name: 'Plan Cero Listas de Espera en Salud con Derivación AUGE', issue: 'Salud', deltaApproval: 4.0, deltaTension: -4.0 }
+      ];
+
+      // =========================================================================
+      // CATÁLOGO DE ASESORES Y STAFF DE CAMPAÑA
+      // =========================================================================
+      const STAFF_CATALOG = [
+        {
+          id: 'staff_mgr_morales',
+          role: 'manager',
+          roleLabel: 'Jefe de Campaña',
+          roleIcon: '👔',
+          name: 'Esteban Morales',
+          avatar: '👨‍💼',
+          title: 'Operador Territorial Tradicional',
+          exp: '20 años en campañas distritales y municipales en la Región Metropolitana.',
+          salaryWeekly: 450000,
+          bonusHours: 8,
+          bonusRecogWeekly: 0.2,
+          bonusVolunteersWeekly: 5,
+          bonusPPMonthly: 0,
+          perkDesc: '+8 hrs semanales ejecutivas | +10% en recaudación de cenas'
+        },
+        {
+          id: 'staff_mgr_valenzuela',
+          role: 'manager',
+          roleLabel: 'Jefe de Campaña',
+          roleIcon: '👔',
+          name: 'Catalina Valenzuela',
+          avatar: '👩‍💼',
+          title: 'Estratega Electoral de Datos (Data & Analytics)',
+          exp: 'Master en Políticas Públicas. Diseña franjas y microsegmentación por mesa de votación.',
+          salaryWeekly: 800000,
+          bonusHours: 14,
+          bonusRecogWeekly: 0.5,
+          bonusVolunteersWeekly: 10,
+          bonusPPMonthly: 0,
+          perkDesc: '+14 hrs semanales | +25% de precisión en sondeos privados'
+        },
+        {
+          id: 'staff_comm_navarrete',
+          role: 'communications',
+          roleLabel: 'Dir. de Comunicaciones',
+          roleIcon: '📢',
+          name: 'Gonzalo Navarrete',
+          avatar: '🎙️',
+          title: 'Ex-Editor de Prensa y Televisión',
+          exp: 'Vínculos de primer nivel con conductores radiales, diarios y matinales de TV.',
+          salaryWeekly: 500000,
+          bonusHours: 0,
+          bonusRecogWeekly: 0.8,
+          bonusVolunteersWeekly: 0,
+          bonusPPMonthly: 0,
+          perkDesc: '+0.8% Reconocimiento comunal semanal automático | +15% impacto de marketing'
+        },
+        {
+          id: 'staff_comm_diaz',
+          role: 'communications',
+          roleLabel: 'Dir. de Comunicaciones',
+          roleIcon: '📢',
+          name: 'Valentina Díaz',
+          avatar: '📱',
+          title: 'Directora Digital y Viralización en Redes',
+          exp: 'Especialista en streaming, TikTok y contenido de alto impacto para votantes jóvenes.',
+          salaryWeekly: 750000,
+          bonusHours: 2,
+          bonusRecogWeekly: 1.6,
+          bonusVolunteersWeekly: 8,
+          bonusPPMonthly: 0,
+          perkDesc: '+1.6% Reconocimiento semanal | Amortigua -50% el desgaste de ataques opositores'
+        },
+        {
+          id: 'staff_field_albornoz',
+          role: 'field',
+          roleLabel: 'Estratega Territorial',
+          roleIcon: '🚩',
+          name: 'Rosa Albornoz',
+          avatar: '🤝',
+          title: 'Dirigente Social y Líder Vecinal',
+          exp: 'Conexión histórica con juntas de vecinos, clubes deportivos y ferias libres.',
+          salaryWeekly: 350000,
+          bonusHours: 0,
+          bonusRecogWeekly: 0.3,
+          bonusVolunteersWeekly: 20,
+          bonusPPMonthly: 0,
+          perkDesc: '+20 Voluntarios nuevos/semana | +10% entusiasmo en barrios populares'
+        },
+        {
+          id: 'staff_field_benitez',
+          role: 'field',
+          roleLabel: 'Estratega Territorial',
+          roleIcon: '🚩',
+          name: 'Javier Benítez',
+          avatar: '🗺️',
+          title: 'Coordinador General de Despliegue y Logística',
+          exp: 'Especialista en copamiento de avenidas, instalación de brigadas y banderazos.',
+          salaryWeekly: 650000,
+          bonusHours: 0,
+          bonusRecogWeekly: 0.6,
+          bonusVolunteersWeekly: 40,
+          bonusPPMonthly: 0,
+          perkDesc: '+40 Voluntarios nuevos/semana | -25% costo de propaganda en vía pública'
+        },
+        {
+          id: 'staff_legal_vergara',
+          role: 'legal',
+          roleLabel: 'Contralor & SERVEL',
+          roleIcon: '⚖️',
+          name: 'Andrés Vergara',
+          avatar: '👨‍⚖️',
+          title: 'Abogado Electoralista SERVEL & TRICEL',
+          exp: 'Litigante ante tribunales electorales, especialista en la Ley 18.700 sobre votaciones.',
+          salaryWeekly: 400000,
+          bonusHours: 0,
+          bonusRecogWeekly: 0.1,
+          bonusVolunteersWeekly: 0,
+          bonusPPMonthly: 0,
+          perkDesc: 'Inmunidad ante multas SERVEL | Descuento del 30% en costos de inscripción'
+        },
+        {
+          id: 'staff_legal_silva',
+          role: 'legal',
+          roleLabel: 'Contralor & SERVEL',
+          roleIcon: '⚖️',
+          name: 'Loreto Silva',
+          avatar: '👩‍⚖️',
+          title: 'Auditora de Cuentas y Probidad Pública',
+          exp: 'Ex-fiscalizadora de Contraloría. Blindaje total en rendición de gastos electorales.',
+          salaryWeekly: 600000,
+          bonusHours: 0,
+          bonusRecogWeekly: 0.2,
+          bonusVolunteersWeekly: 0,
+          bonusPPMonthly: 2,
+          perkDesc: '+2 Puntos Políticos (PP) al mes por probidad | +3% aprobación pública'
+        }
+      ];
+
+      // =========================================================================
+      // ESTADO GLOBAL MAESTRO DEL JUEGO (GAME_STATE)
+      // =========================================================================
+      let GAME_STATE = {
+        week: 1,
+        year: 2024,
+        month: 'Enero',
+        volunteers: 120,
+        player: {
+          name: 'Gabriel Silva',
+          age: 25,
+          profession: 'Abogado/a Constitucionalista',
+          region: 'rm',
+          district: 'Distrito 8',
+          commune: 'Maipú',
+          currentOffice: 'Ciudadano sin Cargo',
+          partyId: 'IND',
+          partyName: 'Independiente Fuera de Pacto',
+          faction: 'Ciudadano Independiente',
+          attributes: {
+            oratory: 60,
+            charisma: 55,
+            negotiation: 50,
+            management: 55
+          },
+          hours: 60,
+          maxHours: 60,
+          funds: 10000000,
+          politicalPoints: 25,
+          nameRecognition: 25.0,
+          approval: 52.0,
+          corePolicies: ['p1', 'p4', 'p9'],
+          activePactId: 'pact-ofic',
+          hiredStaffIds: []
+        },
+        socialTension: 35,
+        macroMetrics: {
+          inflation: 3.8,
+          gdpGrowth: 2.3,
+          unemployment: 8.5,
+          victimizationRate: 58.0
+        },
+        congress: {
+          activeChamber: 'diputados'
+        },
+        legislativeHistory: [
+          { number: 'Ley N° 21.601', title: 'Ley Marco de Ciberseguridad e Infraestructura Crítica', date: 'Enero 2024', type: 'Simple', quorum: '88 / 155', yes: 88, no: 52, abs: 15, area: 'crime', impact: 'Victimización -3.2%, Certeza jurídica +1.5%' },
+          { number: 'Ley N° 21.602', title: 'Ley de Alivio Tributario y Fomento a las PyMEs', date: 'Marzo 2024', type: 'Simple', quorum: '94 / 155', yes: 94, no: 41, abs: 20, area: 'taxes', impact: 'Crecimiento PIB +0.4%, Empleo formal +1.2%' }
+        ],
+        newsFeed: [
+          { date: 'Semana 1, 2024', source: 'SERVEL / Diario Oficial', title: 'Se abre el año electoral municipal y regional 2024 en todo el territorio chileno.' }
+        ],
+        nextNationalEventWeek: 6,
+        electionScrutiny: {
+          progressPct: 0
+        }
+      };
+
+      // =========================================================================
+      // GESTIÓN DE ATRIBUTOS POLÍTICOS EN PÁGINA 1
+      // =========================================================================
+      let p1AvailablePoints = 5;
+      let p1SelectedParty = 'IND';
+      let p1SelectedFaction = 'Ciudadano Independiente';
+      let p1Attributes = { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
+      let p2SelectedPolicies = ['p1', 'p4', 'p9'];
+
+      window.adjustAttribute = function(attrKey, delta) {
+        if (delta > 0 && p1AvailablePoints < delta) return;
+        if (delta < 0 && p1Attributes[attrKey] <= 30) return;
+        if (delta > 0 && p1Attributes[attrKey] >= 95) return;
+
+        p1Attributes[attrKey] += delta;
+        p1AvailablePoints -= delta;
+
+        document.getElementById(`attr-${attrKey}-val`).textContent = p1Attributes[attrKey];
+        document.getElementById(`attr-${attrKey}-bar`).style.width = `${p1Attributes[attrKey]}%`;
+        document.getElementById('p1-points-pool-disp').textContent = `Puntos Disponibles: ${p1AvailablePoints}`;
+      };
+
+      window.p1HandleAgeChange = function(val) {
+        const age = parseInt(val);
+        document.getElementById('p1-age-disp').textContent = `${age} años`;
+        const box = document.getElementById('p1-age-status-box');
+
+        if (age < 21) {
+          box.textContent = 'Habilitado para: Concejal Municipal y Alcalde/Alcaldesa (18+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-amber-900 bg-amber-50 p-2 rounded border border-amber-200 leading-tight';
+        } else if (age < 35) {
+          box.textContent = 'Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional (21+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight';
+        } else {
+          box.textContent = 'Habilitado para TODOS los cargos: Incluye Senador y Presidente de la República (35+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-emerald-900 bg-emerald-50 p-2 rounded border border-emerald-200 leading-tight';
+        }
+
+        window.p1UpdateProfessions(age);
+      };
+
+      window.p1UpdateProfessions = function(age) {
+        const sel = document.getElementById('p1-profession');
+        sel.innerHTML = '';
+        const list = age < 23 
+          ? ['Estudiante Universitario', 'Líder Estudiantil', 'Dirigente Vecinal', 'Emprendedor Joven', 'Activista Social', 'Feriante']
+          : ['Abogado/a Constitucionalista', 'Ingeniero/a Comercial', 'Economista', 'Médico/a Salubrista', 'Profesor/a', 'Administrador/a Público/a', 'Periodista'];
+
+        list.forEach(item => {
+          const opt = document.createElement('option');
+          opt.value = item;
+          opt.textContent = item;
+          sel.appendChild(opt);
+        });
+      };
+
+      window.p1RandomName = function() {
+        const f = ['Gabriel', 'Tomás', 'Claudio', 'Rodrigo', 'Sebastián', 'Camila', 'Evelyn', 'Carolina', 'Macarena', 'Diego', 'Matías'];
+        const l = ['Silva', 'Vodanovic', 'Orrego', 'Vallejo', 'Matthei', 'Boric', 'Desbordes', 'Kast', 'Ripamonti', 'Jackson', 'Soto'];
+        document.getElementById('p1-name').value = `${f[Math.floor(Math.random() * f.length)]} ${l[Math.floor(Math.random() * l.length)]}`;
+      };
+
+      window.p1RenderParties = function() {
+        const grid = document.getElementById('p1-parties-grid');
+        grid.innerHTML = '';
+
+        CHILE_PARTIES.forEach(p => {
+          const isSel = (p1SelectedParty === p.id);
+          const c = document.createElement('div');
+          c.className = `p-2.5 border-2 rounded text-xs cursor-pointer transition select-none flex flex-col justify-between ${isSel ? 'border-blue-700 bg-blue-50/80 font-bold shadow-xs' : 'border-stone-300 bg-white hover:border-stone-400'}`;
+          c.innerHTML = `
+            <div>
+              <div class="flex items-center gap-1.5 mb-1">
+                <span class="w-3 h-3 rounded-full shrink-0" style="background-color: ${p.color};"></span>
+                <span class="font-extrabold text-slate-900">${p.id}</span>
+              </div>
+              <div class="text-[11px] text-stone-600 leading-snug">${p.name}</div>
+            </div>
+            <div class="mt-2 text-[10px] font-mono text-stone-500">${p.bloc}</div>
+          `;
+          c.onclick = () => {
+            p1SelectedParty = p.id;
+            p1SelectedFaction = null;
+            document.getElementById('p1-selected-party-badge').textContent = `${p.id} - ${p.name}`;
+            window.p1RenderParties();
+            window.p1RenderFactions(p);
+          };
+          grid.appendChild(c);
+        });
+      };
+
+      window.p1RenderFactions = function(party) {
+        const grid = document.getElementById('p1-factions-grid');
+        grid.innerHTML = '';
+        const factions = party.factions || ['Sensibilidad Base'];
+        if (!p1SelectedFaction || !factions.includes(p1SelectedFaction)) {
+          p1SelectedFaction = factions[0];
+        }
+        document.getElementById('p1-faction-badge').textContent = p1SelectedFaction;
+
+        factions.forEach(f => {
+          const isSel = (p1SelectedFaction === f);
+          const c = document.createElement('div');
+          c.className = `p-2.5 border-2 rounded cursor-pointer text-xs transition select-none ${isSel ? 'bg-blue-100 border-blue-600 font-bold text-blue-950 shadow-xs ring-1 ring-blue-500' : 'bg-white border-stone-300 hover:border-stone-400 hover:bg-stone-50'}`;
+          c.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-base">${isSel ? '✅' : '🚩'}</span>
+              <div>
+                <strong class="block text-slate-900">${f}</strong>
+                <span class="text-[10px] text-stone-500 font-normal">Corriente interna en ${party.id}</span>
+              </div>
+            </div>
+          `;
+          c.onclick = () => {
+            p1SelectedFaction = f;
+            document.getElementById('p1-faction-badge').textContent = f;
+            window.p1RenderFactions(party);
+          };
+          grid.appendChild(c);
+        });
+      };
+
+      // Navegación entre Página 1 y Página 2
+      window.goToPage2Territory = function() {
+        const name = document.getElementById('p1-name').value.trim();
+        const alertEl = document.getElementById('p1-validation-alert');
+        if (name.length < 3) {
+          alertEl.textContent = '⚠️ Debes ingresar un nombre y apellido de al menos 3 caracteres.';
+          alertEl.classList.remove('hidden');
+          return;
+        }
+        alertEl.classList.add('hidden');
+
+        // Inicializar cascada de la página 2
+        window.p2InitTerritoryCascades();
+        window.p2RenderPoliciesCatalog();
+
+        document.getElementById('screen-page-1-identity').classList.add('hidden');
+        document.getElementById('screen-page-2-territory').classList.remove('hidden');
+      };
+
+      window.backToPage1Identity = function() {
+        document.getElementById('screen-page-2-territory').classList.add('hidden');
+        document.getElementById('screen-page-1-identity').classList.remove('hidden');
+      };
+
+      // =========================================================================
+      // PÁGINA 2: AÑO ELECTORAL, TERRITORIO Y POLÍTICAS
+      // =========================================================================
+      window.p2HandleYearChange = function(yearVal) {
+        const descBox = document.getElementById('p2-year-description');
+        if (!descBox) return;
+        if (yearVal === '2024') {
+          descBox.innerHTML = '📅 <strong>Año 2024:</strong> Elecciones Municipales y Regionales en Semana 44 (Alcaldes, Concejales, Gobernadores). Inscripción legal SERVEL en Semana 8.';
+          descBox.className = 'p-2.5 bg-blue-50 border border-blue-200 text-blue-900 rounded text-[11px] leading-snug';
+        } else if (yearVal === '2025') {
+          descBox.innerHTML = '📅 <strong>Año 2025:</strong> Elecciones Presidenciales y Parlamentarias en Semana 44 (La Moneda, Cámara de Diputados y Senado). Inscripción en Semana 8.';
+          descBox.className = 'p-2.5 bg-purple-50 border border-purple-200 text-purple-900 rounded text-[11px] leading-snug';
+        } else {
+          descBox.innerHTML = '📅 <strong>Año 2026:</strong> Gobernanza Intermedia. Año de gestión política, negociación en el Congreso y reformas estructurales. Próximo ciclo electoral en 2028.';
+          descBox.className = 'p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded text-[11px] leading-snug';
+        }
+      };
+
+      window.p2InitTerritoryCascades = function() {
+        const regSelect = document.getElementById('p2-region');
+        regSelect.innerHTML = '<option value="" disabled selected>-- Selecciona una Región --</option>';
+
+        for (const regKey in CHILE_GEO) {
+          const opt = document.createElement('option');
+          opt.value = regKey;
+          opt.textContent = CHILE_GEO[regKey].name;
+          regSelect.appendChild(opt);
+        }
+
+        const distSelect = document.getElementById('p2-district');
+        distSelect.innerHTML = '<option value="" disabled selected>-- Primero selecciona una región --</option>';
+        distSelect.disabled = true;
+        distSelect.className = 'w-full p-2 border border-stone-300 bg-stone-100 rounded text-xs font-bold text-slate-800 cursor-pointer';
+
+        const commSelect = document.getElementById('p2-commune');
+        commSelect.innerHTML = '<option value="" disabled selected>-- Primero selecciona un distrito --</option>';
+        commSelect.disabled = true;
+        commSelect.className = 'w-full p-2 border border-stone-300 bg-stone-100 rounded text-xs font-bold text-slate-800 cursor-pointer';
+
+        document.getElementById('p2-preview-domicile').innerHTML = '<span class="text-amber-800 italic">Sin territorio asignado (Elige Región, Distrito y Comuna)</span>';
+      };
+
+      window.p2HandleRegionChange = function(regKey) {
+        const distSelect = document.getElementById('p2-district');
+        distSelect.innerHTML = '<option value="" disabled selected>-- Selecciona un Distrito --</option>';
+        distSelect.disabled = false;
+        distSelect.className = 'w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer';
+
+        const districts = CHILE_GEO[regKey]?.districts || {};
+        for (const distKey in districts) {
+          const opt = document.createElement('option');
+          opt.value = distKey;
+          opt.textContent = `${distKey} (${districts[distKey].seats} Escaños)`;
+          distSelect.appendChild(opt);
+        }
+
+        const commSelect = document.getElementById('p2-commune');
+        commSelect.innerHTML = '<option value="" disabled selected>-- Primero selecciona un distrito --</option>';
+        commSelect.disabled = true;
+        commSelect.className = 'w-full p-2 border border-stone-300 bg-stone-100 rounded text-xs font-bold text-slate-800 cursor-pointer';
+
+        document.getElementById('p2-preview-domicile').innerHTML = `<span class="text-stone-700">${CHILE_GEO[regKey]?.name} (Selecciona Distrito y Comuna)</span>`;
+      };
+
+      window.p2HandleDistrictChange = function(distKey) {
+        const regKey = document.getElementById('p2-region').value;
+        const commSelect = document.getElementById('p2-commune');
+        commSelect.innerHTML = '<option value="" disabled selected>-- Selecciona una Comuna --</option>';
+        commSelect.disabled = false;
+        commSelect.className = 'w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer';
+
+        const cleanDistKey = distKey.split(' (')[0];
+        const communes = CHILE_GEO[regKey]?.districts[cleanDistKey]?.communes || [];
+
+        communes.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          commSelect.appendChild(opt);
+        });
+
+        document.getElementById('p2-preview-domicile').innerHTML = `<span class="text-stone-700">${cleanDistKey} - Selecciona tu comuna de residencia</span>`;
+      };
+
+      window.p2HandleCommuneChange = function(commName) {
+        const regKey = document.getElementById('p2-region').value;
+        const distKey = document.getElementById('p2-district').value.split(' (')[0];
+        document.getElementById('p2-preview-domicile').innerHTML = `<strong class="text-blue-900">${commName}</strong> (${distKey}, ${CHILE_GEO[regKey]?.name})`;
+      };
+
+      window.p2RenderPoliciesCatalog = function() {
+        const cat = document.getElementById('p2-policies-catalog');
+        cat.innerHTML = '';
+
+        POLICIES_CATALOG.forEach(p => {
+          const isChecked = p2SelectedPolicies.includes(p.id);
+          const row = document.createElement('label');
+          row.className = `p-2 border rounded flex items-center justify-between text-xs cursor-pointer ${isChecked ? 'bg-blue-50 border-blue-400 font-bold' : 'bg-white border-stone-200'}`;
+          row.innerHTML = `
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window.p2TogglePolicy('${p.id}')" class="cursor-pointer" />
+              <span>${p.name}</span>
+            </div>
+            <span class="text-[10px] font-mono text-stone-500">${p.issue}</span>
+          `;
+          cat.appendChild(row);
+        });
+
+        document.getElementById('p2-policies-count-badge').textContent = `${p2SelectedPolicies.length} / 3 Seleccionadas`;
+      };
+
+      window.p2TogglePolicy = function(pid) {
+        if (p2SelectedPolicies.includes(pid)) {
+          p2SelectedPolicies = p2SelectedPolicies.filter(id => id !== pid);
+        } else {
+          if (p2SelectedPolicies.length >= 3) {
+            alert('Solo puedes seleccionar exactamente 3 políticas prioritarias.');
+            window.p2RenderPoliciesCatalog();
+            return;
+          }
+          p2SelectedPolicies.push(pid);
+        }
+        window.p2RenderPoliciesCatalog();
+      };
+
+      window.finishFullCharacterCreation = function() {
+        const alertEl = document.getElementById('p2-validation-alert');
+
+        const reg = document.getElementById('p2-region').value;
+        const distVal = document.getElementById('p2-district').value;
+        const comm = document.getElementById('p2-commune').value;
+
+        if (!reg || !distVal || !comm) {
+          alertEl.textContent = '⚠️ Debes seleccionar libremente tu Región, Distrito y Comuna de residencia antes de iniciar.';
+          alertEl.classList.remove('hidden');
+          return;
+        }
+
+        if (p2SelectedPolicies.length !== 3) {
+          alertEl.textContent = '⚠️ Debes elegir exactamente 3 políticas prioritarias.';
+          alertEl.classList.remove('hidden');
+          return;
+        }
+
+        const age = parseInt(document.getElementById('p1-age').value);
+        const officeVal = document.getElementById('p2-initial-office').value;
+
+        if ((officeVal === 'diputado' || officeVal === 'gobernador') && age < 21) {
+          alertEl.textContent = '⚠️ Para iniciar como Diputado o Gobernador debes tener 21 años o más.';
+          alertEl.classList.remove('hidden');
+          return;
+        }
+        if ((officeVal === 'senador' || officeVal === 'presidente') && age < 35) {
+          alertEl.textContent = '⚠️ Para iniciar como Senador o Presidente debes tener 35 años o más.';
+          alertEl.classList.remove('hidden');
+          return;
+        }
+
+        const dist = distVal.split(' (')[0];
+        const name = document.getElementById('p1-name').value.trim();
+        const profession = document.getElementById('p1-profession').value;
+        const startYear = parseInt(document.getElementById('p2-start-year')?.value || '2024');
+
+        const officeLabels = {
+          none: 'Ciudadano sin Cargo',
+          concejal: `Concejal de ${comm}`,
+          alcalde: `Alcalde de ${comm}`,
+          diputado: `Diputado (${dist})`,
+          gobernador: `Gobernador Regional`,
+          senador: 'Senador de la República',
+          presidente: 'Presidente de la República'
+        };
+
+        const partyObj = CHILE_PARTIES.find(p => p.id === p1SelectedParty) || { name: 'Independiente' };
+
+        GAME_STATE.year = startYear;
+        GAME_STATE.week = 1;
+        GAME_STATE.month = 'Enero';
+        GAME_STATE.volunteers = 120;
+        GAME_STATE.player.name = name;
+        GAME_STATE.player.age = age;
+        GAME_STATE.player.profession = profession;
+        GAME_STATE.player.region = reg;
+        GAME_STATE.player.district = dist;
+        GAME_STATE.player.commune = comm;
+        GAME_STATE.player.partyId = p1SelectedParty;
+        GAME_STATE.player.partyName = partyObj.name;
+        GAME_STATE.player.faction = p1SelectedFaction;
+        GAME_STATE.player.attributes = { ...p1Attributes };
+        GAME_STATE.player.currentOffice = officeLabels[officeVal] || 'Ciudadano sin Cargo';
+        GAME_STATE.player.corePolicies = [...p2SelectedPolicies];
+        GAME_STATE.player.hiredStaffIds = [];
+
+        // Ocultar pantallas de creación y abrir tablero
+        document.getElementById('screen-page-1-identity').classList.add('hidden');
+        document.getElementById('screen-page-2-territory').classList.add('hidden');
+
+        window.showToast('¡Bienvenido al Juego!', `Inicias tu carrera en ${comm} (${dist}) en el año ${startYear}.`, 'success');
+        window.renderAll();
+      };
+
+
+      // =========================================================================
+      // MOTOR D3.JS: SIMULADOR DINÁMICO DE ESCAÑOS D'HONDT EN PACTOS ELECTORALES
+      // =========================================================================
+      let d3SimShares = { ofic: 38, cv: 32, rep: 18, cent: 12 };
+
+      window.resetDHondtSliders = function() {
+        d3SimShares = { ofic: 38, cv: 32, rep: 18, cent: 12 };
+        document.getElementById('dh-slider-ofic').value = 38;
+        document.getElementById('dh-slider-cv').value = 32;
+        document.getElementById('dh-slider-rep').value = 18;
+        document.getElementById('dh-slider-cent').value = 12;
+        window.updateDHondtSimulation();
+      };
+
+      window.updateDHondtSimulation = function() {
+        d3SimShares.ofic = parseInt(document.getElementById('dh-slider-ofic').value);
+        d3SimShares.cv = parseInt(document.getElementById('dh-slider-cv').value);
+        d3SimShares.rep = parseInt(document.getElementById('dh-slider-rep').value);
+        d3SimShares.cent = parseInt(document.getElementById('dh-slider-cent').value);
+
+        document.getElementById('dh-pct-ofic').textContent = `${d3SimShares.ofic}%`;
+        document.getElementById('dh-pct-cv').textContent = `${d3SimShares.cv}%`;
+        document.getElementById('dh-pct-rep').textContent = `${d3SimShares.rep}%`;
+        document.getElementById('dh-pct-cent').textContent = `${d3SimShares.cent}%`;
+
+        window.renderDHondtD3Visualization();
+      };
+
+      window.renderDHondtD3Visualization = function() {
+        const container = document.getElementById('d3-dhondt-hemicircle');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const distKey = GAME_STATE.player.district || 'Distrito 8';
+        const regKey = GAME_STATE.player.region || 'rm';
+        const totalSeats = CHILE_GEO[regKey]?.districts[distKey]?.seats || 8;
+
+        document.getElementById('dhondt-sim-district-header').textContent = 
+          `Simulador D'Hondt con D3.js: Distribución de Escaños en ${distKey} (${totalSeats} Escaños en Disputa)`;
+
+        // Total votos del distrito (base 300.000)
+        const totalVotes = 300000;
+        const sumShares = d3SimShares.ofic + d3SimShares.cv + d3SimShares.rep + d3SimShares.cent;
+        
+        const lists = [
+          { id: 'ofic', name: 'Contigo Chile Mejor', color: '#DC2626', votes: Math.round(totalVotes * (d3SimShares.ofic / sumShares)), seats: 0 },
+          { id: 'cv', name: 'Chile Vamos', color: '#1D4ED8', votes: Math.round(totalVotes * (d3SimShares.cv / sumShares)), seats: 0 },
+          { id: 'rep', name: 'Republicanos', color: '#0F172A', votes: Math.round(totalVotes * (d3SimShares.rep / sumShares)), seats: 0 },
+          { id: 'cent', name: 'Centro Democrático', color: '#D97706', votes: Math.round(totalVotes * (d3SimShares.cent / sumShares)), seats: 0 }
+        ];
+
+        // Algoritmo D'Hondt Real: Generar cocientes (Votos / 1, Votos / 2, ..., Votos / N)
+        const quotients = [];
+        lists.forEach(l => {
+          for (let s = 1; s <= totalSeats; s++) {
+            quotients.push({
+              listId: l.id,
+              divisor: s,
+              quotient: Math.floor(l.votes / s),
+              color: l.color
+            });
+          }
+        });
+
+        // Ordenar cocientes de mayor a menor y seleccionar los N mayores
+        quotients.sort((a,b) => b.quotient - a.quotient);
+        const winningQuotients = quotients.slice(0, totalSeats);
+        const lastWinning = winningQuotients[winningQuotients.length - 1];
+
+        // Asignar escaños
+        winningQuotients.forEach(wq => {
+          const l = lists.find(x => x.id === wq.listId);
+          if (l) l.seats++;
+        });
+
+        document.getElementById('dh-seats-ofic').textContent = `${lists.find(x => x.id === 'ofic').seats} Escaños`;
+        document.getElementById('dh-seats-cv').textContent = `${lists.find(x => x.id === 'cv').seats} Escaños`;
+        document.getElementById('dh-seats-rep').textContent = `${lists.find(x => x.id === 'rep').seats} Escaños`;
+        document.getElementById('dh-seats-cent').textContent = `${lists.find(x => x.id === 'cent').seats} Escaños`;
+
+        document.getElementById('dhondt-cifra-repartidora-disp').textContent = 
+          `Cifra Repartidora de Corte: ${lastWinning ? lastWinning.quotient.toLocaleString('es-CL') : '0'} Votos`;
+
+        // Renderizado Hemiciclo D3.js
+        const width = 280;
+        const height = 150;
+        const radius = 110;
+
+        const svg = d3.select(container)
+          .append('svg')
+          .attr('viewBox', `0 0 ${width} ${height}`)
+          .attr('class', 'w-full h-full select-none');
+
+        const g = svg.append('g')
+          .attr('transform', `translate(${width / 2}, ${height - 15})`);
+
+        // Generar coordenadas semicirculares para los escaños ganados
+        const seatDots = [];
+        winningQuotients.sort((a,b) => {
+          const order = { ofic: 1, cent: 2, cv: 3, rep: 4 };
+          return order[a.listId] - order[b.listId];
+        });
+
+        const step = Math.PI / (totalSeats - 1);
+        winningQuotients.forEach((wq, idx) => {
+          const theta = Math.PI - (idx * step);
+          const x = - (radius * Math.cos(theta));
+          const y = - (radius * Math.sin(theta));
+          seatDots.push({ x, y, color: wq.color, listId: wq.listId });
+        });
+
+        // Dibujar los escaños con animación D3
+        g.selectAll('circle')
+          .data(seatDots)
+          .enter()
+          .append('circle')
+          .attr('cx', d => d.x)
+          .attr('cy', d => d.y)
+          .attr('r', 0)
+          .attr('fill', d => d.color)
+          .attr('stroke', '#FFFFFF')
+          .attr('stroke-width', 2)
+          .transition()
+          .duration(300)
+          .attr('r', 11);
+      };
+
+      // =========================================================================
+      // GESTIÓN INTEGRAL DE ASESORES Y STAFF DE CAMPAÑA
+      // =========================================================================
+      let currentStaffRoleFilter = 'all';
+
+      window.filterStaffRole = function(role) {
+        currentStaffRoleFilter = role;
+        document.querySelectorAll('.staff-role-filter').forEach(btn => {
+          btn.className = 'staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer';
+        });
+        const activeBtn = document.getElementById(`staff-tab-${role}`);
+        if (activeBtn) {
+          activeBtn.className = 'staff-role-filter px-2.5 py-1 rounded bg-[#0047AB] text-white font-bold text-xs cursor-pointer';
+        }
+        window.renderStaffPanel();
+      };
+
+      window.hireStaff = function(staffId) {
+        const staff = STAFF_CATALOG.find(s => s.id === staffId);
+        if (!staff) return;
+
+        if (GAME_STATE.player.funds < staff.salaryWeekly) {
+          window.showToast('Fondos Insuficientes', `Necesitas al menos $${staff.salaryWeekly.toLocaleString('es-CL')} CLP para financiar la primera semana de sueldo.`, 'error');
+          return;
+        }
+
+        if (!GAME_STATE.player.hiredStaffIds) {
+          GAME_STATE.player.hiredStaffIds = [];
+        }
+
+        // Si ya hay alguien contratado en este mismo rol, se reemplaza
+        const existingInRole = STAFF_CATALOG.find(s => s.role === staff.role && GAME_STATE.player.hiredStaffIds.includes(s.id));
+        if (existingInRole && existingInRole.id !== staff.id) {
+          GAME_STATE.player.hiredStaffIds = GAME_STATE.player.hiredStaffIds.filter(id => id !== existingInRole.id);
+          window.showToast('Reemplazo de Asesor', `Has reemplazado a ${existingInRole.name} por ${staff.name} en el cargo de ${staff.roleLabel}.`, 'info');
+        }
+
+        if (!GAME_STATE.player.hiredStaffIds.includes(staff.id)) {
+          GAME_STATE.player.hiredStaffIds.push(staff.id);
+        }
+
+        // Recalcular horas máximas
+        const hiredStaff = STAFF_CATALOG.filter(s => GAME_STATE.player.hiredStaffIds.includes(s.id));
+        const bonusHrs = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
+        GAME_STATE.player.maxHours = 60 + bonusHrs;
+        GAME_STATE.player.hours = Math.min(GAME_STATE.player.maxHours, GAME_STATE.player.hours + staff.bonusHours);
+
+        window.showToast('¡Asesor Incorporado!', `${staff.name} se ha sumado a tu comando como ${staff.roleLabel}.`, 'success');
+        window.renderAll();
+      };
+
+      window.fireStaff = function(staffId) {
+        const staff = STAFF_CATALOG.find(s => s.id === staffId);
+        if (!staff) return;
+
+        GAME_STATE.player.hiredStaffIds = (GAME_STATE.player.hiredStaffIds || []).filter(id => id !== staffId);
+
+        // Recalcular horas máximas
+        const hiredStaff = STAFF_CATALOG.filter(s => GAME_STATE.player.hiredStaffIds.includes(s.id));
+        const bonusHrs = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
+        GAME_STATE.player.maxHours = 60 + bonusHrs;
+        GAME_STATE.player.hours = Math.min(GAME_STATE.player.maxHours, GAME_STATE.player.hours);
+
+        window.showToast('Contrato Concluido', `Has desvinculado a ${staff.name} del comando de campaña.`, 'info');
+        window.renderAll();
+      };
+
+      window.renderStaffPanel = function() {
+        const container = document.getElementById('staff-hire-container');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const hiredIds = GAME_STATE.player.hiredStaffIds || [];
+        const hiredStaff = STAFF_CATALOG.filter(s => hiredIds.includes(s.id));
+
+        // Actualizar métricas del dashboard superior
+        const totalPayroll = hiredStaff.reduce((sum, s) => sum + s.salaryWeekly, 0);
+        const totalBonusHours = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
+        const totalBonusRecog = hiredStaff.reduce((sum, s) => sum + s.bonusRecogWeekly, 0);
+        const totalBonusVolunteers = hiredStaff.reduce((sum, s) => sum + s.bonusVolunteersWeekly, 0);
+
+        const badgeEl = document.getElementById('staff-summary-badge');
+        if (badgeEl) badgeEl.textContent = `${hiredStaff.length} / 4 Cargos Cubiertos`;
+
+        const pEl = document.getElementById('staff-metric-payroll');
+        if (pEl) pEl.textContent = `$${totalPayroll.toLocaleString('es-CL')} CLP / sem`;
+
+        const hEl = document.getElementById('staff-metric-hours');
+        if (hEl) hEl.textContent = `+${totalBonusHours} hrs / sem (${60 + totalBonusHours} hrs tot)`;
+
+        const rEl = document.getElementById('staff-metric-recog');
+        if (rEl) rEl.textContent = `+${totalBonusRecog.toFixed(1)}% / sem`;
+
+        const vEl = document.getElementById('staff-metric-volunteers');
+        if (vEl) vEl.textContent = `+${totalBonusVolunteers} brigadistas / sem`;
+
+        // Filtrar catálogo según la categoría seleccionada
+        const visibleStaff = (currentStaffRoleFilter === 'all') 
+          ? STAFF_CATALOG 
+          : STAFF_CATALOG.filter(s => s.role === currentStaffRoleFilter);
+
+        visibleStaff.forEach(staff => {
+          const isHired = hiredIds.includes(staff.id);
+          const card = document.createElement('div');
+          card.className = `p-3.5 border-2 rounded shadow-2xs flex flex-col justify-between transition ${isHired ? 'bg-emerald-50/70 border-emerald-500' : 'bg-white border-stone-300 hover:border-stone-400'}`;
+
+          card.innerHTML = `
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl">${staff.avatar}</span>
+                  <div>
+                    <h4 class="font-extrabold text-xs text-slate-900">${staff.name}</h4>
+                    <span class="text-[10px] font-mono font-bold text-stone-600 block">${staff.roleIcon} ${staff.roleLabel}</span>
+                  </div>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold ${isHired ? 'bg-emerald-600 text-white' : 'bg-stone-100 text-stone-700 border border-stone-300'}">
+                  ${isHired ? '✓ CONTRATADO' : 'DISPONIBLE'}
+                </span>
+              </div>
+
+              <div>
+                <strong class="text-[11px] text-blue-950 block">${staff.title}</strong>
+                <p class="text-[11px] text-stone-600 leading-snug">${staff.exp}</p>
+              </div>
+
+              <div class="p-2 bg-stone-50 rounded border border-stone-200 text-xs font-mono space-y-1">
+                <div class="flex justify-between">
+                  <span class="text-stone-500 font-sans text-[11px]">Sueldo Semanal:</span>
+                  <strong class="text-slate-900 font-mono-num font-bold">$${staff.salaryWeekly.toLocaleString('es-CL')} CLP</strong>
+                </div>
+                <div class="text-[11px] font-sans font-bold text-emerald-800">
+                  🎁 Bonos: <span class="font-normal font-sans text-slate-800">${staff.perkDesc}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t mt-3 flex justify-end">
+              ${isHired ? `
+                <button onclick="window.fireStaff('${staff.id}')" class="w-full py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-300 font-bold text-xs rounded cursor-pointer transition">
+                  ✕ Desvincular del Comando
+                </button>
+              ` : `
+                <button onclick="window.hireStaff('${staff.id}')" class="w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-bold text-xs rounded shadow-2xs cursor-pointer transition flex items-center justify-center gap-1.5">
+                  <span>Contratar por $${staff.salaryWeekly.toLocaleString('es-CL')}/sem</span>
+                </button>
+              `}
+            </div>
+          `;
+
+          container.appendChild(card);
+        });
+      };
+
+      // =========================================================================
+      // MOTOR DE TURNOS A PRUEBA DE FALLOS: window.advanceTurn
+      // =========================================================================
+      window.advanceTurn = function(weeksToAdvance = 1) {
+        const count = typeof weeksToAdvance === 'number' ? weeksToAdvance : 1;
+        const hiredIds = GAME_STATE.player.hiredStaffIds || [];
+        const hiredStaff = STAFF_CATALOG.filter(s => hiredIds.includes(s.id));
+
+        for (let w = 0; w < count; w++) {
+          GAME_STATE.week += 1;
+
+          // 1. Deducir planilla semanal de sueldos de asesores
+          const weeklyPayroll = hiredStaff.reduce((sum, s) => sum + s.salaryWeekly, 0);
+          if (GAME_STATE.player.funds >= weeklyPayroll) {
+            GAME_STATE.player.funds -= weeklyPayroll;
+          } else {
+            const unpaid = weeklyPayroll - GAME_STATE.player.funds;
+            GAME_STATE.player.funds = 0;
+            if (w === 0 && weeklyPayroll > 0) {
+              window.showToast('⚠️ Planilla Impaga', `Fondos insuficientes para cubrir el sueldo semanal de tu staff ($${unpaid.toLocaleString('es-CL')} CLP impagos).`, 'warning');
+            }
+          }
+
+          // 2. Horas semanales disponibles (Base 60 hrs + bonos de Jefatura de Campaña)
+          const bonusHours = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
+          GAME_STATE.player.maxHours = 60 + bonusHours;
+          GAME_STATE.player.hours = GAME_STATE.player.maxHours;
+
+          // 3. Bonos pasivos semanales de asesores
+          const bonusRecog = hiredStaff.reduce((sum, s) => sum + s.bonusRecogWeekly, 0);
+          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + bonusRecog);
+
+          const bonusVol = hiredStaff.reduce((sum, s) => sum + s.bonusVolunteersWeekly, 0);
+          GAME_STATE.volunteers = (GAME_STATE.volunteers || 120) + bonusVol;
+
+          // Bono mensual de probidad y Puntos Políticos (cada 4 semanas)
+          if (GAME_STATE.week % 4 === 0) {
+            const bonusPP = hiredStaff.reduce((sum, s) => sum + s.bonusPPMonthly, 0);
+            GAME_STATE.player.politicalPoints += bonusPP;
+          }
+
+          const isElectionYear = (GAME_STATE.year % 4 === 0 || GAME_STATE.year % 4 === 1);
+          const cycleType = (GAME_STATE.year % 4 === 0) ? 'Municipales y Regionales' : ((GAME_STATE.year % 4 === 1) ? 'Presidenciales y Parlamentarias' : 'Gobernanza');
+
+          if (GAME_STATE.week === 8 && isElectionYear) {
+            window.showToast('Semana 8: Inscripción SERVEL', `Se abre formalmente el plazo legal de candidaturas para las Elecciones ${cycleType}. Postula en [Elecciones].`, 'info');
+          } else if (GAME_STATE.week === 20 && isElectionYear) {
+            window.showToast('Semana 20: Primarias', 'Jornada de Elecciones Primarias Oficiales SERVEL.', 'info');
+          } else if (GAME_STATE.week === 44 && isElectionYear) {
+            window.triggerElectionNight();
+          }
+
+          if (GAME_STATE.week > 52) {
+            GAME_STATE.week = 1;
+            GAME_STATE.year += 1;
+            GAME_STATE.player.age += 1;
+            window.showToast('¡Año Nuevo Constitucional!', `Comienza el año ${GAME_STATE.year}. Tienes ${GAME_STATE.player.age} años cumplidos.`, 'success');
+          }
+
+          const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+          const mIdx = Math.min(11, Math.floor((GAME_STATE.week - 1) / 4.33));
+          GAME_STATE.month = months[mIdx];
+        }
+
+        window.renderAll();
+      };
+
+      // =========================================================================
+      // RENDERIZADO GLOBAL: window.renderAll()
+      // =========================================================================
+      window.renderAll = function() {
+        document.getElementById('stat-player-name').textContent = `${GAME_STATE.player.name || 'Sin Nombre'} (${GAME_STATE.player.age} años)`;
+        document.getElementById('stat-player-party').textContent = GAME_STATE.player.partyId;
+        document.getElementById('stat-player-office').textContent = GAME_STATE.player.currentOffice;
+        document.getElementById('stat-pp').textContent = `${GAME_STATE.player.politicalPoints} PP`;
+        document.getElementById('clock-date-disp').textContent = `Semana ${GAME_STATE.week} / 52, ${GAME_STATE.month} ${GAME_STATE.year}`;
+        document.getElementById('card-funds-disp').textContent = `$${GAME_STATE.player.funds.toLocaleString('es-CL')}`;
+        document.getElementById('card-hours-disp').textContent = `${GAME_STATE.player.hours} / ${GAME_STATE.player.maxHours} hrs`;
+        document.getElementById('card-recognition-disp').textContent = `${GAME_STATE.player.nameRecognition.toFixed(1)}%`;
+
+        const finFunds = document.getElementById('finance-total-funds');
+        if (finFunds) finFunds.textContent = `$${GAME_STATE.player.funds.toLocaleString('es-CL')}`;
+
+        const volDisp = document.getElementById('volunteers-count-disp');
+        if (volDisp) volDisp.textContent = (GAME_STATE.volunteers || 120).toLocaleString('es-CL');
+
+        const badgeEl = document.getElementById('clock-election-badge');
+        if (badgeEl) {
+          if (GAME_STATE.year % 4 === 0) {
+            badgeEl.textContent = `Elecciones Municipales y Regionales (Sem 44, ${GAME_STATE.year})`;
+            badgeEl.className = 'hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300';
+          } else if (GAME_STATE.year % 4 === 1) {
+            badgeEl.textContent = `Elecciones Presidenciales y Parlamentarias (Sem 44, ${GAME_STATE.year})`;
+            badgeEl.className = 'hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-purple-100 text-purple-900 border border-purple-300';
+          } else {
+            const nextElecYear = Math.ceil((GAME_STATE.year + 1) / 4) * 4;
+            badgeEl.textContent = `Gobernanza Plena (Próximas Municipales ${nextElecYear})`;
+            badgeEl.className = 'hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-100 text-emerald-900 border border-emerald-300';
+          }
+        }
+
+        const domDisp = document.getElementById('profile-domicile-disp');
+        if (domDisp) {
+          domDisp.textContent = `Domicilio Electoral: ${GAME_STATE.player.commune || 'Sin definir'} (${GAME_STATE.player.district || 'Sin distrito'})`;
+        }
+
+        window.renderStaffPanel();
+        window.renderContiguousMap();
+        window.renderPublicOpinionTable();
+        window.renderNewsFeed();
+        window.renderCongressHemiciclo();
+        window.renderLegislativeHistory();
+        window.renderPoliticiansDirectory();
+        window.renderElectoralPactsCatalog();
+        window.renderDHondtD3Visualization();
+        window.renderProfileAttributes();
+      };
+
+      window.renderProfileAttributes = function() {
+        const list = document.getElementById('profile-attributes-list');
+        if (!list) return;
+        const attrs = GAME_STATE.player.attributes || { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
+        list.innerHTML = `
+          <div class="flex justify-between p-1 bg-white border rounded"><span>🎙️ Oratoria y Debate:</span><strong>${attrs.oratory}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>✨ Carisma Popular:</span><strong>${attrs.charisma}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>🤝 Negociación Política:</span><strong>${attrs.negotiation}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>📊 Capacidad de Gestión:</span><strong>${attrs.management}/100</strong></div>
+          <div class="flex justify-between p-1 bg-blue-50 border border-blue-200 rounded text-blue-900"><span>🚩 Facción Interna:</span><strong>${GAME_STATE.player.faction || 'Sensibilidad Base'}</strong></div>
+        `;
+      };
+
+      window.renderContiguousMap = function() {
+        const svg = document.getElementById('svg-contiguous-map');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const commune = GAME_STATE.player.commune;
+        const district = GAME_STATE.player.district;
+        const regName = CHILE_GEO[GAME_STATE.player.region]?.name || 'REGIÓN METROPOLITANA';
+
+        document.getElementById('map-territory-title').textContent = `RESUMEN DE ${commune.toUpperCase()} (${district.toUpperCase()} - ${regName.toUpperCase()})`;
+
+        const sectors = [
+          { name: 'Centro Cívico y Plaza', path: 'M 200,100 L 280,100 L 290,150 L 210,150 Z', color: '#CBD5E1', pop: 48000 },
+          { name: 'Norte Industrial', path: 'M 200,40 L 280,40 L 280,100 L 200,100 Z', color: '#E2E8F0', pop: 35000 },
+          { name: 'Avenida Principal Poniente', path: 'M 120,80 L 200,100 L 210,150 L 130,140 Z', color: '#CBD5E1', pop: 52000 },
+          { name: 'Sector Histórico y Templo', path: 'M 210,150 L 290,150 L 280,210 L 200,200 Z', color: '#94A3B8', pop: 44000 },
+          { name: 'Oriente Residencial', path: 'M 280,100 L 360,90 L 370,160 L 290,150 Z', color: '#E2E8F0', pop: 61000 },
+          { name: 'Sur Cordillera / Agrícola', path: 'M 200,200 L 280,210 L 270,270 L 190,260 Z', color: '#CBD5E1', pop: 38000 },
+          { name: 'Barrio Estación y Comercio', path: 'M 130,140 L 210,150 L 200,200 L 120,190 Z', color: '#E2E8F0', pop: 49000 },
+          { name: 'Sector Satélite Sur', path: 'M 120,190 L 200,200 L 190,260 L 110,250 Z', color: '#94A3B8', pop: 42000 }
+        ];
+
+        sectors.forEach(s => {
+          const poly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          poly.setAttribute('d', s.path);
+          poly.setAttribute('fill', s.color);
+          poly.setAttribute('stroke', '#475569');
+          poly.setAttribute('stroke-width', '1.5');
+          poly.setAttribute('class', 'hover:fill-blue-500 transition-colors duration-150');
+
+          poly.onmouseover = () => {
+            const tip = document.getElementById('map-hover-tooltip');
+            tip.innerHTML = `<strong>${s.name}</strong><br>Población: ${s.pop.toLocaleString('es-CL')} electores`;
+            tip.classList.remove('hidden');
+          };
+          poly.onmouseout = () => {
+            document.getElementById('map-hover-tooltip').classList.add('hidden');
+          };
+          poly.onclick = () => {
+            window.showToast('Barrio Seleccionado', `Has enfocado el despliegue territorial en ${s.name} (${commune}).`, 'info');
+          };
+
+          svg.appendChild(poly);
+        });
+      };
+
+      window.renderPublicOpinionTable = function() {
+        const tbody = document.getElementById('public-opinion-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const issues = [
+          { name: 'Seguridad Ciudadana & Narcotráfico', imp: 88, val: 6.5 },
+          { name: 'Economía, Crecimiento y PyMEs', imp: 75, val: 4.0 },
+          { name: 'Salud Pública y Listas de Espera', imp: 82, val: 5.2 },
+          { name: 'Reforma de Pensiones (AFP)', imp: 78, val: -1.5 },
+          { name: 'Control Migratorio y Fronteras', imp: 80, val: 7.0 }
+        ];
+
+        issues.forEach(i => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-stone-50 text-xs';
+          tr.innerHTML = `
+            <td class="py-1 px-2 font-bold text-slate-900">${i.name}</td>
+            <td class="py-1 px-2 text-center text-stone-600">${i.imp}%</td>
+            <td class="py-1 px-2">
+              <div class="w-full bg-stone-200 h-2.5 rounded overflow-hidden">
+                <div class="h-full ${i.val >= 0 ? 'bg-blue-600' : 'bg-rose-600'}" style="width: ${Math.min(100, Math.abs(i.val) * 10)}%;"></div>
+              </div>
+            </td>
+            <td class="py-1 px-2 text-right font-mono font-bold ${i.val >= 0 ? 'text-blue-800' : 'text-rose-700'}">
+              ${i.val > 0 ? '+' : ''}${i.val.toFixed(1)}%
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      };
+
+      window.renderNewsFeed = function() {
+        const cont = document.getElementById('news-feed-container');
+        if (!cont) return;
+        cont.innerHTML = '';
+
+        GAME_STATE.newsFeed.forEach(n => {
+          const item = document.createElement('div');
+          item.className = 'p-2.5 border border-stone-300 bg-white rounded text-xs space-y-0.5';
+          item.innerHTML = `
+            <div class="flex justify-between text-[10px] text-stone-500 font-mono">
+              <span>${n.source}</span>
+              <span>${n.date}</span>
+            </div>
+            <div class="font-bold text-slate-900 text-xs">${n.title}</div>
+          `;
+          cont.appendChild(item);
+        });
+      };
+
+      window.renderCongressHemiciclo = function() {
+        const svg = document.getElementById('svg-congress-hemiciclo');
+        if (!svg) return;
+        svg.innerHTML = '';
+
+        const isDip = (GAME_STATE.congress.activeChamber === 'diputados');
+        const total = isDip ? 155 : 50;
+        const cx = 320, cy = 280;
+        const rows = isDip ? [
+          { r: 130, count: 32 }, { r: 165, count: 38 }, { r: 200, count: 41 }, { r: 235, count: 44 }
+        ] : [
+          { r: 140, count: 14 }, { r: 185, count: 17 }, { r: 230, count: 19 }
+        ];
+
+        let dotCoords = [];
+        rows.forEach(row => {
+          const step = Math.PI / (row.count - 1);
+          for (let i = 0; i < row.count; i++) {
+            const theta = Math.PI - (i * step);
+            const x = cx - (row.r * Math.cos(theta));
+            const y = cy - (row.r * Math.sin(theta));
+            dotCoords.push({ x, y });
+          }
+        });
+
+        dotCoords.sort((a,b) => a.x - b.x);
+
+        dotCoords.forEach((c, idx) => {
+          if (idx >= total) return;
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', c.x);
+          circle.setAttribute('cy', c.y);
+          circle.setAttribute('r', isDip ? '5.5' : '8');
+
+          let color = '#2563EB';
+          if (idx < total * 0.42) color = '#DC2626';
+          else if (idx < total * 0.54) color = '#F59E0B';
+          else if (idx > total * 0.88) color = '#172554';
+
+          circle.setAttribute('fill', color);
+          circle.setAttribute('stroke', '#FFFFFF');
+          circle.setAttribute('stroke-width', '1');
+          svg.appendChild(circle);
+        });
+      };
+
+      window.renderLegislativeHistory = function() {
+        const tbody = document.getElementById('legislative-history-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        GAME_STATE.legislativeHistory.forEach(l => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-stone-50 text-xs';
+          tr.innerHTML = `
+            <td class="py-2 px-3 font-bold text-blue-900">${l.number}: ${l.title}</td>
+            <td class="py-2 px-2 text-center text-stone-600 font-mono">${l.date}</td>
+            <td class="py-2 px-2 text-center font-mono">${l.type}</td>
+            <td class="py-2 px-2 text-center font-bold text-slate-800 font-mono">${l.quorum}</td>
+            <td class="py-2 px-2 text-center font-mono text-[11px]"><span class="text-emerald-700">${l.yes} Sí</span> / <span class="text-rose-700">${l.no} No</span></td>
+            <td class="py-2 px-3 text-stone-700 text-[11px]">${l.impact}</td>
+            <td class="py-2 px-2 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">VIGENTE</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      };
+
+      window.renderPoliticiansDirectory = function() {
+        const tbody = document.getElementById('politicians-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        const pols = [
+          { name: 'Gabriel Boric Font', party: 'FA', office: 'Presidente de la República', age: 38, econ: '-60 / -40', rel: 50, app: 31 },
+          { name: 'Camila Vallejo Dowling', party: 'PC', office: 'Ministra Vocera', age: 36, econ: '-80 / -50', rel: 45, app: 42 },
+          { name: 'Tomás Vodanovic Escudero', party: 'FA', office: 'Alcalde de Maipú', age: 33, econ: '-40 / +10', rel: 70, app: 58 },
+          { name: 'Evelyn Matthei Fornet', party: 'UDI', office: 'Alcaldesa de Providencia', age: 70, econ: '+60 / +50', rel: 40, app: 61 },
+          { name: 'José Antonio Kast Rist', party: 'PREP', office: 'Líder Opositor', age: 58, econ: '+85 / +80', rel: 30, app: 45 },
+          { name: 'Mario Desbordes Jiménez', party: 'RN', office: 'Alcalde de Santiago', age: 55, econ: '+40 / +65', rel: 60, app: 50 }
+        ];
+
+        pols.forEach(p => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-stone-50 text-xs';
+          tr.innerHTML = `
+            <td class="py-2 px-3 font-bold text-slate-900">${p.name}</td>
+            <td class="py-2 px-2 font-mono font-bold">${p.party}</td>
+            <td class="py-2 px-2 text-stone-700">${p.office}</td>
+            <td class="py-2 px-2 text-center font-mono">${p.age}</td>
+            <td class="py-2 px-2 text-center font-mono">${p.econ}</td>
+            <td class="py-2 px-2 text-center font-mono font-bold text-blue-800">${p.rel}/100</td>
+            <td class="py-2 px-2 text-center font-mono font-bold ${p.app >= 50 ? 'text-emerald-700' : 'text-slate-700'}">${p.app}%</td>
+            <td class="py-2 px-2 text-right"><button class="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 border rounded font-bold text-[10px]" onclick="window.showToast('Ficha', '${p.name}: Liderazgo activo.', 'info')">Ver</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      };
+
+      window.renderElectoralPactsCatalog = function() {
+        const grid = document.getElementById('electoral-pacts-grid');
+        if (!grid) return;
+        grid.innerHTML = '';
+
+        const pacts = [
+          { id: 'pact-ofic', name: 'Contigo Chile Mejor', parties: 'FA, PC, PS, PPD, PL, PR', color: '#DC2626', desc: 'Pacto oficialista de centroizquierda e izquierda progresista.' },
+          { id: 'pact-cv', name: 'Chile Vamos', parties: 'RN, UDI, Evópoli', color: '#1D4ED8', desc: 'Coalición de centroderecha tradicional y liberal.' },
+          { id: 'pact-rep', name: 'Frente Republicano & Libertario', parties: 'PREP, PSC, PNL', color: '#0F172A', desc: 'Fuerza de derecha conservadora y libre mercado.' },
+          { id: 'pact-cent', name: 'Centro Democrático', parties: 'DC, Demócratas, Amarillos', color: '#D97706', desc: 'Alianza de centro humanista y reformista.' }
+        ];
+
+        pacts.forEach(p => {
+          const isAct = (GAME_STATE.player.activePactId === p.id);
+          const card = document.createElement('div');
+          card.className = `p-3 border-2 rounded flex flex-col justify-between ${isAct ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-stone-300'}`;
+          card.innerHTML = `
+            <div>
+              <div class="flex justify-between items-start mb-1">
+                <strong class="text-xs" style="color: ${p.color};">${p.name}</strong>
+                <span class="text-[10px] font-mono px-1.5 py-0.2 rounded font-bold ${isAct ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-700'}">${isAct ? 'PACTO ACTIVO' : 'DISPONIBLE'}</span>
+              </div>
+              <p class="text-[11px] text-stone-600 leading-snug mb-2">${p.desc}</p>
+              <div class="text-[10px] font-mono text-stone-500">Partidos: <strong>${p.parties}</strong></div>
+            </div>
+            <button onclick="window.togglePactMembership('${p.id}')" class="mt-3 w-full py-1 text-xs font-bold rounded border ${isAct ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 border-rose-300' : 'bg-[#0047AB] hover:bg-[#003399] text-white border-[#002266]'}">
+              ${isAct ? 'Renunciar al Pacto' : 'Unirse al Pacto Electoral'}
+            </button>
+          `;
+          grid.appendChild(card);
+        });
+      };
+
+      window.togglePactMembership = function(pactId) {
+        if (GAME_STATE.player.activePactId === pactId) {
+          GAME_STATE.player.activePactId = null;
+          window.showToast('Pacto Disuelto', 'Ahora competirás como Independiente Fuera de Pacto.', 'info');
+        } else {
+          GAME_STATE.player.activePactId = pactId;
+          window.showToast('¡Pacto Formalizado!', 'Has inscrito tu alianza electoral formal ante el SERVEL.', 'success');
+        }
+        window.renderElectoralPactsCatalog();
+        window.updateDHondtSimulation();
+      };
+
+      // =========================================================================
+      // NAVEGACIÓN DE VISTAS PRINCIPALES Y SUBPESTAÑAS
+      // =========================================================================
+      window.switchMainView = function(viewId) {
+        document.querySelectorAll('.folder-tab').forEach(t => t.classList.remove('active'));
+        const btn = document.querySelector(`[data-view="${viewId}"]`);
+        if (btn) btn.classList.add('active');
+
+        document.querySelectorAll('.main-view').forEach(v => v.classList.add('hidden'));
+        const viewEl = document.getElementById(viewId);
+        if (viewEl) viewEl.classList.remove('hidden');
+
+        document.getElementById('subtabs-campaign').classList.toggle('hidden', viewId !== 'view-campaign');
+        document.getElementById('subtabs-congress').classList.toggle('hidden', viewId !== 'view-congress');
+        document.getElementById('subtabs-politicians').classList.toggle('hidden', viewId !== 'view-politicians');
+        document.getElementById('subtabs-office').classList.toggle('hidden', viewId !== 'view-office');
+
+        if (viewId === 'view-politicians') {
+          setTimeout(() => window.renderDHondtD3Visualization(), 50);
+        }
+      };
+
+      window.switchCampaignSubpanel = function(panelKey) {
+        document.querySelectorAll('#subtabs-campaign .subfolder-tab').forEach(b => b.classList.remove('active'));
+        event?.target?.classList?.add('active');
+
+        const panels = ['summary', 'events', 'marketing', 'opponents', 'contacts', 'polls', 'finance', 'staff', 'policies', 'volunteers'];
+        panels.forEach(p => {
+          const el = document.getElementById(`campaign-panel-${p}`);
+          if (el) el.classList.toggle('hidden', p !== panelKey);
+        });
+      };
+
+      window.switchCongressSubpanel = function(panelKey) {
+        document.querySelectorAll('#subtabs-congress .subfolder-tab').forEach(b => b.classList.remove('active'));
+        event?.target?.classList?.add('active');
+
+        document.getElementById('congress-panel-hemiciclo').classList.toggle('hidden', panelKey !== 'hemiciclo');
+        document.getElementById('congress-panel-history').classList.toggle('hidden', panelKey !== 'history');
+      };
+
+      window.switchPoliticiansSubpanel = function(panelKey) {
+        document.querySelectorAll('#subtabs-politicians .subfolder-tab').forEach(b => b.classList.remove('active'));
+        event?.target?.classList?.add('active');
+
+        document.getElementById('politicians-panel-directory').classList.toggle('hidden', panelKey !== 'directory');
+        document.getElementById('politicians-panel-alliances').classList.toggle('hidden', panelKey !== 'alliances');
+
+        if (panelKey === 'alliances') {
+          setTimeout(() => window.renderDHondtD3Visualization(), 50);
+        }
+      };
+
+      window.switchOfficeSubpanel = function(panelKey) {
+        document.querySelectorAll('#subtabs-office .subfolder-tab').forEach(b => b.classList.remove('active'));
+        event?.target?.classList?.add('active');
+
+        document.getElementById('office-panel-overview').classList.toggle('hidden', panelKey !== 'overview');
+        document.getElementById('office-panel-lobby').classList.toggle('hidden', panelKey !== 'lobby');
+        document.getElementById('office-panel-bills').classList.toggle('hidden', panelKey !== 'bills');
+      };
+
+      // Control del Menú Hamburguesa
+      window.toggleSessionMenu = function(e) {
+        e.stopPropagation();
+        document.getElementById('dropdown-session-menu').classList.toggle('hidden');
+      };
+
+      document.addEventListener('click', () => {
+        document.getElementById('dropdown-session-menu')?.classList?.add('hidden');
+      });
+
+      window.openNewGameWizard = function() {
+        document.getElementById('dropdown-session-menu').classList.add('hidden');
+        p1AvailablePoints = 5;
+        p1Attributes = { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
+        p1SelectedParty = 'IND';
+        p1SelectedFaction = 'Ciudadano Independiente';
+        p2SelectedPolicies = ['p1', 'p4', 'p9'];
+
+        const nameInput = document.getElementById('p1-name');
+        if (nameInput) nameInput.value = '';
+
+        const ageInput = document.getElementById('p1-age');
+        if (ageInput) ageInput.value = '25';
+
+        const yearSelect = document.getElementById('p2-start-year');
+        if (yearSelect) {
+          yearSelect.value = '2024';
+          window.p2HandleYearChange('2024');
+        }
+
+        window.p1RenderParties();
+        window.p1RenderFactions(CHILE_PARTIES.find(p => p.id === 'IND'));
+        window.p1HandleAgeChange(25);
+        window.p2InitTerritoryCascades();
+
+        document.getElementById('screen-page-1-identity').classList.remove('hidden');
+        document.getElementById('screen-page-2-territory').classList.add('hidden');
+      };
+
+      window.saveGameQuick = function() {
+        localStorage.setItem('tpp_chile_clean_save', JSON.stringify(GAME_STATE));
+        window.showToast('Partida Guardada', 'Progreso almacenado en la memoria local.', 'success');
+      };
+
+      window.loadGameQuick = function() {
+        const raw = localStorage.getItem('tpp_chile_clean_save');
+        if (raw) {
+          try {
+            GAME_STATE = JSON.parse(raw);
+            document.getElementById('screen-page-1-identity').classList.add('hidden');
+            document.getElementById('screen-page-2-territory').classList.add('hidden');
+            window.showToast('Partida Cargada', 'Datos restaurados correctamente.', 'success');
+            window.renderAll();
+          } catch(e) {
+            window.showToast('Error', 'Archivo corrupto.', 'error');
+          }
+        } else {
+          window.showToast('Sin Partida', 'No se encontró guardado previo.', 'warning');
+        }
+      };
+
+      window.exportGameJson = function() {
+        const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(GAME_STATE, null, 2));
+        const a = document.createElement('a');
+        a.href = dataStr;
+        a.download = `partida_${GAME_STATE.player.name.replace(/\s+/g, '_')}_${GAME_STATE.year}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.showToast('Exportado', 'Archivo JSON descargado exitosamente.', 'success');
+      };
+
+      window.importGameJson = function(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            GAME_STATE = JSON.parse(event.target.result);
+            document.getElementById('screen-page-1-identity').classList.add('hidden');
+            document.getElementById('screen-page-2-territory').classList.add('hidden');
+            window.showToast('Importado', 'Partida cargada desde archivo JSON.', 'success');
+            window.renderAll();
+          } catch(err) {
+            window.showToast('Error', 'Archivo JSON no válido.', 'error');
+          }
+        };
+        reader.readAsText(file);
+      };
+
+      window.resetGameConfirm = function() {
+        if (confirm('¿Reiniciar partida a valores de fábrica?')) {
+          localStorage.removeItem('tpp_chile_clean_save');
+          location.reload();
+        }
+      };
+
+      window.showToast = function(title, msg, type = 'info') {
+        const t = document.createElement('div');
+        const color = type === 'success' ? 'bg-emerald-50 border-emerald-600 text-emerald-950' :
+                      type === 'warning' ? 'bg-amber-50 border-amber-600 text-amber-950' :
+                      type === 'error' ? 'bg-rose-50 border-rose-600 text-rose-950' : 'bg-blue-50 border-blue-600 text-blue-950';
+
+        t.className = `fixed bottom-4 right-4 z-50 p-3 rounded border-2 shadow-2xl max-w-sm transition-all duration-200 ${color}`;
+        t.innerHTML = `
+          <div class="font-extrabold text-xs uppercase mb-0.5">${title}</div>
+          <div class="text-[11px] font-medium leading-tight">${msg}</div>
+        `;
+        document.body.appendChild(t);
+        setTimeout(() => {
+          t.style.opacity = '0';
+          setTimeout(() => t.remove(), 250);
+        }, 3500);
+      };
+
+      // Inicialización general
+      window.addEventListener('DOMContentLoaded', () => {
+        window.p1RenderParties();
+        window.p1RenderFactions(CHILE_PARTIES.find(p => p.id === 'IND'));
+        window.p1UpdateProfessions(25);
+
+        const saved = localStorage.getItem('tpp_chile_clean_save');
+        if (saved) {
+          try {
+            GAME_STATE = JSON.parse(saved);
+            document.getElementById('screen-page-1-identity').classList.add('hidden');
+            document.getElementById('screen-page-2-territory').classList.add('hidden');
+          } catch(e) {}
+        }
+        window.renderAll();
+      });
+    </script>
+  </body>
+</html>

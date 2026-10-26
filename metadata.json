@@ -1,0 +1,6 @@
+{
+  "name": "El Proceso Político: Chile",
+  "description": "Simulación política y electoral profunda adaptada al sistema chileno (SERVEL, Congreso, CADEM, D'Hondt) con mapa interactivo de la Región Metropolitana y Valparaíso.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

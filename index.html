@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -135,7 +135,7 @@
                     <label class="text-xs font-bold text-slate-900 uppercase">Edad de Inicio *</label>
                     <span id="p1-age-disp" class="text-xs font-mono font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">25 años</span>
                   </div>
-                  <input type="range" id="p1-age" min="18" max="80" value="25" oninput="window.p1HandleAgeChange(this.value)" class="w-full cursor-pointer accent-[#0047AB]" />
+                  <input type="range" id="p1-age" min="18" max="85" value="25" oninput="window.p1HandleAgeChange(this.value)" class="w-full cursor-pointer accent-[#0047AB]" />
                   <div id="p1-age-status-box" class="mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight">
                     Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional
                   </div>
@@ -143,10 +143,7 @@
 
                 <div>
                   <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Oficio o Profesión *</label>
-                  <select id="p1-profession" onchange="window.p1HandleProfessionChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer"></select>
-                  <div id="p1-profession-perk-box" class="mt-1.5 text-[11px] font-mono text-stone-700 bg-stone-100 p-2 rounded border border-stone-300 leading-tight">
-                    Bonos de oficio: Selecciona una profesión
-                  </div>
+                  <select id="p1-profession" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800"></select>
                 </div>
               </div>
 
@@ -391,32 +388,16 @@
                 </div>
               </div>
 
-              <!-- Compás Ideológico 2D de Resumen y Afinidad Partidaria -->
-              <div class="bg-[#FAF8F5] border border-[#A89E88] p-3 rounded shadow-xs space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <h3 class="font-extrabold text-xs text-slate-900 uppercase">Orientación Programática Estimada</h3>
-                    <div class="text-xs text-stone-800 font-bold" id="p2-ideology-summary-text">Estatismo / Socialdemocracia moderada</div>
-                    <div class="text-[10px] text-stone-500 font-mono" id="p2-ideology-top-parties">Top afinidad: Calculando...</div>
-                  </div>
-                  <div class="w-20 h-20 bg-white border border-stone-400 relative flex items-center justify-center font-mono text-[7px] text-stone-400 shrink-0">
-                    <span class="absolute top-0.5 text-[6px] text-stone-400 uppercase font-bold">Orden</span>
-                    <span class="absolute bottom-0.5 text-[6px] text-stone-400 uppercase font-bold">Libertad</span>
-                    <span class="absolute left-0.5 text-[6px] text-stone-400 uppercase font-bold">Izq</span>
-                    <span class="absolute right-0.5 text-[6px] text-stone-400 uppercase font-bold">Der</span>
-                    <div class="absolute w-px h-full bg-stone-300"></div>
-                    <div class="absolute h-px w-full bg-stone-300"></div>
-                    <div id="p2-compass-dot" class="w-3.5 h-3.5 rounded-full bg-blue-700 border-2 border-white absolute shadow transition-all duration-300" style="left: 50%; top: 50%;"></div>
-                  </div>
+              <!-- Compás Ideológico 2D de Resumen -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-3 rounded shadow-xs flex items-center justify-between">
+                <div>
+                  <h3 class="font-extrabold text-xs text-slate-900 uppercase">Orientación Programática Estimada</h3>
+                  <span class="text-xs text-stone-600" id="p2-ideology-summary-text">Estatismo / Socialdemocracia moderada</span>
                 </div>
-
-                <!-- Barra / Grid de Afinidad con los 15 Partidos -->
-                <div class="border-t border-stone-200 pt-2 space-y-1">
-                  <div class="flex justify-between items-center text-[10px] font-bold text-stone-600 uppercase">
-                    <span>% Afinidad con los 15 Partidos Chilenos:</span>
-                    <span class="text-[9px] font-mono text-stone-400">En tiempo real según tus 3 políticas</span>
-                  </div>
-                  <div id="p2-party-affinity-bars" class="grid grid-cols-3 sm:grid-cols-5 gap-1.5 max-h-28 overflow-y-auto pr-1"></div>
+                <div class="w-20 h-20 bg-white border border-stone-400 relative flex items-center justify-center font-mono text-[7px] text-stone-400">
+                  <div class="absolute w-px h-full bg-stone-300"></div>
+                  <div class="absolute h-px w-full bg-stone-300"></div>
+                  <div id="p2-compass-dot" class="w-3 h-3 rounded-full bg-blue-700 border-2 border-white absolute shadow"></div>
                 </div>
               </div>
 
@@ -1311,81 +1292,6 @@
     </div>
 
     <!-- ========================================================================= -->
-    <!-- MODAL AUXILIAR: CAMBIAR DOMICILIO ELECTORAL (TURISMO / MUDANZA LIBRE)     -->
-    <!-- ========================================================================= -->
-    <div id="modal-change-domicile" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 select-none">
-      <div class="bg-[#FAF8F5] border-2 border-[#7D735F] w-full max-w-lg rounded shadow-2xl p-4 space-y-3">
-        <div class="border-b pb-2 flex justify-between items-center">
-          <h3 class="font-extrabold text-sm text-slate-900 uppercase">📍 Cambio de Domicilio Electoral SERVEL</h3>
-          <button onclick="document.getElementById('modal-change-domicile').classList.add('hidden')" class="font-bold text-stone-500 hover:text-black">✕</button>
-        </div>
-        <p class="text-xs text-stone-600">Puedes mudarte a cualquier comuna de Chile. Si te trasladas a una comuna nueva, sufrirás un penalizador temporal de 'Candidato Foráneo / Paracaidista' (-15% de reconocimiento local) que deberás remontar con trabajo de terreno.</p>
-        <div class="space-y-2.5">
-          <div>
-            <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Nueva Región *</label>
-            <select id="cd-region" onchange="window.handleCdRegionChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold"></select>
-          </div>
-          <div>
-            <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Nuevo Distrito *</label>
-            <select id="cd-district" onchange="window.handleCdDistrictChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold"></select>
-          </div>
-          <div>
-            <label class="block text-[11px] uppercase font-bold text-stone-700 mb-0.5">Nueva Comuna *</label>
-            <select id="cd-commune" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold"></select>
-          </div>
-        </div>
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button onclick="document.getElementById('modal-change-domicile').classList.add('hidden')" class="px-3 py-1 bg-stone-200 text-stone-800 font-bold text-xs rounded">Cancelar</button>
-          <button onclick="window.confirmChangeDomicile()" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-extrabold text-xs rounded shadow-xs">Actualizar Domicilio</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL AUXILIAR: PREDICCIÓN Y PROYECCIÓN ELECTORAL LOCAL                   -->
-    <!-- ========================================================================= -->
-    <div id="modal-predict-election" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center p-3 select-none">
-      <div class="bg-[#FAF8F5] border-2 border-[#7D735F] w-full max-w-xl rounded shadow-2xl p-4 space-y-3">
-        <div class="border-b pb-2 flex justify-between items-center">
-          <div>
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase">📊 Modelo Predictivo & Proyección Electoral</h3>
-            <span class="text-[11px] font-mono text-stone-500" id="predict-modal-territory">Estimación de Votación</span>
-          </div>
-          <button onclick="document.getElementById('modal-predict-election').classList.add('hidden')" class="font-bold text-stone-500 hover:text-black">✕</button>
-        </div>
-        <div id="predict-modal-body" class="space-y-3 max-h-96 overflow-y-auto"></div>
-        <div class="flex justify-end pt-2 border-t">
-          <button onclick="document.getElementById('modal-predict-election').classList.add('hidden')" class="px-4 py-1.5 bg-[#0047AB] text-white font-bold text-xs rounded">Cerrar Informe</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- MODAL AUXILIAR: EVENTO POLÍTICO NACIONAL DE COYUNTURA                     -->
-    <!-- ========================================================================= -->
-    <div id="modal-national-event" class="hidden fixed inset-0 bg-slate-900/85 z-50 flex items-center justify-center p-3 select-none">
-      <div class="bg-[#FAF8F5] border-2 border-[#7D735F] w-full max-w-xl rounded shadow-2xl p-4 space-y-3">
-        <div class="border-b pb-2 flex justify-between items-center">
-          <div class="flex items-center gap-2">
-            <span class="text-xl">🚨</span>
-            <div>
-              <h3 class="font-extrabold text-sm text-slate-900 uppercase" id="ne-event-title">Noticia de Última Hora</h3>
-              <span class="text-[11px] font-mono text-stone-500" id="ne-event-source">Prensa Nacional</span>
-            </div>
-          </div>
-          <span class="text-xs font-mono font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300">Impacto Nacional</span>
-        </div>
-        <p class="text-xs text-stone-700 leading-relaxed" id="ne-event-desc"></p>
-        <div class="space-y-2 pt-2 border-t" id="ne-options-container"></div>
-      </div>
-    </div>
-
-    <!-- ========================================================================= -->
-    <!-- CONTENEDOR DE NOTIFICACIONES APILABLES (TOASTS EN COLA VERTICAL)          -->
-    <!-- ========================================================================= -->
-    <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
-
-    <!-- ========================================================================= -->
     <!-- MASTER SCRIPT: MOTOR JAVASCRIPT CON D3.JS Y 2 PÁGINAS DE CREACIÓN         -->
     <!-- ========================================================================= -->
     <script>
@@ -1393,25 +1299,6 @@
       // DICCIONARIOS Y CATÁLOGOS GEOGRÁFICOS DE CHILE
       // =========================================================================
       const CHILE_GEO = {
-        antofagasta: {
-          name: 'Región de Antofagasta',
-          districts: {
-            'Distrito 3': { seats: 5, communes: ['Antofagasta', 'Calama', 'Tocopilla', 'Mejillones', 'Taltal', 'San Pedro de Atacama'] }
-          }
-        },
-        coquimbo: {
-          name: 'Región de Coquimbo',
-          districts: {
-            'Distrito 5': { seats: 7, communes: ['La Serena', 'Coquimbo', 'Ovalle', 'Illapel', 'Vicuña', 'Salamanca'] }
-          }
-        },
-        valpo: {
-          name: 'Región de Valparaíso',
-          districts: {
-            'Distrito 6': { seats: 8, communes: ['Quilpué', 'Villa Alemana', 'Quillota', 'San Felipe', 'Los Andes', 'La Calera', 'Limache'] },
-            'Distrito 7': { seats: 8, communes: ['Valparaíso', 'Viña del Mar', 'Concón', 'San Antonio', 'Casablanca', 'Cartagena', 'Algarrobo'] }
-          }
-        },
         rm: {
           name: 'Región Metropolitana de Santiago',
           districts: {
@@ -1424,32 +1311,11 @@
             'Distrito 14': { seats: 6, communes: ['San Bernardo', 'Buin', 'Paine', 'Melipilla', 'Talagante', 'Peñaflor', 'Padre Hurtado'] }
           }
         },
-        maule: {
-          name: 'Región del Maule',
+        valpo: {
+          name: 'Región de Valparaíso',
           districts: {
-            'Distrito 17': { seats: 7, communes: ['Talca', 'Curicó', 'Constitución', 'Molina', 'San Clemente', 'Maule'] },
-            'Distrito 18': { seats: 4, communes: ['Linares', 'Cauquenes', 'Parral', 'San Javier', 'Longaví', 'Colbún'] }
-          }
-        },
-        biobio: {
-          name: 'Región del Biobío',
-          districts: {
-            'Distrito 20': { seats: 8, communes: ['Concepción', 'Talcahuano', 'San Pedro de la Paz', 'Chiguayante', 'Coronel', 'Hualpén', 'Penco', 'Tomé'] },
-            'Distrito 21': { seats: 5, communes: ['Los Ángeles', 'Arauco', 'Lebu', 'Cañete', 'Curanilahue', 'Mulchén'] }
-          }
-        },
-        araucania: {
-          name: 'Región de La Araucanía',
-          districts: {
-            'Distrito 22': { seats: 4, communes: ['Angol', 'Victoria', 'Collipulli', 'Traiguén', 'Curacautín'] },
-            'Distrito 23': { seats: 7, communes: ['Temuco', 'Padre Las Casas', 'Villarrica', 'Pucón', 'Nueva Imperial', 'Lautaro'] }
-          }
-        },
-        loslagos: {
-          name: 'Región de Los Lagos',
-          districts: {
-            'Distrito 25': { seats: 4, communes: ['Osorno', 'Puerto Varas', 'Frutillar', 'Purranque', 'Llanquihue'] },
-            'Distrito 26': { seats: 5, communes: ['Puerto Montt', 'Castro', 'Ancud', 'Quellón', 'Calbuco'] }
+            'Distrito 6': { seats: 8, communes: ['Quilpué', 'Villa Alemana', 'Quillota', 'San Felipe', 'Los Andes', 'La Calera', 'Limache'] },
+            'Distrito 7': { seats: 8, communes: ['Valparaíso', 'Viña del Mar', 'Concón', 'San Antonio', 'Casablanca', 'Cartagena', 'Algarrobo'] }
           }
         }
       };
@@ -1473,725 +1339,16 @@
       ];
 
       const POLICIES_CATALOG = [
-        // =========================================================================
-        // 1. SEGURIDAD Y CRIMEN ORGANIZADO
-        // =========================================================================
-        {
-          id: 'sec_1',
-          name: 'Reforma y Desmilitarización Policial con Enfoque Social y Comunitario',
-          category: '1. Seguridad y Crimen Organizado',
-          issue: 'Seguridad',
-          ideologyVector: { econ: -30, social: 75, authority: -45 },
-          costFiscal: 120000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 95, FA: 85, PS: 35, PPD: 15, DC: -25, AMARILLOS: -55, DEM: -65, PDG: -45, EVOPOLI: -50, RN: -90, UDI: -95, PSC: -90, PREP: -100, PNL: -30, IND: 0 },
-          impactOnMetrics: { gdp: -0.1, inflation: 0.0, crime: 4.0, unemployment: 0.0, tension: 5.0 }
-        },
-        {
-          id: 'sec_2',
-          name: 'Ministerio de Seguridad Pública y Nueva Agencia Nacional de Inteligencia',
-          category: '1. Seguridad y Crimen Organizado',
-          issue: 'Seguridad',
-          ideologyVector: { econ: -10, social: 30, authority: 35 },
-          costFiscal: 250000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 60, FA: 85, PS: 90, PPD: 90, DC: 80, AMARILLOS: 75, DEM: 75, PDG: 65, EVOPOLI: 70, RN: 55, UDI: 45, PSC: 35, PREP: 20, PNL: 0, IND: 60 },
-          impactOnMetrics: { gdp: 0.0, inflation: 0.0, crime: -3.8, unemployment: 0.0, tension: -2.0 }
-        },
-        {
-          id: 'sec_3',
-          name: 'Plan Anti-Bandas con Drones, Trazabilidad Balística y Persecución Financiera',
-          category: '1. Seguridad y Crimen Organizado',
-          issue: 'Seguridad',
-          ideologyVector: { econ: 0, social: 0, authority: 55 },
-          costFiscal: 380000,
-          targetGSE: 'C2/C3',
-          partyStances: { PC: 40, FA: 60, PS: 80, PPD: 85, DC: 90, AMARILLOS: 90, DEM: 90, PDG: 85, EVOPOLI: 85, RN: 85, UDI: 85, PSC: 80, PREP: 75, PNL: 25, IND: 70 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.0, crime: -5.5, unemployment: 0.0, tension: -3.0 }
-        },
-        {
-          id: 'sec_4',
-          name: 'Cárceles de Máxima Seguridad con Aislamiento e Inhibición Celular Total',
-          category: '1. Seguridad y Crimen Organizado',
-          issue: 'Seguridad',
-          ideologyVector: { econ: 20, social: -30, authority: 80 },
-          costFiscal: 550000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -40, FA: -20, PS: 45, PPD: 65, DC: 75, AMARILLOS: 85, DEM: 90, PDG: 90, EVOPOLI: 85, RN: 95, UDI: 98, PSC: 95, PREP: 98, PNL: 50, IND: 65 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -7.5, unemployment: 0.0, tension: 1.0 }
-        },
-        {
-          id: 'sec_5',
-          name: 'Estado de Excepción Permanente en Zonas Críticas y Tribunales Militares para Narco',
-          category: '1. Seguridad y Crimen Organizado',
-          issue: 'Seguridad',
-          ideologyVector: { econ: 30, social: -70, authority: 100 },
-          costFiscal: 700000,
-          targetGSE: 'D/E',
-          partyStances: { PC: -100, FA: -95, PS: -75, PPD: -55, DC: -45, AMARILLOS: -15, DEM: 35, PDG: 55, EVOPOLI: 20, RN: 85, UDI: 92, PSC: 95, PREP: 100, PNL: 60, IND: 35 },
-          impactOnMetrics: { gdp: -0.2, inflation: 0.0, crime: -9.5, unemployment: 0.0, tension: 9.0 }
-        },
-
-        // =========================================================================
-        // 2. DEFENSA Y FF.AA.
-        // =========================================================================
-        {
-          id: 'def_1',
-          name: 'Reducción del Presupuesto Militar y Derogación de Mecanismos Reservados',
-          category: '2. Defensa y FF.AA.',
-          issue: 'Defensa',
-          ideologyVector: { econ: -40, social: 60, authority: -60 },
-          costFiscal: -150000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 95, FA: 85, PS: 40, PPD: 20, DC: -20, AMARILLOS: -50, DEM: -60, PDG: -40, EVOPOLI: -50, RN: -90, UDI: -95, PSC: -95, PREP: -100, PNL: 10, IND: -20 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.0, crime: 1.0, unemployment: 0.0, tension: 4.0 }
-        },
-        {
-          id: 'def_2',
-          name: 'Modernización Cívico-Militar para Soberanía Territorial sin Roles Internos',
-          category: '2. Defensa y FF.AA.',
-          issue: 'Defensa',
-          ideologyVector: { econ: -10, social: 30, authority: 10 },
-          costFiscal: 200000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 50, FA: 80, PS: 85, PPD: 80, DC: 75, AMARILLOS: 70, DEM: 65, PDG: 50, EVOPOLI: 60, RN: 40, UDI: 30, PSC: 20, PREP: 10, PNL: -10, IND: 50 },
-          impactOnMetrics: { gdp: 0.0, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: -1.0 }
-        },
-        {
-          id: 'def_3',
-          name: 'Despliegue de FF.AA. en Resguardo de Infraestructura Crítica Estratégica',
-          category: '2. Defensa y FF.AA.',
-          issue: 'Defensa',
-          ideologyVector: { econ: 10, social: -10, authority: 55 },
-          costFiscal: 350000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -30, FA: 20, PS: 70, PPD: 85, DC: 90, AMARILLOS: 95, DEM: 95, PDG: 90, EVOPOLI: 90, RN: 95, UDI: 95, PSC: 90, PREP: 90, PNL: 30, IND: 75 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -3.0, unemployment: 0.0, tension: 1.0 }
-        },
-        {
-          id: 'def_4',
-          name: 'Militarización Fronteriza Activa con Reglas de Uso de la Fuerza Asertivas (RUF)',
-          category: '2. Defensa y FF.AA.',
-          issue: 'Defensa',
-          ideologyVector: { econ: 20, social: -45, authority: 80 },
-          costFiscal: 480000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -80, FA: -60, PS: 20, PPD: 50, DC: 65, AMARILLOS: 80, DEM: 85, PDG: 90, EVOPOLI: 85, RN: 95, UDI: 98, PSC: 95, PREP: 98, PNL: 50, IND: 70 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.0, crime: -4.5, unemployment: 0.0, tension: 3.0 }
-        },
-        {
-          id: 'def_5',
-          name: 'Rearme Aéreo-Naval Mayor, Servicio Militar Obligatorio y Amnistía Operativa FF.AA.',
-          category: '2. Defensa y FF.AA.',
-          issue: 'Defensa',
-          ideologyVector: { econ: 30, social: -80, authority: 95 },
-          costFiscal: 900000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -100, FA: -95, PS: -80, PPD: -60, DC: -50, AMARILLOS: -10, DEM: 20, PDG: 40, EVOPOLI: 30, RN: 85, UDI: 95, PSC: 98, PREP: 100, PNL: 30, IND: 20 },
-          impactOnMetrics: { gdp: -0.3, inflation: 0.2, crime: -3.0, unemployment: 0.1, tension: 8.0 }
-        },
-
-        // =========================================================================
-        // 3. MODELO ECONÓMICO E IMPUESTOS
-        // =========================================================================
-        {
-          id: 'eco_1',
-          name: 'Nacionalización del Cobre y Litio con Impuesto Corporativo a 35%',
-          category: '3. Modelo Económico e Impuestos',
-          issue: 'Economía',
-          ideologyVector: { econ: -90, social: 40, authority: 70 },
-          costFiscal: 800000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 100, FA: 75, PS: 30, PPD: 10, DC: -40, AMARILLOS: -75, DEM: -80, PDG: -60, EVOPOLI: -85, RN: -95, UDI: -100, PSC: -95, PREP: -100, PNL: -100, IND: -20 },
-          impactOnMetrics: { gdp: -1.2, inflation: 0.8, crime: 0.0, unemployment: 1.5, tension: 8.0 }
-        },
-        {
-          id: 'eco_2',
-          name: 'Pacto Fiscal Progresivo con Impuesto a la Riqueza y Fin a Exenciones',
-          category: '3. Modelo Económico e Impuestos',
-          issue: 'Economía',
-          ideologyVector: { econ: -50, social: 30, authority: 40 },
-          costFiscal: -300000,
-          targetGSE: 'C3/D',
-          partyStances: { PC: 85, FA: 95, PS: 90, PPD: 85, DC: 70, AMARILLOS: 30, DEM: 25, PDG: 10, EVOPOLI: -20, RN: -60, UDI: -80, PSC: -75, PREP: -95, PNL: -95, IND: 40 },
-          impactOnMetrics: { gdp: -0.2, inflation: 0.1, crime: 0.0, unemployment: 0.3, tension: 2.0 }
-        },
-        {
-          id: 'eco_3',
-          name: 'Responsabilidad Fiscal Estricta y Eficiencia del Gasto Público sin Nuevos Impuestos',
-          category: '3. Modelo Económico e Impuestos',
-          issue: 'Economía',
-          ideologyVector: { econ: 15, social: 0, authority: 10 },
-          costFiscal: -100000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 10, FA: 40, PS: 70, PPD: 85, DC: 90, AMARILLOS: 95, DEM: 95, PDG: 85, EVOPOLI: 90, RN: 85, UDI: 80, PSC: 75, PREP: 70, PNL: 60, IND: 75 },
-          impactOnMetrics: { gdp: 0.4, inflation: -0.3, crime: 0.0, unemployment: -0.2, tension: -2.0 }
-        },
-        {
-          id: 'eco_4',
-          name: 'Rebaja de Impuesto a Empresas a 23% e Incentivos a la Inversión Privada',
-          category: '3. Modelo Económico e Impuestos',
-          issue: 'Economía',
-          ideologyVector: { econ: 60, social: -20, authority: -20 },
-          costFiscal: 250000,
-          targetGSE: 'ABC1/C2',
-          partyStances: { PC: -70, FA: -50, PS: -10, PPD: 25, DC: 50, AMARILLOS: 80, DEM: 85, PDG: 80, EVOPOLI: 95, RN: 95, UDI: 98, PSC: 90, PREP: 95, PNL: 90, IND: 60 },
-          impactOnMetrics: { gdp: 0.7, inflation: 0.1, crime: 0.0, unemployment: -0.5, tension: 1.0 }
-        },
-        {
-          id: 'eco_5',
-          name: 'Flat Tax Único de 15%, Desregulación Financiera y Privatización de Estatales',
-          category: '3. Modelo Económico e Impuestos',
-          issue: 'Economía',
-          ideologyVector: { econ: 95, social: -50, authority: -70 },
-          costFiscal: 600000,
-          targetGSE: 'ABC1',
-          partyStances: { PC: -100, FA: -100, PS: -90, PPD: -80, DC: -70, AMARILLOS: -40, DEM: -20, PDG: 20, EVOPOLI: 40, RN: 65, UDI: 80, PSC: 75, PREP: 90, PNL: 100, IND: 20 },
-          impactOnMetrics: { gdp: 1.1, inflation: -0.5, crime: 0.0, unemployment: -0.8, tension: 7.0 }
-        },
-
-        // =========================================================================
-        // 4. PREVISIÓN SOCIAL (AFP VS REPARTO/MIXTO)
-        // =========================================================================
-        {
-          id: 'prev_1',
-          name: 'Fin Total de las AFP y Creación de Sistema de Reparto Solidario 100% Estatal',
-          category: '4. Previsión Social (AFP vs Reparto/Mixto)',
-          issue: 'Pensiones',
-          ideologyVector: { econ: -85, social: 60, authority: 60 },
-          costFiscal: 950000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 100, FA: 80, PS: 35, PPD: 15, DC: -30, AMARILLOS: -70, DEM: -80, PDG: -70, EVOPOLI: -85, RN: -95, UDI: -100, PSC: -95, PREP: -100, PNL: -100, IND: -15 },
-          impactOnMetrics: { gdp: -0.6, inflation: 0.4, crime: 0.0, unemployment: 0.2, tension: 7.0 }
-        },
-        {
-          id: 'prev_2',
-          name: '6% Adicional a Fondo Solidario Colectivo Intergeneracional con Ente Público',
-          category: '4. Previsión Social (AFP vs Reparto/Mixto)',
-          issue: 'Pensiones',
-          ideologyVector: { econ: -45, social: 40, authority: 40 },
-          costFiscal: 400000,
-          targetGSE: 'C3/D',
-          partyStances: { PC: 80, FA: 95, PS: 90, PPD: 85, DC: 60, AMARILLOS: 20, DEM: 15, PDG: -10, EVOPOLI: -30, RN: -65, UDI: -85, PSC: -80, PREP: -95, PNL: -100, IND: 35 },
-          impactOnMetrics: { gdp: -0.2, inflation: 0.1, crime: 0.0, unemployment: 0.1, tension: -3.0 }
-        },
-        {
-          id: 'prev_3',
-          name: 'Fórmula Mixta 3% Individual y 3% Solidario con Gestor Público Alternativo',
-          category: '4. Previsión Social (AFP vs Reparto/Mixto)',
-          issue: 'Pensiones',
-          ideologyVector: { econ: 0, social: 10, authority: 20 },
-          costFiscal: 200000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 30, FA: 60, PS: 85, PPD: 90, DC: 95, AMARILLOS: 85, DEM: 85, PDG: 65, EVOPOLI: 50, RN: 40, UDI: 20, PSC: 20, PREP: -10, PNL: -40, IND: 70 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: -4.0 }
-        },
-        {
-          id: 'prev_4',
-          name: '6% Adicional Completo a Cuentas Individuales Heredables con Libre Elección',
-          category: '4. Previsión Social (AFP vs Reparto/Mixto)',
-          issue: 'Pensiones',
-          ideologyVector: { econ: 55, social: -20, authority: -20 },
-          costFiscal: 100000,
-          targetGSE: 'C2/C3',
-          partyStances: { PC: -75, FA: -55, PS: -15, PPD: 20, DC: 45, AMARILLOS: 80, DEM: 85, PDG: 90, EVOPOLI: 95, RN: 95, UDI: 98, PSC: 95, PREP: 98, PNL: 90, IND: 65 },
-          impactOnMetrics: { gdp: 0.4, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: 2.0 }
-        },
-        {
-          id: 'prev_5',
-          name: 'Pensión Básica Universal Vía IVA y Libre Retiro Irrestricto de Fondos Propios',
-          category: '4. Previsión Social (AFP vs Reparto/Mixto)',
-          issue: 'Pensiones',
-          ideologyVector: { econ: 85, social: -40, authority: -70 },
-          costFiscal: 500000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -90, FA: -85, PS: -60, PPD: -40, DC: -20, AMARILLOS: 10, DEM: 30, PDG: 75, EVOPOLI: 60, RN: 70, UDI: 85, PSC: 85, PREP: 90, PNL: 95, IND: 40 },
-          impactOnMetrics: { gdp: 0.6, inflation: 0.6, crime: 0.0, unemployment: -0.2, tension: 5.0 }
-        },
-
-        // =========================================================================
-        // 5. TRABAJO Y SINDICATOS
-        // =========================================================================
-        {
-          id: 'tra_1',
-          name: 'Negociación Ramal Obligatoria y Titularidad Sindical Exclusiva Sin Grupos Negociadores',
-          category: '5. Trabajo y Sindicatos',
-          issue: 'Trabajo',
-          ideologyVector: { econ: -80, social: 50, authority: 50 },
-          costFiscal: 50000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 100, FA: 85, PS: 50, PPD: 25, DC: -20, AMARILLOS: -65, DEM: -75, PDG: -55, EVOPOLI: -80, RN: -90, UDI: -98, PSC: -90, PREP: -100, PNL: -100, IND: 0 },
-          impactOnMetrics: { gdp: -0.4, inflation: 0.3, crime: 0.0, unemployment: 0.5, tension: 5.0 }
-        },
-        {
-          id: 'tra_2',
-          name: 'Sueldo Mínimo de $650.000 con Subsidio Permanente a PyMEs y Fin a la Subcontratación',
-          category: '5. Trabajo y Sindicatos',
-          issue: 'Trabajo',
-          ideologyVector: { econ: -45, social: 30, authority: 30 },
-          costFiscal: 180000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 85, FA: 95, PS: 90, PPD: 85, DC: 70, AMARILLOS: 40, DEM: 45, PDG: 50, EVOPOLI: 20, RN: -10, UDI: -40, PSC: -30, PREP: -60, PNL: -80, IND: 55 },
-          impactOnMetrics: { gdp: -0.1, inflation: 0.2, crime: 0.0, unemployment: 0.2, tension: -3.0 }
-        },
-        {
-          id: 'tra_3',
-          name: 'Jornada de 40 Horas con Pactos de Adaptabilidad y Fomento a la Productividad',
-          category: '5. Trabajo y Sindicatos',
-          issue: 'Trabajo',
-          ideologyVector: { econ: 0, social: 20, authority: 10 },
-          costFiscal: 80000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 60, FA: 85, PS: 90, PPD: 90, DC: 90, AMARILLOS: 85, DEM: 85, PDG: 80, EVOPOLI: 85, RN: 75, UDI: 65, PSC: 60, PREP: 45, PNL: 20, IND: 75 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: -4.0 }
-        },
-        {
-          id: 'tra_4',
-          name: 'Flexibilidad Laboral Horaria para Jóvenes y Cuidadores con Subsidio al Empleo Formal',
-          category: '5. Trabajo y Sindicatos',
-          issue: 'Trabajo',
-          ideologyVector: { econ: 45, social: -10, authority: -20 },
-          costFiscal: 120000,
-          targetGSE: 'C2/C3',
-          partyStances: { PC: -40, FA: -10, PS: 30, PPD: 60, DC: 75, AMARILLOS: 90, DEM: 90, PDG: 90, EVOPOLI: 95, RN: 95, UDI: 95, PSC: 90, PREP: 90, PNL: 75, IND: 70 },
-          impactOnMetrics: { gdp: 0.5, inflation: -0.1, crime: 0.0, unemployment: -0.4, tension: -1.0 }
-        },
-        {
-          id: 'tra_5',
-          name: 'Libertad de Contratación Total, Supresión de Indemnizaciones y Desregulación Sindical',
-          category: '5. Trabajo y Sindicatos',
-          issue: 'Trabajo',
-          ideologyVector: { econ: 90, social: -40, authority: -60 },
-          costFiscal: 30000,
-          targetGSE: 'ABC1',
-          partyStances: { PC: -100, FA: -100, PS: -85, PPD: -70, DC: -60, AMARILLOS: -20, DEM: 0, PDG: 30, EVOPOLI: 65, RN: 75, UDI: 85, PSC: 80, PREP: 92, PNL: 100, IND: 20 },
-          impactOnMetrics: { gdp: 0.8, inflation: -0.2, crime: 0.0, unemployment: -0.6, tension: 7.0 }
-        },
-
-        // =========================================================================
-        // 6. SALUD (FONASA/ISAPRE)
-        // =========================================================================
-        {
-          id: 'sal_1',
-          name: 'Fondo Universal de Salud Estatal Único y Fin Gradual a las ISAPREs Privadas',
-          category: '6. Salud (FONASA/ISAPRE)',
-          issue: 'Salud',
-          ideologyVector: { econ: -85, social: 50, authority: 60 },
-          costFiscal: 850000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 100, FA: 85, PS: 45, PPD: 20, DC: -25, AMARILLOS: -70, DEM: -80, PDG: -65, EVOPOLI: -85, RN: -95, UDI: -100, PSC: -95, PREP: -100, PNL: -100, IND: -10 },
-          impactOnMetrics: { gdp: -0.4, inflation: 0.2, crime: 0.0, unemployment: 0.1, tension: 6.0 }
-        },
-        {
-          id: 'sal_2',
-          name: 'Inversión Histórica en Red Hospitalaria Pública y Salario Médico Exclusivo FONASA',
-          category: '6. Salud (FONASA/ISAPRE)',
-          issue: 'Salud',
-          ideologyVector: { econ: -45, social: 30, authority: 35 },
-          costFiscal: 600000,
-          targetGSE: 'C3/D',
-          partyStances: { PC: 85, FA: 95, PS: 95, PPD: 90, DC: 80, AMARILLOS: 60, DEM: 60, PDG: 60, EVOPOLI: 40, RN: 20, UDI: 10, PSC: 20, PREP: 0, PNL: -40, IND: 60 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.1, crime: 0.0, unemployment: 0.0, tension: -3.0 }
-        },
-        {
-          id: 'sal_3',
-          name: 'Plan Universal de Salud con Libre Elección y Cero Listas de Espera en AUGE',
-          category: '6. Salud (FONASA/ISAPRE)',
-          issue: 'Salud',
-          ideologyVector: { econ: 0, social: 10, authority: 15 },
-          costFiscal: 420000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 40, FA: 65, PS: 85, PPD: 90, DC: 95, AMARILLOS: 95, DEM: 95, PDG: 90, EVOPOLI: 85, RN: 80, UDI: 75, PSC: 75, PREP: 65, PNL: 20, IND: 80 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: -5.0 }
-        },
-        {
-          id: 'sal_4',
-          name: 'Modernización y Salvaguarda de ISAPREs con Tarifa Plana e Integración Clínicas AUGE',
-          category: '6. Salud (FONASA/ISAPRE)',
-          issue: 'Salud',
-          ideologyVector: { econ: 50, social: -20, authority: -15 },
-          costFiscal: 250000,
-          targetGSE: 'ABC1/C2',
-          partyStances: { PC: -70, FA: -50, PS: -10, PPD: 25, DC: 50, AMARILLOS: 80, DEM: 85, PDG: 80, EVOPOLI: 95, RN: 95, UDI: 98, PSC: 95, PREP: 95, PNL: 80, IND: 60 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: 2.0 }
-        },
-        {
-          id: 'sal_5',
-          name: 'Vouchers Sanitarios Personales y Desregulación Plena del Mercado de Clínicas Privadas',
-          category: '6. Salud (FONASA/ISAPRE)',
-          issue: 'Salud',
-          ideologyVector: { econ: 90, social: -40, authority: -70 },
-          costFiscal: 300000,
-          targetGSE: 'ABC1',
-          partyStances: { PC: -100, FA: -95, PS: -80, PPD: -60, DC: -50, AMARILLOS: -10, DEM: 20, PDG: 50, EVOPOLI: 65, RN: 75, UDI: 85, PSC: 85, PREP: 90, PNL: 100, IND: 35 },
-          impactOnMetrics: { gdp: 0.5, inflation: -0.1, crime: 0.0, unemployment: -0.2, tension: 6.0 }
-        },
-
-        // =========================================================================
-        // 7. EDUCACIÓN Y CAE
-        // =========================================================================
-        {
-          id: 'edu_1',
-          name: 'Condonación Universal Incondicional del CAE y Gratuidad Universitaria Total',
-          category: '7. Educación y CAE',
-          issue: 'Educación',
-          ideologyVector: { econ: -90, social: 70, authority: 45 },
-          costFiscal: 980000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 100, FA: 95, PS: 50, PPD: 20, DC: -30, AMARILLOS: -75, DEM: -80, PDG: -60, EVOPOLI: -85, RN: -95, UDI: -100, PSC: -95, PREP: -100, PNL: -100, IND: 0 },
-          impactOnMetrics: { gdp: -0.5, inflation: 0.5, crime: 0.0, unemployment: 0.0, tension: 5.0 }
-        },
-        {
-          id: 'edu_2',
-          name: 'Fortalecimiento Integral de la Educación Pública y Servicios Locales (SLEP)',
-          category: '7. Educación y CAE',
-          issue: 'Educación',
-          ideologyVector: { econ: -45, social: 40, authority: 35 },
-          costFiscal: 500000,
-          targetGSE: 'C3/D',
-          partyStances: { PC: 80, FA: 95, PS: 90, PPD: 85, DC: 75, AMARILLOS: 45, DEM: 45, PDG: 30, EVOPOLI: 20, RN: -10, UDI: -40, PSC: -30, PREP: -65, PNL: -80, IND: 50 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.1, crime: 0.0, unemployment: 0.0, tension: -2.0 }
-        },
-        {
-          id: 'edu_3',
-          name: 'Financiamiento de la Educación Superior (FES) Sin Bancos y con Pago Contingente',
-          category: '7. Educación y CAE',
-          issue: 'Educación',
-          ideologyVector: { econ: -10, social: 20, authority: 20 },
-          costFiscal: 350000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 55, FA: 85, PS: 90, PPD: 90, DC: 85, AMARILLOS: 75, DEM: 75, PDG: 65, EVOPOLI: 60, RN: 45, UDI: 30, PSC: 30, PREP: 10, PNL: -20, IND: 65 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: -4.0 }
-        },
-        {
-          id: 'edu_4',
-          name: 'Restauración de la Selección por Mérito Académico en Liceos y Aporte a Subvencionados',
-          category: '7. Educación y CAE',
-          issue: 'Educación',
-          ideologyVector: { econ: 40, social: -30, authority: 10 },
-          costFiscal: 150000,
-          targetGSE: 'C2/C3',
-          partyStances: { PC: -75, FA: -65, PS: -20, PPD: 20, DC: 50, AMARILLOS: 85, DEM: 90, PDG: 90, EVOPOLI: 95, RN: 95, UDI: 98, PSC: 95, PREP: 98, PNL: 80, IND: 70 },
-          impactOnMetrics: { gdp: 0.4, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: 2.0 }
-        },
-        {
-          id: 'edu_5',
-          name: 'Vouchers Educativos Directos a Padres, Desregulación Curricular y Desmantelamiento SLEP',
-          category: '7. Educación y CAE',
-          issue: 'Educación',
-          ideologyVector: { econ: 85, social: -60, authority: -60 },
-          costFiscal: 220000,
-          targetGSE: 'ABC1',
-          partyStances: { PC: -100, FA: -95, PS: -80, PPD: -60, DC: -40, AMARILLOS: 0, DEM: 25, PDG: 55, EVOPOLI: 65, RN: 80, UDI: 90, PSC: 95, PREP: 98, PNL: 100, IND: 35 },
-          impactOnMetrics: { gdp: 0.6, inflation: -0.1, crime: 0.0, unemployment: -0.2, tension: 6.0 }
-        },
-
-        // =========================================================================
-        // 8. INSTITUCIONALIDAD Y DESCENTRALIZACIÓN
-        // =========================================================================
-        {
-          id: 'inst_1',
-          name: 'Asambleas Regionales Soberanas con Potestad Tributaria y Referéndums Revocatorios',
-          category: '8. Institucionalidad y Descentralización',
-          issue: 'Institucionalidad',
-          ideologyVector: { econ: -60, social: 70, authority: -60 },
-          costFiscal: 250000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 95, FA: 85, PS: 40, PPD: 20, DC: -20, AMARILLOS: -70, DEM: -75, PDG: 30, EVOPOLI: -40, RN: -80, UDI: -90, PSC: -85, PREP: -95, PNL: -20, IND: 20 },
-          impactOnMetrics: { gdp: -0.3, inflation: 0.1, crime: 0.0, unemployment: 0.1, tension: 5.0 }
-        },
-        {
-          id: 'inst_2',
-          name: 'Autonomía Financiera Regional y Eliminación Definitiva de Delegados Presidenciales',
-          category: '8. Institucionalidad y Descentralización',
-          issue: 'Institucionalidad',
-          ideologyVector: { econ: -15, social: 30, authority: -20 },
-          costFiscal: 150000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 70, FA: 85, PS: 90, PPD: 90, DC: 90, AMARILLOS: 85, DEM: 85, PDG: 85, EVOPOLI: 85, RN: 70, UDI: 60, PSC: 60, PREP: 50, PNL: 40, IND: 85 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: -3.0 }
-        },
-        {
-          id: 'inst_3',
-          name: 'Carrera Funcionaria por Alta Dirección Pública y Prohibición de Operadores Políticos',
-          category: '8. Institucionalidad y Descentralización',
-          issue: 'Institucionalidad',
-          ideologyVector: { econ: 15, social: 0, authority: 20 },
-          costFiscal: -50000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 30, FA: 60, PS: 75, PPD: 80, DC: 85, AMARILLOS: 95, DEM: 95, PDG: 95, EVOPOLI: 95, RN: 90, UDI: 85, PSC: 80, PREP: 85, PNL: 80, IND: 90 },
-          impactOnMetrics: { gdp: 0.4, inflation: -0.2, crime: 0.0, unemployment: 0.0, tension: -4.0 }
-        },
-        {
-          id: 'inst_4',
-          name: 'Reducción del Congreso a 120 Diputados y Umbral Electoral del 5% contra Fragmentación',
-          category: '8. Institucionalidad y Descentralización',
-          issue: 'Institucionalidad',
-          ideologyVector: { econ: 40, social: -20, authority: 40 },
-          costFiscal: -120000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -70, FA: -50, PS: 20, PPD: 40, DC: 60, AMARILLOS: 90, DEM: 90, PDG: 60, EVOPOLI: 90, RN: 95, UDI: 98, PSC: 90, PREP: 98, PNL: 80, IND: 45 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: 1.0 }
-        },
-        {
-          id: 'inst_5',
-          name: 'Reducción Drástica a 10 Ministerios, Recorte del 30% del Gasto Fiscal y Cierre de Agencias',
-          category: '8. Institucionalidad y Descentralización',
-          issue: 'Institucionalidad',
-          ideologyVector: { econ: 90, social: -50, authority: -50 },
-          costFiscal: -500000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -100, FA: -95, PS: -80, PPD: -60, DC: -40, AMARILLOS: 10, DEM: 30, PDG: 70, EVOPOLI: 65, RN: 80, UDI: 90, PSC: 85, PREP: 95, PNL: 100, IND: 30 },
-          impactOnMetrics: { gdp: 0.8, inflation: -0.5, crime: 0.0, unemployment: 0.4, tension: 6.0 }
-        },
-
-        // =========================================================================
-        // 9. MIGRACIÓN Y FRONTERAS
-        // =========================================================================
-        {
-          id: 'mig_1',
-          name: 'Regularización Extraordinaria Universal e Integración Socioeconómica Migrante',
-          category: '9. Migración y Fronteras',
-          issue: 'Migración',
-          ideologyVector: { econ: -30, social: 90, authority: -70 },
-          costFiscal: 200000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 95, FA: 85, PS: 35, PPD: 10, DC: -25, AMARILLOS: -70, DEM: -80, PDG: -85, EVOPOLI: -60, RN: -95, UDI: -98, PSC: -95, PREP: -100, PNL: -30, IND: -20 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.1, crime: 2.5, unemployment: 0.3, tension: 8.0 }
-        },
-        {
-          id: 'mig_2',
-          name: 'Empadronamiento Biométrico Humanitario y Visas Laborales Sujetas a Contrato Formal',
-          category: '9. Migración y Fronteras',
-          issue: 'Migración',
-          ideologyVector: { econ: -5, social: 40, authority: 20 },
-          costFiscal: 150000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 60, FA: 85, PS: 85, PPD: 80, DC: 75, AMARILLOS: 70, DEM: 70, PDG: 50, EVOPOLI: 65, RN: 45, UDI: 30, PSC: 25, PREP: 10, PNL: 10, IND: 55 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -1.0, unemployment: 0.1, tension: -1.0 }
-        },
-        {
-          id: 'mig_3',
-          name: 'Control Fronterizo con Visado Consular Obligatorio y Reconducción Bilateral Ágil',
-          category: '9. Migración y Fronteras',
-          issue: 'Migración',
-          ideologyVector: { econ: 10, social: -10, authority: 55 },
-          costFiscal: 250000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -10, FA: 40, PS: 70, PPD: 85, DC: 90, AMARILLOS: 95, DEM: 95, PDG: 90, EVOPOLI: 90, RN: 90, UDI: 85, PSC: 85, PREP: 80, PNL: 40, IND: 75 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -3.5, unemployment: 0.0, tension: -3.0 }
-        },
-        {
-          id: 'mig_4',
-          name: 'Expulsión Administrativa Express en 48 Horas para Clandestinos y Condenados',
-          category: '9. Migración y Fronteras',
-          issue: 'Migración',
-          ideologyVector: { econ: 25, social: -45, authority: 80 },
-          costFiscal: 380000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -70, FA: -40, PS: 20, PPD: 50, DC: 70, AMARILLOS: 85, DEM: 90, PDG: 95, EVOPOLI: 90, RN: 98, UDI: 100, PSC: 98, PREP: 100, PNL: 70, IND: 75 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -5.5, unemployment: -0.1, tension: 2.0 }
-        },
-        {
-          id: 'mig_5',
-          name: 'Zanja Continua en el Norte, Bloqueo Militar Fronterizo y Fin Total al Ius Soli',
-          category: '9. Migración y Fronteras',
-          issue: 'Migración',
-          ideologyVector: { econ: 35, social: -85, authority: 95 },
-          costFiscal: 650000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -100, FA: -95, PS: -80, PPD: -60, DC: -45, AMARILLOS: -10, DEM: 25, PDG: 65, EVOPOLI: 30, RN: 85, UDI: 95, PSC: 98, PREP: 100, PNL: 50, IND: 35 },
-          impactOnMetrics: { gdp: -0.1, inflation: 0.1, crime: -6.5, unemployment: 0.0, tension: 7.0 }
-        },
-
-        // =========================================================================
-        // 10. MEDIOAMBIENTE, AGUA Y PERMISOLOGÍA
-        // =========================================================================
-        {
-          id: 'amb_1',
-          name: 'Estatización Integral de Derechos de Agua y Moratoria Minera en Glaciares',
-          category: '10. Medioambiente, Agua y Permisología',
-          issue: 'Medioambiente',
-          ideologyVector: { econ: -90, social: 70, authority: 60 },
-          costFiscal: 600000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 95, FA: 95, PS: 50, PPD: 25, DC: -20, AMARILLOS: -70, DEM: -80, PDG: -60, EVOPOLI: -85, RN: -95, UDI: -100, PSC: -95, PREP: -100, PNL: -100, IND: 0 },
-          impactOnMetrics: { gdp: -1.0, inflation: 0.4, crime: 0.0, unemployment: 0.8, tension: 6.0 }
-        },
-        {
-          id: 'amb_2',
-          name: 'Descarbonización Acelerada y Servicio de Biodiversidad y Áreas Protegidas (SBAP)',
-          category: '10. Medioambiente, Agua y Permisología',
-          issue: 'Medioambiente',
-          ideologyVector: { econ: -40, social: 50, authority: 30 },
-          costFiscal: 400000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 75, FA: 95, PS: 90, PPD: 90, DC: 80, AMARILLOS: 60, DEM: 55, PDG: 45, EVOPOLI: 50, RN: 20, UDI: 0, PSC: 0, PREP: -20, PNL: -60, IND: 55 },
-          impactOnMetrics: { gdp: -0.2, inflation: 0.2, crime: 0.0, unemployment: 0.1, tension: -2.0 }
-        },
-        {
-          id: 'amb_3',
-          name: 'Código de Aguas con Prioridad de Consumo Humano y Certeza para Riego Tecnificado',
-          category: '10. Medioambiente, Agua y Permisología',
-          issue: 'Medioambiente',
-          ideologyVector: { econ: 0, social: 20, authority: 10 },
-          costFiscal: 200000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 40, FA: 65, PS: 85, PPD: 90, DC: 95, AMARILLOS: 95, DEM: 95, PDG: 85, EVOPOLI: 85, RN: 80, UDI: 70, PSC: 70, PREP: 60, PNL: 30, IND: 80 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.0, crime: 0.0, unemployment: -0.1, tension: -4.0 }
-        },
-        {
-          id: 'amb_4',
-          name: 'Fast-Track de Permisología Ambiental y Silencio Positivo para Grandes Proyectos',
-          category: '10. Medioambiente, Agua y Permisología',
-          issue: 'Permisología',
-          ideologyVector: { econ: 60, social: -30, authority: -30 },
-          costFiscal: 80000,
-          targetGSE: 'ABC1/C2',
-          partyStances: { PC: -70, FA: -50, PS: 10, PPD: 40, DC: 65, AMARILLOS: 90, DEM: 90, PDG: 85, EVOPOLI: 98, RN: 98, UDI: 100, PSC: 95, PREP: 98, PNL: 95, IND: 70 },
-          impactOnMetrics: { gdp: 0.8, inflation: -0.2, crime: 0.0, unemployment: -0.5, tension: 1.0 }
-        },
-        {
-          id: 'amb_5',
-          name: 'Derogación de Trabas Ambientales y de la Consulta Indígena OIT 169 a Inversiones',
-          category: '10. Medioambiente, Agua y Permisología',
-          issue: 'Permisología',
-          ideologyVector: { econ: 95, social: -70, authority: -50 },
-          costFiscal: 20000,
-          targetGSE: 'ABC1',
-          partyStances: { PC: -100, FA: -100, PS: -85, PPD: -70, DC: -50, AMARILLOS: -10, DEM: 15, PDG: 50, EVOPOLI: 55, RN: 80, UDI: 92, PSC: 90, PREP: 98, PNL: 100, IND: 25 },
-          impactOnMetrics: { gdp: 1.2, inflation: -0.3, crime: 0.0, unemployment: -0.7, tension: 8.0 }
-        },
-
-        // =========================================================================
-        // 11. VIVIENDA, URBANISMO Y TRANSPORTE
-        // =========================================================================
-        {
-          id: 'viv_1',
-          name: 'Banco de Suelo Fiscal Obligatorio y Arriendos a Precio Regulado por el Estado',
-          category: '11. Vivienda, Urbanismo y Transporte',
-          issue: 'Vivienda',
-          ideologyVector: { econ: -80, social: 60, authority: 55 },
-          costFiscal: 550000,
-          targetGSE: 'D/E',
-          partyStances: { PC: 95, FA: 85, PS: 50, PPD: 25, DC: -20, AMARILLOS: -65, DEM: -75, PDG: -50, EVOPOLI: -80, RN: -90, UDI: -95, PSC: -90, PREP: -100, PNL: -100, IND: 0 },
-          impactOnMetrics: { gdp: -0.3, inflation: 0.2, crime: 0.0, unemployment: 0.1, tension: 4.0 }
-        },
-        {
-          id: 'viv_2',
-          name: 'Plan de Emergencia Habitacional con Construcción Directa SERVIU y Cero Campamentos',
-          category: '11. Vivienda, Urbanismo y Transporte',
-          issue: 'Vivienda',
-          ideologyVector: { econ: -40, social: 40, authority: 35 },
-          costFiscal: 750000,
-          targetGSE: 'C3/D',
-          partyStances: { PC: 80, FA: 95, PS: 90, PPD: 85, DC: 80, AMARILLOS: 65, DEM: 65, PDG: 60, EVOPOLI: 50, RN: 40, UDI: 25, PSC: 30, PREP: 10, PNL: -30, IND: 65 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.2, crime: -1.0, unemployment: -0.2, tension: -3.0 }
-        },
-        {
-          id: 'viv_3',
-          name: 'Subsidio de Integración Social Masivo (DS19) y Expansión Acelerada del Metro',
-          category: '11. Vivienda, Urbanismo y Transporte',
-          issue: 'Vivienda',
-          ideologyVector: { econ: 10, social: 20, authority: 10 },
-          costFiscal: 650000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 40, FA: 70, PS: 85, PPD: 90, DC: 95, AMARILLOS: 95, DEM: 95, PDG: 90, EVOPOLI: 90, RN: 85, UDI: 80, PSC: 80, PREP: 75, PNL: 30, IND: 85 },
-          impactOnMetrics: { gdp: 0.5, inflation: 0.0, crime: -0.5, unemployment: -0.3, tension: -4.0 }
-        },
-        {
-          id: 'viv_4',
-          name: 'Densificación en Ejes de Metro y Desalojo Express con Fuerza Pública de Tomas',
-          category: '11. Vivienda, Urbanismo y Transporte',
-          issue: 'Vivienda',
-          ideologyVector: { econ: 45, social: -20, authority: 60 },
-          costFiscal: 250000,
-          targetGSE: 'C2/C3',
-          partyStances: { PC: -60, FA: -30, PS: 20, PPD: 50, DC: 70, AMARILLOS: 85, DEM: 90, PDG: 90, EVOPOLI: 95, RN: 95, UDI: 98, PSC: 95, PREP: 98, PNL: 75, IND: 70 },
-          impactOnMetrics: { gdp: 0.4, inflation: 0.0, crime: -3.0, unemployment: -0.2, tension: 1.0 }
-        },
-        {
-          id: 'viv_5',
-          name: 'Exención Total de Contribuciones a Primera Vivienda y Libertad Urbanística Comunal',
-          category: '11. Vivienda, Urbanismo y Transporte',
-          issue: 'Vivienda',
-          ideologyVector: { econ: 85, social: -50, authority: -50 },
-          costFiscal: 380000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -90, FA: -85, PS: -50, PPD: -20, DC: 15, AMARILLOS: 60, DEM: 70, PDG: 85, EVOPOLI: 85, RN: 95, UDI: 98, PSC: 95, PREP: 100, PNL: 100, IND: 60 },
-          impactOnMetrics: { gdp: 0.6, inflation: 0.1, crime: 0.0, unemployment: -0.3, tension: 3.0 }
-        },
-
-        // =========================================================================
-        // 12. AGENDA VALÓRICA Y MACROZONA SUR
-        // =========================================================================
-        {
-          id: 'val_1',
-          name: 'Desmilitarización de Macrozona Sur, Devolución Masiva de Tierras y Género Transversal',
-          category: '12. Agenda Valórica y Macrozona Sur',
-          issue: 'Valórica / Sur',
-          ideologyVector: { econ: -60, social: 90, authority: -60 },
-          costFiscal: 400000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 100, FA: 90, PS: 40, PPD: 20, DC: -20, AMARILLOS: -75, DEM: -85, PDG: -65, EVOPOLI: -70, RN: -95, UDI: -100, PSC: -100, PREP: -100, PNL: -30, IND: -10 },
-          impactOnMetrics: { gdp: -0.3, inflation: 0.1, crime: 3.0, unemployment: 0.1, tension: 8.0 }
-        },
-        {
-          id: 'val_2',
-          name: 'Reconocimiento Constitucional Indígena, Aborto Legal y Eutanasia Voluntaria',
-          category: '12. Agenda Valórica y Macrozona Sur',
-          issue: 'Valórica / Sur',
-          ideologyVector: { econ: -20, social: 80, authority: -10 },
-          costFiscal: 90000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 90, FA: 95, PS: 90, PPD: 85, DC: 40, AMARILLOS: 45, DEM: 40, PDG: 30, EVOPOLI: 50, RN: -40, UDI: -75, PSC: -100, PREP: -95, PNL: 20, IND: 40 },
-          impactOnMetrics: { gdp: 0.0, inflation: 0.0, crime: 0.0, unemployment: 0.0, tension: 2.0 }
-        },
-        {
-          id: 'val_3',
-          name: 'Comisión de Paz y Entendimiento con Indemnización a Víctimas y Diálogo Intercultural',
-          category: '12. Agenda Valórica y Macrozona Sur',
-          issue: 'Valórica / Sur',
-          ideologyVector: { econ: 0, social: 30, authority: 20 },
-          costFiscal: 300000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: 40, FA: 75, PS: 85, PPD: 90, DC: 95, AMARILLOS: 90, DEM: 90, PDG: 80, EVOPOLI: 85, RN: 70, UDI: 60, PSC: 50, PREP: 35, PNL: 10, IND: 75 },
-          impactOnMetrics: { gdp: 0.2, inflation: 0.0, crime: -2.5, unemployment: 0.0, tension: -4.0 }
-        },
-        {
-          id: 'val_4',
-          name: 'Ley Antiterrorista Dura en Macrozona Sur, Libertad Religiosa y Protección de la Familia',
-          category: '12. Agenda Valórica y Macrozona Sur',
-          issue: 'Valórica / Sur',
-          ideologyVector: { econ: 30, social: -70, authority: 75 },
-          costFiscal: 350000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -80, FA: -65, PS: 0, PPD: 30, DC: 60, AMARILLOS: 80, DEM: 85, PDG: 85, EVOPOLI: 85, RN: 98, UDI: 100, PSC: 100, PREP: 100, PNL: 60, IND: 65 },
-          impactOnMetrics: { gdp: 0.3, inflation: 0.0, crime: -4.5, unemployment: 0.0, tension: 2.0 }
-        },
-        {
-          id: 'val_5',
-          name: 'Operativo Militar Total en Macrozona Sur y Derogación de Toda Agenda de Género',
-          category: '12. Agenda Valórica y Macrozona Sur',
-          issue: 'Valórica / Sur',
-          ideologyVector: { econ: 40, social: -95, authority: 95 },
-          costFiscal: 500000,
-          targetGSE: 'Transversal',
-          partyStances: { PC: -100, FA: -100, PS: -80, PPD: -60, DC: -45, AMARILLOS: -20, DEM: 15, PDG: 45, EVOPOLI: 20, RN: 85, UDI: 95, PSC: 100, PREP: 100, PNL: 40, IND: 30 },
-          impactOnMetrics: { gdp: 0.1, inflation: 0.0, crime: -6.0, unemployment: 0.0, tension: 9.0 }
-        }
+        { id: 'p1', name: 'Militarización de Infraestructura Crítica y Fronteras', issue: 'Seguridad', deltaCrime: -8.0, deltaTension: 3.0 },
+        { id: 'p2', name: 'Cárceles de Alta Seguridad y Aislamiento de Bandas', issue: 'Seguridad', deltaCrime: -7.5, deltaTension: 1.0 },
+        { id: 'p3', name: 'Expulsión Administrativa Express en 48 Horas de Irregulares', issue: 'Seguridad', deltaCrime: -5.0, deltaTension: 4.0 },
+        { id: 'p4', name: 'Rebaja del Impuesto Corporativo a 23% para Inversión', issue: 'Economía', deltaGrowth: 0.6, deltaTension: -1.0 },
+        { id: 'p5', name: 'Fast-Track de Permisología para Grandes Proyectos', issue: 'Economía', deltaGrowth: 0.5, deltaTension: -2.0 },
+        { id: 'p6', name: 'Sueldo Mínimo de $650.000 con Subsidio Estatal a PyMEs', issue: 'Economía', deltaGrowth: -0.3, deltaTension: -4.0 },
+        { id: 'p7', name: '6% Previsional Completo a Cuentas Individuales Heredables', issue: 'Pensiones', deltaGrowth: 0.3, deltaTension: 2.0 },
+        { id: 'p8', name: 'Fondo Solidario Mixto Estatal para Pensiones', issue: 'Pensiones', deltaGrowth: -0.2, deltaTension: -5.0 },
+        { id: 'p9', name: 'Plan Cero Listas de Espera en Salud con Derivación AUGE', issue: 'Salud', deltaApproval: 4.0, deltaTension: -4.0 }
       ];
-
-      // Mapeo retrocompatible para IDs antiguos si existían
-      const POLICY_ALIAS_MAP = {
-        'p1': 'sec_4', 'p2': 'sec_4', 'p3': 'mig_4', 'p4': 'eco_4', 'p5': 'amb_4',
-        'p6': 'tra_2', 'p7': 'prev_4', 'p8': 'prev_2', 'p9': 'sal_3'
-      };
-      window.resolvePolicy = function(id) {
-        const resolvedId = POLICY_ALIAS_MAP[id] || id;
-        return POLICIES_CATALOG.find(p => p.id === resolvedId) || POLICIES_CATALOG[0];
-      };
-
 
       // =========================================================================
       // CATÁLOGO DE ASESORES Y STAFF DE CAMPAÑA
@@ -2328,272 +1485,6 @@
       ];
 
       // =========================================================================
-      // TABLA SALARIAL Y DIETAS INSTITUCIONALES (CLP / SEMANA)
-      // =========================================================================
-      const SALARY_TABLE = {
-        none: 0,
-        concejal: 250000,
-        alcalde: 1250000,
-        diputado: 1800000,
-        gobernador: 1500000,
-        senador: 1800000,
-        presidente: 2200000
-      };
-
-      // =========================================================================
-      // GENERADOR PROCEDURAL DE 120 POLÍTICOS CHILENOS AUTÉNTICOS
-      // =========================================================================
-      function generateChileanPoliticians() {
-        const firstNames = [
-          'Carlos', 'Rodrigo', 'Mauricio', 'Patricia', 'Andrea', 'Gonzalo', 'Marcela', 'Cristián', 
-          'Francisco', 'Ximena', 'Ignacio', 'Paulina', 'Sebastián', 'Claudia', 'Felipe', 'Daniela', 
-          'Andrés', 'María José', 'Juan Antonio', 'Catalina', 'Álvaro', 'Valentina', 'Jaime', 'Loreto', 
-          'Matías', 'Javiera', 'Jorge', 'Constanza', 'Ricardo', 'Natalia', 'Hernán', 'Alejandra',
-          'Tomás', 'Macarena', 'Diego', 'Camila', 'Evelyn', 'Gabriel', 'Mario', 'Carmen', 'Esteban', 'Paula', 'Sergio'
-        ];
-
-        const lastNames = [
-          'González', 'Muñoz', 'Rojas', 'Díaz', 'Pérez', 'Soto', 'Contreras', 'Silva', 
-          'Martínez', 'Sepúlveda', 'Morales', 'Rodríguez', 'López', 'Fuentes', 'Hernández', 'Torres', 
-          'Araya', 'Flores', 'Espinoza', 'Valenzuela', 'Castillo', 'Tapia', 'Reyes', 'Gutiérrez', 
-          'Castro', 'Pizarro', 'Álvarez', 'Vásquez', 'Sánchez', 'Carrasco', 'Gómez', 'Cortés', 
-          'Herrera', 'Núñez', 'Jara', 'Vergara', 'Rivera', 'Figueroa', 'Miranda', 'Bravo'
-        ];
-
-        const partyList = ['PC', 'FA', 'PS', 'PPD', 'DC', 'DEM', 'AMARILLOS', 'EVOPOLI', 'RN', 'UDI', 'PREP', 'PSC', 'PNL', 'PDG', 'IND'];
-        const offices = ['Diputado/a', 'Senador/a', 'Alcalde/Alcaldesa', 'Concejal/a', 'Gobernador/a', 'Dirigente'];
-        const regions = Object.keys(CHILE_GEO);
-
-        const politicians = [
-          { id: 'pol_boric', name: 'Gabriel Boric Font', party: 'FA', office: 'Presidente de la República', region: 'rm', district: 'Distrito 10', commune: 'Santiago Centro', age: 38, econ: -55, rel: 50, app: 32, retired: false },
-          { id: 'pol_vallejo', name: 'Camila Vallejo Dowling', party: 'PC', office: 'Ministra Vocera', region: 'rm', district: 'Distrito 12', commune: 'La Florida', age: 36, econ: -75, rel: 45, app: 41, retired: false },
-          { id: 'pol_vodanovic', name: 'Tomás Vodanovic Escudero', party: 'FA', office: 'Alcalde de Maipú', region: 'rm', district: 'Distrito 8', commune: 'Maipú', age: 34, econ: -30, rel: 70, app: 62, retired: false },
-          { id: 'pol_matthei', name: 'Evelyn Matthei Fornet', party: 'UDI', office: 'Alcaldesa de Providencia', region: 'rm', district: 'Distrito 10', commune: 'Providencia', age: 71, econ: 60, rel: 40, app: 64, retired: false },
-          { id: 'pol_kast', name: 'José Antonio Kast Rist', party: 'PREP', office: 'Líder Opositor', region: 'rm', district: 'Distrito 14', commune: 'San Bernardo', age: 58, econ: 85, rel: 30, app: 46, retired: false },
-          { id: 'pol_desbordes', name: 'Mario Desbordes Jiménez', party: 'RN', office: 'Alcalde de Santiago', region: 'rm', district: 'Distrito 10', commune: 'Santiago Centro', age: 56, econ: 45, rel: 55, app: 52, retired: false },
-          { id: 'pol_orrego', name: 'Claudio Orrego Larraín', party: 'IND', office: 'Gobernador Regional RM', region: 'rm', district: 'Distrito 10', commune: 'Santiago Centro', age: 57, econ: 10, rel: 65, app: 58, retired: false },
-          { id: 'pol_ripamonti', name: 'Macarena Ripamonti Serrano', party: 'FA', office: 'Alcaldesa de Viña del Mar', region: 'valpo', district: 'Distrito 7', commune: 'Viña del Mar', age: 33, econ: -40, rel: 50, app: 55, retired: false },
-          { id: 'pol_mirosevic', name: 'Vlado Mirosevic Verdugo', party: 'IND', office: 'Diputado de la República', region: 'antofagasta', district: 'Distrito 3', commune: 'Antofagasta', age: 37, econ: -10, rel: 60, app: 48, retired: false },
-          { id: 'pol_rincon', name: 'Ximena Rincón González', party: 'DEM', office: 'Senadora de la República', region: 'maule', district: 'Distrito 17', commune: 'Talca', age: 56, econ: 25, rel: 50, app: 45, retired: false },
-          { id: 'pol_macaya', name: 'Javier Macaya Danús', party: 'UDI', office: 'Senador de la República', region: 'maule', district: 'Distrito 18', commune: 'Linares', age: 45, econ: 65, rel: 40, app: 35, retired: false },
-          { id: 'pol_kaiser', name: 'Johannes Kaiser Barents-von Hohenhagen', party: 'PNL', office: 'Diputado de la República', region: 'rm', district: 'Distrito 10', commune: 'Ñuñoa', age: 48, econ: 90, rel: 25, app: 40, retired: false }
-        ];
-
-        let idCounter = 13;
-        while (politicians.length < 120) {
-          const fn = firstNames[Math.floor(Math.random() * firstNames.length)];
-          const ln = lastNames[Math.floor(Math.random() * lastNames.length)];
-          const fullName = `${fn} ${ln}`;
-
-          if (politicians.some(p => p.name === fullName)) continue;
-
-          const pParty = partyList[Math.floor(Math.random() * partyList.length)];
-          const pOffice = offices[Math.floor(Math.random() * offices.length)];
-          const pReg = regions[Math.floor(Math.random() * regions.length)];
-          const distKeys = Object.keys(CHILE_GEO[pReg]?.districts || {});
-          const pDist = distKeys.length > 0 ? distKeys[Math.floor(Math.random() * distKeys.length)] : 'Distrito 8';
-          const commList = CHILE_GEO[pReg]?.districts[pDist]?.communes || ['Maipú'];
-          const pComm = commList[Math.floor(Math.random() * commList.length)];
-          const age = 24 + Math.floor(Math.random() * 54);
-
-          let baseEcon = 0;
-          if (['PC', 'FA', 'PS', 'PPD'].includes(pParty)) baseEcon = -30 - Math.floor(Math.random() * 50);
-          else if (['DC', 'DEM', 'AMARILLOS', 'PDG'].includes(pParty)) baseEcon = -15 + Math.floor(Math.random() * 30);
-          else if (['EVOPOLI', 'RN', 'UDI'].includes(pParty)) baseEcon = 30 + Math.floor(Math.random() * 40);
-          else if (['PREP', 'PSC', 'PNL'].includes(pParty)) baseEcon = 60 + Math.floor(Math.random() * 35);
-          else baseEcon = -20 + Math.floor(Math.random() * 40);
-
-          politicians.push({
-            id: `npc_pol_${idCounter++}`,
-            name: fullName,
-            party: pParty,
-            office: pOffice,
-            region: pReg,
-            district: pDist,
-            commune: pComm,
-            age: age,
-            econ: baseEcon,
-            rel: 40 + Math.floor(Math.random() * 25),
-            app: 25 + Math.floor(Math.random() * 45),
-            retired: false
-          });
-        }
-
-        return politicians;
-      }
-
-      // =========================================================================
-      // CATÁLOGO DE 15 EVENTOS POLÍTICOS NACIONALES AUTÉNTICOS
-      // =========================================================================
-      const NATIONAL_EVENTS = [
-        {
-          id: 'ev_luz',
-          title: 'Alza de Cuentas de la Luz e Inflación Energética',
-          source: 'Diario Financiero',
-          desc: 'El descongelamiento de tarifas eléctricas golpea el bolsillo de los hogares con un aumento de hasta 25% en las boletas. La oposición exige subsidios universales mientras el gobierno busca recursos.',
-          options: [
-            { text: 'Exigir subsidio eléctrico ampliado para el 60% más vulnerable', deltaApp: 3.5, deltaTension: -2, deltaFunds: 0, deltaPP: 2, news: 'Exiges subsidios ampliados ante el tarifazo eléctrico.' },
-            { text: 'Criticar la ineficiencia estatal y pedir desregulación del mercado', deltaApp: -1.0, deltaTension: 3, deltaFunds: 500000, deltaPP: 1, news: 'Apuntas a fallas regulatorias en la matriz eléctrica.' },
-            { text: 'Mantener silencio institucional y evitar el debate mediático', deltaApp: -2.0, deltaTension: 0, deltaFunds: 0, deltaPP: 0, news: 'Guardas cautela ante la crisis de tarifas energéticas.' }
-          ]
-        },
-        {
-          id: 'ev_profesores',
-          title: 'Paro Nacional del Colegio de Profesores por Deuda Histórica',
-          source: 'La Tercera',
-          desc: 'Miles de docentes marchan por la Alameda exigiendo el pago de la Deuda Histórica y mejoras urgentes en infraestructura escolar. Las salas de clases permanecen cerradas.',
-          options: [
-            { text: 'Apoyar públicamente la movilización docente y sus demandas', deltaApp: 4.0, deltaTension: 2, deltaFunds: 0, deltaPP: 2, news: 'Te sumas al respaldo docente por la Deuda Histórica.' },
-            { text: 'Exigir retorno inmediato a clases por el daño a los estudiantes', deltaApp: 1.5, deltaTension: 1, deltaFunds: 250000, deltaPP: 1, news: 'Priorizas la continuidad de clases frente al paro docente.' },
-            { text: 'Proponer una mesa técnica de pago gradual a 10 años', deltaApp: 2.5, deltaTension: -3, deltaFunds: 0, deltaPP: 3, news: 'Planteas fórmula de consenso financiero para los profesores.' }
-          ]
-        },
-        {
-          id: 'ev_convenios',
-          title: 'Formalizaciones Judiciales en Caso Convenios / Fundaciones',
-          source: 'Emol',
-          desc: 'El Ministerio Público amplía formalizaciones por fraude al fisco y tráfico de influencias en convenios directos entre seremis y fundaciones políticas.',
-          options: [
-            { text: 'Pedir destituciones inmediatas y querellas criminales caiga quien caiga', deltaApp: 5.0, deltaTension: 4, deltaFunds: 0, deltaPP: 3, news: 'Arremetes con querellas implacables por el Caso Convenios.' },
-            { text: 'Llamar a respetar la presunción de inocencia y el debido proceso', deltaApp: -4.0, deltaTension: -1, deltaFunds: 0, deltaPP: -1, news: 'Pides mesura ante las formalizaciones judiciales.' },
-            { text: 'Presentar paquete de probidad para prohibir asignaciones directas', deltaApp: 4.5, deltaTension: -2, deltaFunds: 0, deltaPP: 4, news: 'Lideras agenda anticorrupción contra asignaciones a dedo.' }
-          ]
-        },
-        {
-          id: 'ev_seguridad',
-          title: 'Ataques y Estado de Excepción en la Macrozona Sur',
-          source: 'Radio Bío Bío',
-          desc: 'Nuevos atentados a maquinaria forestal y cortes de ruta en La Araucanía reactivan el debate sobre endurecer el Estado de Excepción Constitucional.',
-          options: [
-            { text: 'Exigir Estado de Sitio y uso pleno de la fuerza militar', deltaApp: 3.5, deltaTension: 5, deltaFunds: 400000, deltaPP: 2, news: 'Exiges mano dura y despliegue militar en la Macrozona Sur.' },
-            { text: 'Fomentar la Comisión para la Paz y Entendimiento territorial', deltaApp: 2.0, deltaTension: -4, deltaFunds: 0, deltaPP: 3, news: 'Apuestas por el diálogo y solución política en el sur.' },
-            { text: 'Solicitar mayores fondos y blindaje para Carabineros de Chile', deltaApp: 4.0, deltaTension: 1, deltaFunds: 200000, deltaPP: 2, news: 'Respaldas recursos y atribuciones policiales.' }
-          ]
-        },
-        {
-          id: 'ev_incendios',
-          title: 'Alerta Roja por Megaincendios Forestales en Zonas Pobladas',
-          source: '24 Horas',
-          desc: 'Olas de calor extremas desatan incendios en interfaz urbano-forestal. Cientos de brigadistas de CONAF y Bomberos combaten las llamas.',
-          options: [
-            { text: 'Desplegar a tus voluntarios como brigada de acopio y ayuda vecinal', deltaApp: 6.0, deltaTension: -3, deltaFunds: -300000, deltaPP: 4, news: 'Tus brigadas apoyan intensamente en el acopio por incendios.' },
-            { text: 'Exigir tipificar como delito antiterrorista la intencionalidad del fuego', deltaApp: 3.0, deltaTension: 2, deltaFunds: 0, deltaPP: 2, news: 'Pides penas de cárcel máxima para pirómanos intencionales.' },
-            { text: 'Proponer subsidio municipal directo de reconstrucción habitacional', deltaApp: 3.5, deltaTension: -2, deltaFunds: -100000, deltaPP: 2, news: 'Presentas plan de subsidios para damnificados.' }
-          ]
-        },
-        {
-          id: 'ev_cobre',
-          title: 'Récord Histórico del Cobre en Londres: US$ 4.90 / lb',
-          source: 'Pulso',
-          desc: 'La demanda mundial de minerales críticos para la transición energética dispara el precio del cobre chileno, otorgando holguras fiscales a Hacienda.',
-          options: [
-            { text: 'Exigir inyectar los excedentes al Fondo de Reserva de Pensiones', deltaApp: 4.5, deltaTension: -3, deltaFunds: 0, deltaPP: 3, news: 'Pides blindar pensiones con excedentes del cobre.' },
-            { text: 'Proponer destinarlo a gasto en seguridad e infraestructura carcelaria', deltaApp: 4.0, deltaTension: 1, deltaFunds: 0, deltaPP: 2, news: 'Propones destinar la renta cuprífera a seguridad ciudadana.' },
-            { text: 'Exigir rebaja de impuestos generales a familias y pymes', deltaApp: 2.5, deltaTension: -1, deltaFunds: 300000, deltaPP: 1, news: 'Planteas alivio tributario financiado con el boom del cobre.' }
-          ]
-        },
-        {
-          id: 'ev_salud',
-          title: 'Colapso de Listas de Espera en Hospitales Públicos',
-          source: 'El Mercurio',
-          desc: 'Informe oficial revela que más de 30.000 personas fallecieron esperando una atención de especialista o cirugía no GES en el sistema público.',
-          options: [
-            { text: 'Exigir convenio público-privado de emergencia para operar de inmediato', deltaApp: 5.5, deltaTension: -2, deltaFunds: 0, deltaPP: 3, news: 'Exiges clínicas privadas para desatascar listas de espera.' },
-            { text: 'Pedir inyección masiva al presupuesto hospitalario y más médicos especialistas', deltaApp: 3.5, deltaTension: -1, deltaFunds: 0, deltaPP: 2, news: 'Pides más médicos y presupuesto para hospitales del Estado.' },
-            { text: 'Acusar negligencia en la gestión del Ministerio de Salud', deltaApp: 2.0, deltaTension: 3, deltaFunds: 0, deltaPP: 1, news: 'Cuestionas fuertemente la conducción sanitaria ministerial.' }
-          ]
-        },
-        {
-          id: 'ev_pensiones',
-          title: 'Tensa Negociación del 6% Previsional en el Senado',
-          source: 'CNN Chile',
-          desc: 'El debate entre solidaridad intergeneracional y cuentas individuales heredables entrampa la reforma previsional en la Comisión de Trabajo.',
-          options: [
-            { text: 'Defender que el 6% completo vaya a cuentas individuales de los trabajadores', deltaApp: 3.5, deltaTension: 2, deltaFunds: 300000, deltaPP: 2, news: 'Respaldas propiedad absoluta de los fondos previsionales.' },
-            { text: 'Apoyar fórmula 3% y 3% con componente solidario y PGU fuerte', deltaApp: 4.0, deltaTension: -4, deltaFunds: 0, deltaPP: 4, news: 'Empujas acuerdo pragmático 3% y 3% en pensiones.' },
-            { text: 'Exigir fin inmediato a las AFP y reparto solidario completo', deltaApp: 1.5, deltaTension: 4, deltaFunds: 0, deltaPP: 1, news: 'Mantienes postura intransigente contra las AFP.' }
-          ]
-        },
-        {
-          id: 'ev_suprema',
-          title: 'Polémica Constitucional por Tráfico de Influencias en Tribunales',
-          source: 'The Clinic',
-          desc: 'Filtración de chats entre abogados penalistas y jueces de la Corte Suprema desata acusaciones constitucionales simultáneas en el Congreso Nacional.',
-          options: [
-            { text: 'Votar a favor de destituir a cualquier ministro involucrado en tráfico de influencias', deltaApp: 6.0, deltaTension: -1, deltaFunds: 0, deltaPP: 4, news: 'Votas a favor de destituir jueces comprometidos con el lobby.' },
-            { text: 'Llamar a prudencia para evitar una crisis entre los poderes del Estado', deltaApp: -3.0, deltaTension: 1, deltaFunds: 0, deltaPP: 1, news: 'Pides resguardar la estabilidad de los poderes públicos.' },
-            { text: 'Presentar ley para crear un Consejo Judicial independiente de nombramientos', deltaApp: 5.0, deltaTension: -3, deltaFunds: 0, deltaPP: 5, news: 'Presentas reforma de nombramientos judiciales transparentes.' }
-          ]
-        },
-        {
-          id: 'ev_temporales',
-          title: 'Inundaciones y Corte de Puentes por Temporal Centro-Sur',
-          source: 'Meganoticias',
-          desc: 'Ríos Maule y Cachapoal desbordan sus caudales inundando sembradíos y caminos vecinales. Alcaldes piden recursos de emergencia inmediatos.',
-          options: [
-            { text: 'Viajar a terreno con brigadistas y canalizar sacos de arena y alimentos', deltaApp: 5.0, deltaTension: -2, deltaFunds: -250000, deltaPP: 3, news: 'Te despliegas en terreno junto a damnificados por temporales.' },
-            { text: 'Exigir obras públicas estructurales de defensas fluviales y dragado', deltaApp: 2.5, deltaTension: 0, deltaFunds: 0, deltaPP: 2, news: 'Exiges obras definitivas de encauzamiento fluvial.' },
-            { text: 'Gestionar donaciones de empresas locales para la reconstrucción', deltaApp: 3.5, deltaTension: -1, deltaFunds: 350000, deltaPP: 2, news: 'Coordinas aportes privados de emergencia para el temporal.' }
-          ]
-        },
-        {
-          id: 'ev_frontera',
-          title: 'Operativo Especial contra el Crimen Organizado en Colchane',
-          source: 'Radio Cooperativa',
-          desc: 'Carabineros y FF.AA. desbaratan célula de banda internacional en pasos no habilitados de la frontera norte de Chile.',
-          options: [
-            { text: 'Felicitar el actuar policial y exigir zanja reforzada y cámaras térmicas', deltaApp: 4.0, deltaTension: 1, deltaFunds: 200000, deltaPP: 2, news: 'Celebras el operativo y pides sellado técnico de fronteras.' },
-            { text: 'Exigir reconducción inmediata sin trámites a países limítrofes', deltaApp: 3.0, deltaTension: 3, deltaFunds: 0, deltaPP: 2, news: 'Exiges expulsión expedita de bandas transfronterizas.' },
-            { text: 'Pedir cumbre diplomática regional con Bolivia y Perú', deltaApp: 1.5, deltaTension: -2, deltaFunds: 0, deltaPP: 2, news: 'Propones coordinación diplomática con países vecinos.' }
-          ]
-        },
-        {
-          id: 'ev_interior',
-          title: 'Moción de Censura en la Cámara Baja contra Ministro de Estado',
-          source: 'La Segunda',
-          desc: 'Bancadas de oposición impulsan acusación constitucional contra el jefe de gabinete acusando abandono de deberes en orden público.',
-          options: [
-            { text: 'Alinear a tu bloque para votar la censura y forzar la caída del ministro', deltaApp: 3.0, deltaTension: 4, deltaFunds: 0, deltaPP: 2, news: 'Promueves la destitución del ministro en la Cámara.' },
-            { text: 'Rechazar la acusación considerándola una vendetta política estéril', deltaApp: 1.0, deltaTension: -3, deltaFunds: 0, deltaPP: 2, news: 'Rechazas el uso abusivo de acusaciones constitucionales.' },
-            { text: 'Condicionar tu voto a un compromiso escrito de 10 medidas de seguridad', deltaApp: 5.0, deltaTension: -2, deltaFunds: 0, deltaPP: 4, news: 'Negocias exigencias concretas de seguridad a cambio de gobernabilidad.' }
-          ]
-        },
-        {
-          id: 'ev_permisologia',
-          title: 'Polémica por Freno de Proyectos de Inversión Verde',
-          source: 'El Mostrador',
-          desc: 'Comisión de Evaluación Ambiental rechaza megaparque eólico por observaciones técnicas, generando duro cruce entre carteras de Economía y Medio Ambiente.',
-          options: [
-            { text: 'Defender el rigor ambiental y la protección estricta de ecosistemas', deltaApp: 2.5, deltaTension: 1, deltaFunds: 0, deltaPP: 2, news: 'Respaldas estándares ambientales estrictos en proyectos.' },
-            { text: 'Exigir destrabar permisos y modernizar el SEA para dar certeza al empleo', deltaApp: 3.5, deltaTension: -2, deltaFunds: 350000, deltaPP: 2, news: 'Llamas a acelerar la inversión con reglas claras y empleo.' },
-            { text: 'Proponer ley marco de compensación directa a comunidades locales', deltaApp: 4.0, deltaTension: -3, deltaFunds: 0, deltaPP: 3, news: 'Planteas compensación económica directa para vecinos.' }
-          ]
-        },
-        {
-          id: 'ev_litio',
-          title: 'Cierre del Acuerdo Estratégico por el Litio en el Salar',
-          source: 'DF MAS',
-          desc: 'Codelco y SQM sellan la asociación público-privada que regirá la explotación de litio hasta el año 2060 en el Salar de Atacama.',
-          options: [
-            { text: 'Celebrar el acuerdo que asegura millonarios ingresos para el fisco', deltaApp: 3.0, deltaTension: -2, deltaFunds: 200000, deltaPP: 2, news: 'Valoras la asociación público-privada en el litio chileno.' },
-            { text: 'Criticar la falta de licitación pública internacional abierta', deltaApp: 2.0, deltaTension: 2, deltaFunds: 0, deltaPP: 1, news: 'Cuestionas la asignación directa en el contrato del litio.' },
-            { text: 'Exigir que un 10% de las rentas se queden en la Región de Antofagasta', deltaApp: 5.0, deltaTension: -1, deltaFunds: 0, deltaPP: 3, news: 'Exiges royalty regionalizado para comunidades mineras.' }
-          ]
-        },
-        {
-          id: 'ev_camioneros',
-          title: 'Paro Preventivo de Camioneros en Ruta 5 Sur',
-          source: 'T13',
-          desc: 'Conductores de camiones detienen máquinas en bermas exigiendo mayor resguardo policial y descanso seguro en autopistas interurbanas.',
-          options: [
-            { text: 'Respaldar las demandas de seguridad y exigir puntos seguros con cámaras', deltaApp: 4.0, deltaTension: 0, deltaFunds: 250000, deltaPP: 2, news: 'Respaldas descanso seguro para transportistas de carga.' },
-            { text: 'Exigir aplicación de Ley de Seguridad del Estado si se corta la ruta', deltaApp: 1.5, deltaTension: 3, deltaFunds: 0, deltaPP: 1, news: 'Adviertes sanciones si se vulnera el libre tránsito vial.' },
-            { text: 'Ofrecerte como mediador entre los gremios del transporte y el MOP', deltaApp: 3.5, deltaTension: -3, deltaFunds: 0, deltaPP: 3, news: 'Asumes rol mediador en la mesa de diálogo del transporte.' }
-          ]
-        }
-      ];
-
-      // =========================================================================
       // ESTADO GLOBAL MAESTRO DEL JUEGO (GAME_STATE)
       // =========================================================================
       let GAME_STATE = {
@@ -2608,16 +1499,7 @@
           region: 'rm',
           district: 'Distrito 8',
           commune: 'Maipú',
-          currentOffice: {
-            roleId: 'none',
-            roleLabel: 'Ciudadano sin Cargo',
-            territoryId: 'Maipú',
-            territoryLabel: 'Maipú',
-            startYear: 2024,
-            endYear: 2028,
-            consecutiveTerms: 0,
-            salaryWeekly: 0
-          },
+          currentOffice: 'Ciudadano sin Cargo',
           partyId: 'IND',
           partyName: 'Independiente Fuera de Pacto',
           faction: 'Ciudadano Independiente',
@@ -2635,52 +1517,29 @@
           approval: 52.0,
           corePolicies: ['p1', 'p4', 'p9'],
           activePactId: 'pact-ofic',
-          hiredStaffIds: [],
-          electionHistory: [],
-          declaredCandidacy: null
-        },
-        enthusiasm: {
-          left: 45,
-          center: 40,
-          right: 35,
-          ind: 42
+          hiredStaffIds: []
         },
         socialTension: 35,
         macroMetrics: {
           inflation: 3.8,
           gdpGrowth: 2.3,
           unemployment: 8.5,
-          victimizationRate: 58.0,
-          minimumWage: 500000,
-          copperPrice: 4.25
+          victimizationRate: 58.0
         },
         congress: {
-          activeChamber: 'diputados',
-          pendingBill: null,
-          lastVoteResult: null
+          activeChamber: 'diputados'
         },
         legislativeHistory: [
           { number: 'Ley N° 21.601', title: 'Ley Marco de Ciberseguridad e Infraestructura Crítica', date: 'Enero 2024', type: 'Simple', quorum: '88 / 155', yes: 88, no: 52, abs: 15, area: 'crime', impact: 'Victimización -3.2%, Certeza jurídica +1.5%' },
           { number: 'Ley N° 21.602', title: 'Ley de Alivio Tributario y Fomento a las PyMEs', date: 'Marzo 2024', type: 'Simple', quorum: '94 / 155', yes: 94, no: 41, abs: 20, area: 'taxes', impact: 'Crecimiento PIB +0.4%, Empleo formal +1.2%' }
         ],
-        politicians: generateChileanPoliticians(),
         newsFeed: [
           { date: 'Semana 1, 2024', source: 'SERVEL / Diario Oficial', title: 'Se abre el año electoral municipal y regional 2024 en todo el territorio chileno.' }
         ],
-        pollsHistory: [
-          { date: 'Semana 1, 2024', scope: 'Comunal (Maipú)', sample: 800, leadingCandidate: 'Tomás Vodanovic (58%)', playerPct: '25.0%', margin: '±3.4%' }
-        ],
         nextNationalEventWeek: 6,
         electionScrutiny: {
-          active: false,
-          progressPct: 0,
-          office: '',
-          territory: '',
-          candidates: [],
-          round: 1
-        },
-        staffStrike: false,
-        unpaidStaffWeeks: 0
+          progressPct: 0
+        }
       };
 
       // =========================================================================
@@ -2690,7 +1549,7 @@
       let p1SelectedParty = 'IND';
       let p1SelectedFaction = 'Ciudadano Independiente';
       let p1Attributes = { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
-      let p2SelectedPolicies = ['sec_4', 'eco_4', 'sal_3'];
+      let p2SelectedPolicies = ['p1', 'p4', 'p9'];
 
       window.adjustAttribute = function(attrKey, delta) {
         if (delta > 0 && p1AvailablePoints < delta) return;
@@ -2705,116 +1564,27 @@
         document.getElementById('p1-points-pool-disp').textContent = `Puntos Disponibles: ${p1AvailablePoints}`;
       };
 
-      // Modificadores de Ocupación / Oficio
-      const PROFESSION_MODIFIERS = {
-        'Estudiante Universitario': { funds: 500000, pp: 5, hours: 2, oratory: 5, charisma: 5, negotiation: 0, management: 0, volunteers: 30, recognition: 0, approval: 0, desc: '⚡ +$500k fondos | +2 hrs energía | +30 voluntarios | +5 Oratoria' },
-        'Líder Estudiantil': { funds: 800000, pp: 10, hours: 2, oratory: 10, charisma: 8, negotiation: 0, management: 0, volunteers: 50, recognition: 2, approval: 0, desc: '⚡ +$800k fondos | +10 PP | +2 hrs | +50 voluntarios | +10 Oratoria | +8 Carisma' },
-        'Dirigente Vecinal': { funds: 1200000, pp: 8, hours: 0, oratory: 0, charisma: 10, negotiation: 5, management: 5, volunteers: 40, recognition: 5, approval: 2, desc: '⚡ +$1.2M fondos | +40 voluntarios | +10 Carisma | +5% reconocimiento barrial' },
-        'Emprendedor Joven': { funds: 5000000, pp: 5, hours: 4, oratory: 0, charisma: 4, negotiation: 5, management: 8, volunteers: 15, recognition: 0, approval: 0, desc: '⚡ +$5.0M fondos | +4 hrs ejecutivas | +8 Gestión | +5 Negociación' },
-        'Activista Social': { funds: 600000, pp: 10, hours: 2, oratory: 8, charisma: 8, negotiation: 0, management: 0, volunteers: 60, recognition: 0, approval: 1, desc: '⚡ +$600k fondos | +10 PP | +2 hrs | +60 voluntarios | +8 Oratoria | +8 Carisma' },
-        'Feriante': { funds: 2500000, pp: 5, hours: 0, oratory: 0, charisma: 10, negotiation: 4, management: 6, volunteers: 25, recognition: 3, approval: 1, desc: '⚡ +$2.5M fondos | +10 Carisma | +6 Gestión | +25 voluntarios de base' },
-        'Abogado/a Constitucionalista': { funds: 8000000, pp: 15, hours: 0, oratory: 8, charisma: 0, negotiation: 12, management: 5, volunteers: 10, recognition: 2, approval: 0, desc: '⚡ +$8.0M fondos | +15 PP | +12 Negociación | +8 Oratoria | Litigación constitucional' },
-        'Ingeniero/a Comercial': { funds: 12000000, pp: 10, hours: 0, oratory: 0, charisma: 0, negotiation: 6, management: 12, volunteers: 15, recognition: 0, approval: 0, desc: '⚡ +$12.0M fondos | +12 Gestión | +6 Negociación | Donantes empresariales' },
-        'Economista': { funds: 10000000, pp: 10, hours: 0, oratory: 4, charisma: 0, negotiation: 8, management: 10, volunteers: 10, recognition: 0, approval: 0, desc: '⚡ +$10.0M fondos | +10 Gestión | +8 Negociación | Respaldo técnico transversal' },
-        'Médico/a Salubrista': { funds: 9000000, pp: 12, hours: 0, oratory: 0, charisma: 8, negotiation: 4, management: 8, volunteers: 20, recognition: 3, approval: 5, desc: '⚡ +$9.0M fondos | +12 PP | +5% aprobación ciudadana | +8 Carisma | +8 Gestión' },
-        'Profesor/a': { funds: 2000000, pp: 10, hours: 0, oratory: 10, charisma: 6, negotiation: 0, management: 4, volunteers: 35, recognition: 2, approval: 2, desc: '⚡ +$2.0M fondos | +10 PP | +35 voluntarios | +10 Oratoria pedagógica' },
-        'Administrador/a Público/a': { funds: 6000000, pp: 12, hours: 0, oratory: 0, charisma: 0, negotiation: 8, management: 14, volunteers: 15, recognition: 0, approval: 0, desc: '⚡ +$6.0M fondos | +14 Gestión | +8 Negociación | Probidad estatal' },
-        'Periodista': { funds: 3500000, pp: 8, hours: 0, oratory: 12, charisma: 8, negotiation: 4, management: 0, volunteers: 20, recognition: 8, approval: 0, desc: '⚡ +$3.5M fondos | +8% reconocimiento en medios | +12 Oratoria | +8 Carisma' }
-      };
-
-      // Modificadores de Etapa de Edad
-      window.getAgeBracketModifiers = function(age) {
-        if (age <= 22) {
-          return {
-            bracketLabel: 'Etapa 18-22 (Juventud y Activismo Estudiantil)',
-            hours: 68,
-            baseFunds: 3500000,
-            basePP: 15,
-            baseVolunteers: 80,
-            bonusRecog: 0,
-            bonusAttrs: { oratory: 8, charisma: 7, negotiation: 0, management: 0 },
-            desc: '⚡ Etapa Joven (18-22): 68 hrs semanales de energía • $3.5M fondos base • +8 Oratoria, +7 Carisma'
-          };
-        } else if (age <= 29) {
-          return {
-            bracketLabel: 'Etapa 23-29 (Profesional Joven / Trayectoria Inicial)',
-            hours: 64,
-            baseFunds: 8000000,
-            basePP: 20,
-            baseVolunteers: 100,
-            bonusRecog: 2,
-            bonusAttrs: { oratory: 4, charisma: 4, negotiation: 0, management: 4 },
-            desc: '⚡ Etapa 23-29: 64 hrs semanales de energía • $8.0M fondos base • 20 PP • Atributos equilibrados'
-          };
-        } else if (age <= 39) {
-          return {
-            bracketLabel: 'Etapa 30-39 (Madurez Intermedia y Consolidación)',
-            hours: 60,
-            baseFunds: 15000000,
-            basePP: 25,
-            baseVolunteers: 120,
-            bonusRecog: 4,
-            bonusAttrs: { oratory: 0, charisma: 0, negotiation: 6, management: 6 },
-            desc: '⚡ Etapa 30-39: 60 hrs semanales • $15M fondos base • 25 PP • +6 Negociación, +6 Gestión'
-          };
-        } else if (age <= 54) {
-          return {
-            bracketLabel: 'Etapa 40-54 (Consolidación Política y Directiva)',
-            hours: 56,
-            baseFunds: 28000000,
-            basePP: 35,
-            baseVolunteers: 150,
-            bonusRecog: 6,
-            bonusAttrs: { oratory: 0, charisma: 0, negotiation: 10, management: 10 },
-            desc: '⚡ Etapa 40-54: 56 hrs semanales • $28M fondos base • 35 PP • +10 Negociación, +10 Gestión • Red política amplia'
-          };
-        } else {
-          return {
-            bracketLabel: 'Etapa 55+ (Trayectoria Mayor y Notabilidad Pública)',
-            hours: 52,
-            baseFunds: 45000000,
-            basePP: 45,
-            baseVolunteers: 180,
-            bonusRecog: 10,
-            bonusAttrs: { oratory: 0, charisma: 5, negotiation: 12, management: 4 },
-            desc: '⚡ Etapa 55+: 52 hrs semanales • $45M fondos base • 45 PP • +12 Negociación • Máxima red de contactos y donantes'
-          };
-        }
-      };
-
       window.p1HandleAgeChange = function(val) {
         const age = parseInt(val);
         document.getElementById('p1-age-disp').textContent = `${age} años`;
         const box = document.getElementById('p1-age-status-box');
-        const bracket = window.getAgeBracketModifiers(age);
 
-        let legalText = '';
-        let colorClass = '';
         if (age < 21) {
-          legalText = '⚖️ Habilitado para: Concejal Municipal y Alcalde/Alcaldesa (18+ años)';
-          colorClass = 'text-amber-900 bg-amber-50 border-amber-200';
+          box.textContent = 'Habilitado para: Concejal Municipal y Alcalde/Alcaldesa (18+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-amber-900 bg-amber-50 p-2 rounded border border-amber-200 leading-tight';
         } else if (age < 35) {
-          legalText = '⚖️ Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional (21+ años)';
-          colorClass = 'text-blue-900 bg-blue-50 border-blue-200';
+          box.textContent = 'Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional (21+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight';
         } else {
-          legalText = '⚖️ Habilitado para TODOS los cargos: Incluye Senador y Presidente de la República (35+ años)';
-          colorClass = 'text-emerald-900 bg-emerald-50 border-emerald-200';
+          box.textContent = 'Habilitado para TODOS los cargos: Incluye Senador y Presidente de la República (35+ años)';
+          box.className = 'mt-1.5 text-[11px] font-mono text-emerald-900 bg-emerald-50 p-2 rounded border border-emerald-200 leading-tight';
         }
 
-        box.className = `mt-1.5 text-[11px] font-mono p-2 rounded border leading-tight ${colorClass}`;
-        box.innerHTML = `
-          <div class="font-bold mb-0.5">${legalText}</div>
-          <div class="text-[10px] text-stone-600">${bracket.desc}</div>
-        `;
-
         window.p1UpdateProfessions(age);
-        window.p1UpdateInitialOfficeOptions(age);
       };
 
       window.p1UpdateProfessions = function(age) {
         const sel = document.getElementById('p1-profession');
-        if (!sel) return;
-        const currentVal = sel.value;
         sel.innerHTML = '';
         const list = age < 23 
           ? ['Estudiante Universitario', 'Líder Estudiantil', 'Dirigente Vecinal', 'Emprendedor Joven', 'Activista Social', 'Feriante']
@@ -2826,66 +1596,16 @@
           opt.textContent = item;
           sel.appendChild(opt);
         });
-
-        if (currentVal && list.includes(currentVal)) {
-          sel.value = currentVal;
-        } else {
-          sel.value = list[0];
-        }
-
-        window.p1HandleProfessionChange(sel.value);
-      };
-
-      window.p1HandleProfessionChange = function(profName) {
-        const perkBox = document.getElementById('p1-profession-perk-box');
-        if (!perkBox) return;
-        const mod = PROFESSION_MODIFIERS[profName];
-        if (mod) {
-          perkBox.innerHTML = `<strong>Bonos de ${profName}:</strong> ${mod.desc}`;
-        }
-      };
-
-      window.p1UpdateInitialOfficeOptions = function(age) {
-        const sel = document.getElementById('p2-initial-office');
-        if (!sel) return;
-
-        const offices = [
-          { val: 'none', label: 'Ciudadano sin Cargo (Recomendado - Carrera política desde cero)', minAge: 18 },
-          { val: 'concejal', label: 'Concejal Municipal (Requiere 18+ años)', minAge: 18 },
-          { val: 'alcalde', label: 'Alcalde/Alcaldesa (Requiere 18+ años)', minAge: 18 },
-          { val: 'diputado', label: 'Diputado/a de la República (Requiere 21+ años)', minAge: 21 },
-          { val: 'gobernador', label: 'Gobernador/a Regional (Requiere 21+ años)', minAge: 21 },
-          { val: 'senador', label: 'Senador/a de la República (Requiere 35+ años)', minAge: 35 },
-          { val: 'presidente', label: 'Presidente/a de la República (Requiere 35+ años)', minAge: 35 }
-        ];
-
-        const prevVal = sel.value;
-        sel.innerHTML = '';
-        offices.forEach(o => {
-          const opt = document.createElement('option');
-          opt.value = o.val;
-          if (age < o.minAge) {
-            opt.textContent = `${o.label} [Inhabilitado por edad]`;
-            opt.disabled = true;
-          } else {
-            opt.textContent = o.label;
-          }
-          sel.appendChild(opt);
-        });
-
-        const available = offices.find(o => o.val === prevVal && age >= o.minAge);
-        sel.value = available ? prevVal : 'none';
       };
 
       window.p1RandomName = function() {
-        const f = ['Gabriel', 'Tomás', 'Claudio', 'Rodrigo', 'Sebastián', 'Camila', 'Evelyn', 'Carolina', 'Macarena', 'Diego', 'Matías', 'Daniela', 'Marcela', 'Francisco'];
-        const l = ['Silva', 'Vodanovic', 'Orrego', 'Vallejo', 'Matthei', 'Boric', 'Desbordes', 'Kast', 'Ripamonti', 'Jackson', 'Soto', 'González', 'Muñoz', 'Rojas'];
+        const f = ['Gabriel', 'Tomás', 'Claudio', 'Rodrigo', 'Sebastián', 'Camila', 'Evelyn', 'Carolina', 'Macarena', 'Diego', 'Matías'];
+        const l = ['Silva', 'Vodanovic', 'Orrego', 'Vallejo', 'Matthei', 'Boric', 'Desbordes', 'Kast', 'Ripamonti', 'Jackson', 'Soto'];
         document.getElementById('p1-name').value = `${f[Math.floor(Math.random() * f.length)]} ${l[Math.floor(Math.random() * l.length)]}`;
       };
 
       window.p1RenderParties = function() {
         const grid = document.getElementById('p1-parties-grid');
-        if (!grid) return;
         grid.innerHTML = '';
 
         CHILE_PARTIES.forEach(p => {
@@ -2915,14 +1635,12 @@
 
       window.p1RenderFactions = function(party) {
         const grid = document.getElementById('p1-factions-grid');
-        if (!grid) return;
         grid.innerHTML = '';
-        const factions = party?.factions || ['Sensibilidad Base'];
+        const factions = party.factions || ['Sensibilidad Base'];
         if (!p1SelectedFaction || !factions.includes(p1SelectedFaction)) {
           p1SelectedFaction = factions[0];
         }
-        const b = document.getElementById('p1-faction-badge');
-        if (b) b.textContent = p1SelectedFaction;
+        document.getElementById('p1-faction-badge').textContent = p1SelectedFaction;
 
         factions.forEach(f => {
           const isSel = (p1SelectedFaction === f);
@@ -2933,13 +1651,13 @@
               <span class="text-base">${isSel ? '✅' : '🚩'}</span>
               <div>
                 <strong class="block text-slate-900">${f}</strong>
-                <span class="text-[10px] text-stone-500 font-normal">Corriente interna en ${party?.id || 'Partido'}</span>
+                <span class="text-[10px] text-stone-500 font-normal">Corriente interna en ${party.id}</span>
               </div>
             </div>
           `;
           c.onclick = () => {
             p1SelectedFaction = f;
-            if (b) b.textContent = f;
+            document.getElementById('p1-faction-badge').textContent = f;
             window.p1RenderFactions(party);
           };
           grid.appendChild(c);
@@ -2957,14 +1675,9 @@
         }
         alertEl.classList.add('hidden');
 
-        // Preservar la cascada si el jugador ya eligió territorio
-        const regSelect = document.getElementById('p2-region');
-        if (!regSelect || !regSelect.value) {
-          window.p2InitTerritoryCascades();
-        }
-        window.p2RenderPresets();
+        // Inicializar cascada de la página 2
+        window.p2InitTerritoryCascades();
         window.p2RenderPoliciesCatalog();
-        window.p2UpdateIdeologySummary();
 
         document.getElementById('screen-page-1-identity').classList.add('hidden');
         document.getElementById('screen-page-2-territory').classList.remove('hidden');
@@ -2995,7 +1708,6 @@
 
       window.p2InitTerritoryCascades = function() {
         const regSelect = document.getElementById('p2-region');
-        if (!regSelect) return;
         regSelect.innerHTML = '<option value="" disabled selected>-- Selecciona una Región --</option>';
 
         for (const regKey in CHILE_GEO) {
@@ -3066,215 +1778,25 @@
         document.getElementById('p2-preview-domicile').innerHTML = `<strong class="text-blue-900">${commName}</strong> (${distKey}, ${CHILE_GEO[regKey]?.name})`;
       };
 
-      // =========================================================================
-      // PÁGINA 2: PRESETS PROGRAMÁTICOS, CATÁLOGO DE 60 POLÍTICAS Y AFINIDAD 15 PARTIDOS
-      // =========================================================================
-      let p2ActiveCategoryFilter = 'all';
-
-      const PROGRAMMATIC_PRESETS = [
-        {
-          id: 'preset_ofic',
-          name: 'Apruebo Dignidad / Izquierda',
-          shortLabel: 'Apruebo Dignidad',
-          policyIds: ['sec_2', 'prev_2', 'sal_1'],
-          color: '#DC2626',
-          desc: 'Seguridad institucional, 6% solidario previsional y fondo de salud universal'
-        },
-        {
-          id: 'preset_socdem',
-          name: 'Socialdemócrata / Reformista',
-          shortLabel: 'Socialdemocracia',
-          policyIds: ['eco_2', 'tra_3', 'sal_3'],
-          color: '#991B1B',
-          desc: 'Pacto fiscal progresivo, 40 horas con adaptabilidad y salud AUGE universal'
-        },
-        {
-          id: 'preset_centro',
-          name: 'Centro Republicano',
-          shortLabel: 'Centro Reformista',
-          policyIds: ['sec_3', 'eco_3', 'inst_4'],
-          color: '#2563EB',
-          desc: 'Vigilancia balística, responsabilidad fiscal estricta y umbral electoral 5%'
-        },
-        {
-          id: 'preset_cv',
-          name: 'Chile Vamos Liberal',
-          shortLabel: 'Chile Vamos',
-          policyIds: ['sec_4', 'eco_4', 'sal_4'],
-          color: '#1D4ED8',
-          desc: 'Cárceles de alta seguridad, rebaja tributaria 23% e ISAPRE con tarifa plana'
-        },
-        {
-          id: 'preset_rep',
-          name: 'Republicanos / Orden y Soberanía',
-          shortLabel: 'Republicano / Orden',
-          policyIds: ['sec_5', 'mig_4', 'val_4'],
-          color: '#172554',
-          desc: 'Estado de excepción permanente, expulsión express en 48 hrs y ley antiterrorista'
-        },
-        {
-          id: 'preset_lib',
-          name: 'Libertario Económico',
-          shortLabel: 'Libertario / Mercado',
-          policyIds: ['eco_5', 'tra_5', 'inst_5'],
-          color: '#0F172A',
-          desc: 'Flat tax del 15%, libertad contractual absoluta y recorte 30% del gasto fiscal'
-        },
-        {
-          id: 'preset_front',
-          name: 'Frontera y Defensa Firme',
-          shortLabel: 'Seguridad & Fronteras',
-          policyIds: ['sec_4', 'def_4', 'mig_4'],
-          color: '#047857',
-          desc: 'Cárceles cerradas, militares en frontera con RUF y expulsiones de irregulares'
-        },
-        {
-          id: 'preset_verde',
-          name: 'Ecologista y Desarrollo Social',
-          shortLabel: 'Social & Ecologista',
-          policyIds: ['amb_2', 'viv_2', 'sal_2'],
-          color: '#059669',
-          desc: 'Descarbonización con SBAP, emergencia habitacional SERVIU y hospitales públicos'
-        }
-      ];
-
-      window.p2RenderPresets = function() {
-        const container = document.getElementById('p2-presets-container');
-        if (!container) return;
-        container.innerHTML = '';
-
-        PROGRAMMATIC_PRESETS.forEach(preset => {
-          const isSelected = preset.policyIds.every(id => p2SelectedPolicies.includes(id));
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = `p-1.5 text-left rounded border transition cursor-pointer select-none ${
-            isSelected 
-              ? 'bg-blue-100 border-blue-700 text-blue-950 font-black shadow-xs ring-1 ring-blue-500' 
-              : 'bg-white hover:bg-stone-50 border-stone-300 text-stone-800'
-          }`;
-          btn.innerHTML = `
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${preset.color};"></span>
-              <span class="text-[11px] truncate font-bold">${preset.shortLabel}</span>
-            </div>
-          `;
-          btn.onclick = () => window.p2SelectPreset(preset.id);
-          container.appendChild(btn);
-        });
-      };
-
-      window.p2SelectPreset = function(presetId) {
-        const preset = PROGRAMMATIC_PRESETS.find(p => p.id === presetId);
-        if (!preset) return;
-        p2SelectedPolicies = [...preset.policyIds];
-        window.showToast('Preset Aplicado', `Has seleccionado la plataforma "${preset.name}".`, 'info');
-        window.p2RenderPresets();
-        window.p2RenderPoliciesCatalog();
-        window.p2UpdateIdeologySummary();
-      };
-
-      window.p2FilterPoliciesByCategory = function(catKey) {
-        p2ActiveCategoryFilter = catKey;
-        window.p2RenderPoliciesCatalog();
-      };
-
       window.p2RenderPoliciesCatalog = function() {
-        const catContainer = document.getElementById('p2-policies-catalog');
-        if (!catContainer) return;
-        catContainer.innerHTML = '';
+        const cat = document.getElementById('p2-policies-catalog');
+        cat.innerHTML = '';
 
-        // Selector de Categoría para navegar limpiamente las 12 dimensiones y 60 políticas
-        const filterBar = document.createElement('div');
-        filterBar.className = 'sticky top-0 bg-[#FAF8F5] pb-2 pt-1 border-b mb-2 z-10 flex items-center justify-between gap-2';
-        
-        const categories = [
-          'all',
-          '1. Seguridad y Crimen Organizado',
-          '2. Defensa y FF.AA.',
-          '3. Modelo Económico e Impuestos',
-          '4. Previsión Social (AFP vs Reparto/Mixto)',
-          '5. Trabajo y Sindicatos',
-          '6. Salud (FONASA/ISAPRE)',
-          '7. Educación y CAE',
-          '8. Institucionalidad y Descentralización',
-          '9. Migración y Fronteras',
-          '10. Medioambiente, Agua y Permisología',
-          '11. Vivienda, Urbanismo y Transporte',
-          '12. Agenda Valórica y Macrozona Sur'
-        ];
-
-        let selectHtml = `<select onchange="window.p2FilterPoliciesByCategory(this.value)" class="w-full p-1.5 border border-stone-400 bg-white rounded text-[11px] font-bold text-slate-800 cursor-pointer">`;
-        categories.forEach(c => {
-          const label = c === 'all' ? '🔍 Ver Todas las 12 Dimensiones (60 Políticas)' : c;
-          selectHtml += `<option value="${c}" ${p2ActiveCategoryFilter === c ? 'selected' : ''}>${label}</option>`;
-        });
-        selectHtml += `</select>`;
-        filterBar.innerHTML = selectHtml;
-        catContainer.appendChild(filterBar);
-
-        const listDiv = document.createElement('div');
-        listDiv.className = 'space-y-1.5';
-
-        const filtered = p2ActiveCategoryFilter === 'all' 
-          ? POLICIES_CATALOG 
-          : POLICIES_CATALOG.filter(p => p.category === p2ActiveCategoryFilter);
-
-        filtered.forEach(p => {
+        POLICIES_CATALOG.forEach(p => {
           const isChecked = p2SelectedPolicies.includes(p.id);
-          const row = document.createElement('div');
-          row.className = `p-2.5 border rounded cursor-pointer transition select-none flex items-start justify-between gap-2 ${
-            isChecked 
-              ? 'bg-blue-50/90 border-blue-600 shadow-xs ring-1 ring-blue-400' 
-              : 'bg-white hover:bg-stone-50 border-stone-200'
-          }`;
-
-          const econVal = p.ideologyVector?.econ || 0;
-          const authVal = p.ideologyVector?.authority || 0;
-          const econLabel = econVal > 20 ? `Derecha Eco (+${econVal})` : (econVal < -20 ? `Izquierda Eco (${econVal})` : 'Centro Eco');
-          const authLabel = authVal > 20 ? `Orden (+${authVal})` : (authVal < -20 ? `Libertad (${authVal})` : 'Equilibrio');
-
+          const row = document.createElement('label');
+          row.className = `p-2 border rounded flex items-center justify-between text-xs cursor-pointer ${isChecked ? 'bg-blue-50 border-blue-400 font-bold' : 'bg-white border-stone-200'}`;
           row.innerHTML = `
-            <div class="flex items-start gap-2.5 flex-1 min-w-0">
-              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window.p2TogglePolicy('${p.id}')" class="mt-0.5 cursor-pointer accent-blue-700" />
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="text-xs font-bold text-slate-900 leading-snug">${p.name}</span>
-                  <span class="text-[9px] font-mono px-1.5 py-0.5 bg-stone-100 text-stone-600 rounded border border-stone-300">${p.issue}</span>
-                </div>
-                <div class="mt-1 flex items-center gap-2 text-[10px] font-mono text-stone-500">
-                  <span>${econLabel}</span>
-                  <span>•</span>
-                  <span>${authLabel}</span>
-                  <span>•</span>
-                  <span class="text-stone-600">GSE: <strong>${p.targetGSE}</strong></span>
-                </div>
-              </div>
+            <div class="flex items-center gap-2">
+              <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="window.p2TogglePolicy('${p.id}')" class="cursor-pointer" />
+              <span>${p.name}</span>
             </div>
-            <div class="text-right shrink-0">
-              <span class="text-[10px] font-mono font-bold ${isChecked ? 'text-blue-900 bg-blue-100 px-2 py-0.5 rounded' : 'text-stone-400'}">
-                ${isChecked ? 'SELECCIONADA' : '+ Elegir'}
-              </span>
-            </div>
+            <span class="text-[10px] font-mono text-stone-500">${p.issue}</span>
           `;
-          row.onclick = (e) => {
-            if (e.target.tagName !== 'INPUT') {
-              window.p2TogglePolicy(p.id);
-            }
-          };
-          listDiv.appendChild(row);
+          cat.appendChild(row);
         });
 
-        catContainer.appendChild(listDiv);
-
-        const badge = document.getElementById('p2-policies-count-badge');
-        if (badge) {
-          badge.textContent = `${p2SelectedPolicies.length} / 3 Seleccionadas`;
-          badge.className = p2SelectedPolicies.length === 3 
-            ? 'text-xs font-mono font-bold px-2.5 py-0.5 bg-emerald-100 text-emerald-900 rounded border border-emerald-300'
-            : 'text-xs font-mono font-bold px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded border border-amber-300';
-        }
-
-        window.p2UpdateIdeologySummary();
+        document.getElementById('p2-policies-count-badge').textContent = `${p2SelectedPolicies.length} / 3 Seleccionadas`;
       };
 
       window.p2TogglePolicy = function(pid) {
@@ -3282,103 +1804,13 @@
           p2SelectedPolicies = p2SelectedPolicies.filter(id => id !== pid);
         } else {
           if (p2SelectedPolicies.length >= 3) {
-            window.showToast('Límite de 3 Políticas', 'Solo puedes elegir 3 políticas prioritarias. Deselecciona una para sumar otra.', 'warning');
+            alert('Solo puedes seleccionar exactamente 3 políticas prioritarias.');
+            window.p2RenderPoliciesCatalog();
             return;
           }
           p2SelectedPolicies.push(pid);
         }
-        window.p2RenderPresets();
         window.p2RenderPoliciesCatalog();
-      };
-
-      window.p2UpdateIdeologySummary = function() {
-        const resolvedPolicies = p2SelectedPolicies.map(id => window.resolvePolicy(id)).filter(Boolean);
-
-        // Vector promedio
-        let avgEcon = 0;
-        let avgAuth = 0;
-        let avgSocial = 0;
-
-        if (resolvedPolicies.length > 0) {
-          resolvedPolicies.forEach(p => {
-            avgEcon += p.ideologyVector?.econ || 0;
-            avgAuth += p.ideologyVector?.authority || 0;
-            avgSocial += p.ideologyVector?.social || 0;
-          });
-          avgEcon = Math.round(avgEcon / resolvedPolicies.length);
-          avgAuth = Math.round(avgAuth / resolvedPolicies.length);
-          avgSocial = Math.round(avgSocial / resolvedPolicies.length);
-        }
-
-        // Posicionamiento en el Compás 2D (Económico X: -100 Izq a +100 Der; Autoridad Y: +100 Arriba a -100 Abajo)
-        const dot = document.getElementById('p2-compass-dot');
-        if (dot) {
-          const pctX = ((avgEcon + 100) / 200) * 100;
-          const pctY = ((100 - avgAuth) / 200) * 100;
-          dot.style.left = `${Math.max(6, Math.min(94, pctX))}%`;
-          dot.style.top = `${Math.max(6, Math.min(94, pctY))}%`;
-        }
-
-        // Etiqueta de Orientación Programática
-        let orientationText = 'Centro Pragmatico';
-        if (avgEcon <= -50 && avgAuth >= 20) orientationText = 'Izquierda Estatal / Estatismo Fuerte';
-        else if (avgEcon <= -40) orientationText = 'Izquierda Transformadora / Progresista';
-        else if (avgEcon <= -10) orientationText = 'Socialdemocracia Reformista / Concertación';
-        else if (avgEcon <= 25 && avgAuth <= 10) orientationText = 'Centro Liberal Republicano';
-        else if (avgEcon <= 25) orientationText = 'Centro Democrático Institucional';
-        else if (avgEcon <= 65 && avgAuth >= 40) orientationText = 'Centro-Derecha / Orden y Crecimiento';
-        else if (avgEcon <= 65) orientationText = 'Derecha Liberal / Chile Vamos';
-        else if (avgAuth >= 50) orientationText = 'Derecha Conservadora / Soberanía Republicana';
-        else orientationText = 'Libertarismo Económico / Minarquismo';
-
-        const summaryTextEl = document.getElementById('p2-ideology-summary-text');
-        if (summaryTextEl) {
-          summaryTextEl.textContent = `${orientationText} (Econ: ${avgEcon > 0 ? '+' : ''}${avgEcon}, Orden: ${avgAuth > 0 ? '+' : ''}${avgAuth})`;
-        }
-
-        // Cálculo de Afinidad en Tiempo Real con los 15 Partidos Chilenos
-        const affinities = CHILE_PARTIES.map(party => {
-          let sumStance = 0;
-          if (resolvedPolicies.length > 0) {
-            resolvedPolicies.forEach(p => {
-              if (p.partyStances && p.partyStances[party.id] !== undefined) {
-                sumStance += p.partyStances[party.id];
-              }
-            });
-            const avgStance = sumStance / resolvedPolicies.length;
-            const pct = Math.round(Math.max(5, Math.min(99, (avgStance + 100) / 2)));
-            return { ...party, affinityPct: pct };
-          } else {
-            return { ...party, affinityPct: 50 };
-          }
-        });
-
-        affinities.sort((a, b) => b.affinityPct - a.affinityPct);
-
-        const topEl = document.getElementById('p2-ideology-top-parties');
-        if (topEl) {
-          const top3 = affinities.slice(0, 3).map(p => `<strong>${p.id}</strong> (${p.affinityPct}%)`).join(' • ');
-          topEl.innerHTML = `Mayor afinidad ideológica: ${top3}`;
-        }
-
-        const barsContainer = document.getElementById('p2-party-affinity-bars');
-        if (barsContainer) {
-          barsContainer.innerHTML = '';
-          affinities.forEach(item => {
-            const chip = document.createElement('div');
-            chip.className = 'p-1 bg-white border rounded flex flex-col justify-between text-[10px] shadow-2xs';
-            chip.innerHTML = `
-              <div class="flex items-center justify-between mb-0.5">
-                <span class="font-extrabold truncate" style="color: ${item.color};">${item.id}</span>
-                <span class="font-mono font-bold text-slate-800">${item.affinityPct}%</span>
-              </div>
-              <div class="w-full bg-stone-200 h-1 rounded overflow-hidden">
-                <div class="h-full rounded" style="width: ${item.affinityPct}%; background-color: ${item.color};"></div>
-              </div>
-            `;
-            barsContainer.appendChild(chip);
-          });
-        }
       };
 
       window.finishFullCharacterCreation = function() {
@@ -3431,29 +1863,10 @@
 
         const partyObj = CHILE_PARTIES.find(p => p.id === p1SelectedParty) || { name: 'Independiente' };
 
-        // Modificadores de Etapa de Edad y Profesión
-        const ageMods = window.getAgeBracketModifiers(age);
-        const profMods = PROFESSION_MODIFIERS[profession] || { funds: 0, pp: 0, hours: 0, oratory: 0, charisma: 0, negotiation: 0, management: 0, volunteers: 0, recognition: 0, approval: 0 };
-
-        // Atributos base sumando puntos asignados + bonos de edad + profesión
-        const finalAttributes = {
-          oratory: Math.min(100, (p1Attributes.oratory || 60) + (ageMods.bonusAttrs.oratory || 0) + (profMods.oratory || 0)),
-          charisma: Math.min(100, (p1Attributes.charisma || 55) + (ageMods.bonusAttrs.charisma || 0) + (profMods.charisma || 0)),
-          negotiation: Math.min(100, (p1Attributes.negotiation || 50) + (ageMods.bonusAttrs.negotiation || 0) + (profMods.negotiation || 0)),
-          management: Math.min(100, (p1Attributes.management || 55) + (ageMods.bonusAttrs.management || 0) + (profMods.management || 0))
-        };
-
-        const totalFunds = ageMods.baseFunds + profMods.funds;
-        const totalHours = ageMods.hours + profMods.hours;
-        const totalPP = ageMods.basePP + profMods.pp;
-        const totalVolunteers = ageMods.baseVolunteers + profMods.volunteers;
-        const baseRecog = (officeVal === 'none' ? 20.0 : 45.0) + (ageMods.bonusRecog || 0) + (profMods.recognition || 0);
-        const baseApproval = 52.0 + (profMods.approval || 0);
-
         GAME_STATE.year = startYear;
         GAME_STATE.week = 1;
         GAME_STATE.month = 'Enero';
-        GAME_STATE.volunteers = totalVolunteers;
+        GAME_STATE.volunteers = 120;
         GAME_STATE.player.name = name;
         GAME_STATE.player.age = age;
         GAME_STATE.player.profession = profession;
@@ -3463,30 +1876,16 @@
         GAME_STATE.player.partyId = p1SelectedParty;
         GAME_STATE.player.partyName = partyObj.name;
         GAME_STATE.player.faction = p1SelectedFaction;
-        GAME_STATE.player.attributes = finalAttributes;
-        GAME_STATE.player.currentOffice = {
-          roleId: officeVal,
-          roleLabel: officeLabels[officeVal] || 'Ciudadano sin Cargo',
-          territoryId: comm,
-          territoryLabel: (officeVal === 'diputado') ? dist : ((officeVal === 'gobernador' || officeVal === 'senador') ? CHILE_GEO[reg]?.name : (officeVal === 'presidente' ? 'Chile' : comm)),
-          startYear: startYear,
-          endYear: startYear + 4,
-          consecutiveTerms: officeVal === 'none' ? 0 : 1,
-          salaryWeekly: SALARY_TABLE[officeVal] || 0
-        };
+        GAME_STATE.player.attributes = { ...p1Attributes };
+        GAME_STATE.player.currentOffice = officeLabels[officeVal] || 'Ciudadano sin Cargo';
         GAME_STATE.player.corePolicies = [...p2SelectedPolicies];
         GAME_STATE.player.hiredStaffIds = [];
-        GAME_STATE.player.funds = totalFunds;
-        GAME_STATE.player.hours = totalHours;
-        GAME_STATE.player.maxHours = totalHours;
-        GAME_STATE.player.politicalPoints = totalPP;
-        GAME_STATE.player.nameRecognition = Math.min(100, baseRecog);
-        GAME_STATE.player.approval = Math.min(100, baseApproval);
 
+        // Ocultar pantallas de creación y abrir tablero
         document.getElementById('screen-page-1-identity').classList.add('hidden');
         document.getElementById('screen-page-2-territory').classList.add('hidden');
 
-        window.showToast('¡Bienvenido a Chile!', `Tu carrera política comienza en ${comm} (${dist}) en ${startYear}. Fondos iniciales: $${totalFunds.toLocaleString('es-CL')} CLP • Energía: ${totalHours} hrs/sem.`, 'success');
+        window.showToast('¡Bienvenido al Juego!', `Inicias tu carrera en ${comm} (${dist}) en el año ${startYear}.`, 'success');
         window.renderAll();
       };
 
@@ -3506,10 +1905,10 @@
       };
 
       window.updateDHondtSimulation = function() {
-        d3SimShares.ofic = parseInt(document.getElementById('dh-slider-ofic')?.value || 38);
-        d3SimShares.cv = parseInt(document.getElementById('dh-slider-cv')?.value || 32);
-        d3SimShares.rep = parseInt(document.getElementById('dh-slider-rep')?.value || 18);
-        d3SimShares.cent = parseInt(document.getElementById('dh-slider-cent')?.value || 12);
+        d3SimShares.ofic = parseInt(document.getElementById('dh-slider-ofic').value);
+        d3SimShares.cv = parseInt(document.getElementById('dh-slider-cv').value);
+        d3SimShares.rep = parseInt(document.getElementById('dh-slider-rep').value);
+        d3SimShares.cent = parseInt(document.getElementById('dh-slider-cent').value);
 
         document.getElementById('dh-pct-ofic').textContent = `${d3SimShares.ofic}%`;
         document.getElementById('dh-pct-cv').textContent = `${d3SimShares.cv}%`;
@@ -3528,13 +1927,12 @@
         const regKey = GAME_STATE.player.region || 'rm';
         const totalSeats = CHILE_GEO[regKey]?.districts[distKey]?.seats || 8;
 
-        const headerEl = document.getElementById('dhondt-sim-district-header');
-        if (headerEl) {
-          headerEl.textContent = `Simulador D'Hondt con D3.js: Distribución de Escaños en ${distKey} (${totalSeats} Escaños en Disputa)`;
-        }
+        document.getElementById('dhondt-sim-district-header').textContent = 
+          `Simulador D'Hondt con D3.js: Distribución de Escaños en ${distKey} (${totalSeats} Escaños en Disputa)`;
 
+        // Total votos del distrito (base 300.000)
         const totalVotes = 300000;
-        const sumShares = Math.max(1, d3SimShares.ofic + d3SimShares.cv + d3SimShares.rep + d3SimShares.cent);
+        const sumShares = d3SimShares.ofic + d3SimShares.cv + d3SimShares.rep + d3SimShares.cent;
         
         const lists = [
           { id: 'ofic', name: 'Contigo Chile Mejor', color: '#DC2626', votes: Math.round(totalVotes * (d3SimShares.ofic / sumShares)), seats: 0 },
@@ -3543,6 +1941,7 @@
           { id: 'cent', name: 'Centro Democrático', color: '#D97706', votes: Math.round(totalVotes * (d3SimShares.cent / sumShares)), seats: 0 }
         ];
 
+        // Algoritmo D'Hondt Real: Generar cocientes (Votos / 1, Votos / 2, ..., Votos / N)
         const quotients = [];
         lists.forEach(l => {
           for (let s = 1; s <= totalSeats; s++) {
@@ -3555,10 +1954,12 @@
           }
         });
 
+        // Ordenar cocientes de mayor a menor y seleccionar los N mayores
         quotients.sort((a,b) => b.quotient - a.quotient);
         const winningQuotients = quotients.slice(0, totalSeats);
         const lastWinning = winningQuotients[winningQuotients.length - 1];
 
+        // Asignar escaños
         winningQuotients.forEach(wq => {
           const l = lists.find(x => x.id === wq.listId);
           if (l) l.seats++;
@@ -3569,11 +1970,10 @@
         document.getElementById('dh-seats-rep').textContent = `${lists.find(x => x.id === 'rep').seats} Escaños`;
         document.getElementById('dh-seats-cent').textContent = `${lists.find(x => x.id === 'cent').seats} Escaños`;
 
-        const cifraDisp = document.getElementById('dhondt-cifra-repartidora-disp');
-        if (cifraDisp) {
-          cifraDisp.textContent = `Cifra Repartidora de Corte: ${lastWinning ? lastWinning.quotient.toLocaleString('es-CL') : '0'} Votos`;
-        }
+        document.getElementById('dhondt-cifra-repartidora-disp').textContent = 
+          `Cifra Repartidora de Corte: ${lastWinning ? lastWinning.quotient.toLocaleString('es-CL') : '0'} Votos`;
 
+        // Renderizado Hemiciclo D3.js
         const width = 280;
         const height = 150;
         const radius = 110;
@@ -3586,13 +1986,14 @@
         const g = svg.append('g')
           .attr('transform', `translate(${width / 2}, ${height - 15})`);
 
+        // Generar coordenadas semicirculares para los escaños ganados
+        const seatDots = [];
         winningQuotients.sort((a,b) => {
           const order = { ofic: 1, cent: 2, cv: 3, rep: 4 };
           return order[a.listId] - order[b.listId];
         });
 
-        const seatDots = [];
-        const step = Math.PI / Math.max(1, totalSeats - 1);
+        const step = Math.PI / (totalSeats - 1);
         winningQuotients.forEach((wq, idx) => {
           const theta = Math.PI - (idx * step);
           const x = - (radius * Math.cos(theta));
@@ -3600,6 +2001,7 @@
           seatDots.push({ x, y, color: wq.color, listId: wq.listId });
         });
 
+        // Dibujar los escaños con animación D3
         g.selectAll('circle')
           .data(seatDots)
           .enter()
@@ -3616,7 +2018,7 @@
       };
 
       // =========================================================================
-      // GESTIÓN DE ASESORES Y STAFF DE CAMPAÑA
+      // GESTIÓN INTEGRAL DE ASESORES Y STAFF DE CAMPAÑA
       // =========================================================================
       let currentStaffRoleFilter = 'all';
 
@@ -3645,6 +2047,7 @@
           GAME_STATE.player.hiredStaffIds = [];
         }
 
+        // Si ya hay alguien contratado en este mismo rol, se reemplaza
         const existingInRole = STAFF_CATALOG.find(s => s.role === staff.role && GAME_STATE.player.hiredStaffIds.includes(s.id));
         if (existingInRole && existingInRole.id !== staff.id) {
           GAME_STATE.player.hiredStaffIds = GAME_STATE.player.hiredStaffIds.filter(id => id !== existingInRole.id);
@@ -3655,11 +2058,11 @@
           GAME_STATE.player.hiredStaffIds.push(staff.id);
         }
 
-        // Blindaje contra exploit de horas infinitas: maxHours sube, pero horas disponibles se topan a maxHours sin regalar horas extras gratis
+        // Recalcular horas máximas
         const hiredStaff = STAFF_CATALOG.filter(s => GAME_STATE.player.hiredStaffIds.includes(s.id));
         const bonusHrs = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
         GAME_STATE.player.maxHours = 60 + bonusHrs;
-        GAME_STATE.player.hours = Math.min(GAME_STATE.player.maxHours, GAME_STATE.player.hours);
+        GAME_STATE.player.hours = Math.min(GAME_STATE.player.maxHours, GAME_STATE.player.hours + staff.bonusHours);
 
         window.showToast('¡Asesor Incorporado!', `${staff.name} se ha sumado a tu comando como ${staff.roleLabel}.`, 'success');
         window.renderAll();
@@ -3671,6 +2074,7 @@
 
         GAME_STATE.player.hiredStaffIds = (GAME_STATE.player.hiredStaffIds || []).filter(id => id !== staffId);
 
+        // Recalcular horas máximas
         const hiredStaff = STAFF_CATALOG.filter(s => GAME_STATE.player.hiredStaffIds.includes(s.id));
         const bonusHrs = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
         GAME_STATE.player.maxHours = 60 + bonusHrs;
@@ -3688,6 +2092,7 @@
         const hiredIds = GAME_STATE.player.hiredStaffIds || [];
         const hiredStaff = STAFF_CATALOG.filter(s => hiredIds.includes(s.id));
 
+        // Actualizar métricas del dashboard superior
         const totalPayroll = hiredStaff.reduce((sum, s) => sum + s.salaryWeekly, 0);
         const totalBonusHours = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
         const totalBonusRecog = hiredStaff.reduce((sum, s) => sum + s.bonusRecogWeekly, 0);
@@ -3708,6 +2113,7 @@
         const vEl = document.getElementById('staff-metric-volunteers');
         if (vEl) vEl.textContent = `+${totalBonusVolunteers} brigadistas / sem`;
 
+        // Filtrar catálogo según la categoría seleccionada
         const visibleStaff = (currentStaffRoleFilter === 'all') 
           ? STAFF_CATALOG 
           : STAFF_CATALOG.filter(s => s.role === currentStaffRoleFilter);
@@ -3766,742 +2172,6 @@
       };
 
       // =========================================================================
-      // IMPLEMENTACIÓN DE LAS 20 FUNCIONES CLAVE DE LA SIMULACIÓN
-      // =========================================================================
-
-      // 1. TRIGGER ELECTION NIGHT
-      window.triggerElectionNight = function() {
-        const modal = document.getElementById('modal-election-night');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-
-        const isMunicipal = (GAME_STATE.year % 4 === 0);
-        let targetOffice = isMunicipal ? `Alcalde de ${GAME_STATE.player.commune}` : `Diputado (${GAME_STATE.player.district})`;
-        let targetRole = isMunicipal ? 'alcalde' : 'diputado';
-
-        if (GAME_STATE.player.declaredCandidacy) {
-          targetOffice = GAME_STATE.player.declaredCandidacy.office;
-          targetRole = GAME_STATE.player.declaredCandidacy.roleId || targetRole;
-        }
-
-        const subtitle = document.getElementById('en-title-subtitle');
-        if (subtitle) {
-          subtitle.textContent = `${targetOffice} - Año Electoral ${GAME_STATE.year}`;
-        }
-
-        // Generar candidatos reales (Jugador + Contendientes de GAME_STATE.politicians)
-        const candidates = [];
-        
-        // Candidato 1: Jugador
-        const playerBloc = CHILE_PARTIES.find(p => p.id === GAME_STATE.player.partyId)?.bloc || 'Independientes';
-        let blocEnth = GAME_STATE.enthusiasm.ind;
-        if (playerBloc === 'Oficialismo') blocEnth = GAME_STATE.enthusiasm.left;
-        else if (playerBloc === 'Chile Vamos' || playerBloc === 'Derecha / Rep') blocEnth = GAME_STATE.enthusiasm.right;
-        else if (playerBloc === 'Centro') blocEnth = GAME_STATE.enthusiasm.center;
-
-        const playerStrength = (GAME_STATE.player.nameRecognition * 0.45) + (blocEnth * 0.35) + ((GAME_STATE.player.attributes.charisma + GAME_STATE.player.attributes.oratory) * 0.1);
-        candidates.push({
-          name: GAME_STATE.player.name,
-          party: GAME_STATE.player.partyId,
-          isPlayer: true,
-          strength: Math.max(10, playerStrength),
-          votes: 0,
-          pct: 0
-        });
-
-        // Contendientes de otros bloques
-        const opposingParties = ['UDI', 'FA', 'PREP', 'DC', 'RN', 'PC'].filter(p => p !== GAME_STATE.player.partyId);
-        const rivals = GAME_STATE.politicians
-          .filter(p => p.region === GAME_STATE.player.region && opposingParties.includes(p.party))
-          .slice(0, 3);
-
-        if (rivals.length < 3) {
-          rivals.push(
-            { name: 'Rodrigo Delgado M.', party: 'UDI', app: 48 },
-            { name: 'Natalia Piergentili C.', party: 'PPD', app: 42 },
-            { name: 'Arturo Squella O.', party: 'PREP', app: 45 }
-          );
-        }
-
-        rivals.forEach(r => {
-          candidates.push({
-            name: r.name,
-            party: r.party,
-            isPlayer: false,
-            strength: (r.app || 40) + (Math.random() * 20 - 10),
-            votes: 0,
-            pct: 0
-          });
-        });
-
-        const totalStrength = candidates.reduce((sum, c) => sum + c.strength, 0);
-        candidates.forEach(c => {
-          c.targetPct = (c.strength / totalStrength) * 100;
-        });
-
-        GAME_STATE.electionScrutiny = {
-          active: true,
-          progressPct: 0,
-          office: targetOffice,
-          roleId: targetRole,
-          totalRegisteredVotes: 120000 + Math.floor(Math.random() * 80000),
-          candidates: candidates,
-          round: 1
-        };
-
-        document.getElementById('en-pct-counted').textContent = '0.0% Mesas Escrutadas';
-        document.getElementById('en-btn-advance').classList.remove('hidden');
-        document.getElementById('en-btn-finish').classList.add('hidden');
-
-        window.renderScrutinyResults();
-      };
-
-      // 2. ADVANCE ELECTION SCRUTINY
-      window.advanceElectionScrutiny = function() {
-        if (!GAME_STATE.electionScrutiny.active) return;
-
-        GAME_STATE.electionScrutiny.progressPct = Math.min(100, GAME_STATE.electionScrutiny.progressPct + 25);
-        const progress = GAME_STATE.electionScrutiny.progressPct / 100;
-        const totalVotesCounted = Math.round(GAME_STATE.electionScrutiny.totalRegisteredVotes * progress);
-
-        GAME_STATE.electionScrutiny.candidates.forEach(c => {
-          const noise = (Math.random() * 4 - 2) * (1 - progress);
-          const currentPct = Math.max(1, c.targetPct + noise);
-          c.votes = Math.round(totalVotesCounted * (currentPct / 100));
-        });
-
-        const countedSum = GAME_STATE.electionScrutiny.candidates.reduce((s, c) => s + c.votes, 0) || 1;
-        GAME_STATE.electionScrutiny.candidates.forEach(c => {
-          c.pct = (c.votes / countedSum) * 100;
-        });
-
-        document.getElementById('en-pct-counted').textContent = `${GAME_STATE.electionScrutiny.progressPct}.0% Mesas Escrutadas`;
-        window.renderScrutinyResults();
-
-        if (GAME_STATE.electionScrutiny.progressPct >= 100) {
-          document.getElementById('en-btn-advance').classList.add('hidden');
-          document.getElementById('en-btn-finish').classList.remove('hidden');
-
-          const playerCand = GAME_STATE.electionScrutiny.candidates.find(c => c.isPlayer);
-          const sorted = [...GAME_STATE.electionScrutiny.candidates].sort((a,b) => b.votes - a.votes);
-          const winner = sorted[0];
-
-          // Reembolso SERVEL legal: $1.500 CLP por voto obtenido
-          const reimbursement = (playerCand?.votes || 0) * 1500;
-          GAME_STATE.player.funds += reimbursement;
-
-          const isWin = (winner.name === GAME_STATE.player.name);
-          const roleId = GAME_STATE.electionScrutiny.roleId || 'alcalde';
-
-          if (isWin) {
-            GAME_STATE.player.currentOffice = {
-              roleId: roleId,
-              roleLabel: GAME_STATE.electionScrutiny.office,
-              territoryId: GAME_STATE.player.commune,
-              territoryLabel: GAME_STATE.player.commune,
-              startYear: GAME_STATE.year,
-              endYear: GAME_STATE.year + 4,
-              consecutiveTerms: (GAME_STATE.player.currentOffice?.consecutiveTerms || 0) + 1,
-              salaryWeekly: SALARY_TABLE[roleId] || 1250000
-            };
-            GAME_STATE.player.politicalPoints += 15;
-            GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + 15);
-            window.showToast('¡VICTORIA ELECTORAL!', `Has ganado la elección de ${GAME_STATE.electionScrutiny.office}. SERVEL te reembolsó $${reimbursement.toLocaleString('es-CL')} CLP ($1.500/voto).`, 'success');
-          } else {
-            window.showToast('Escrutinio Concluido', `Resultado definitivo: Ganador ${winner.name} (${winner.party}) con ${winner.pct.toFixed(1)}%. SERVEL te reembolsó $${reimbursement.toLocaleString('es-CL')} CLP.`, 'info');
-          }
-
-          GAME_STATE.player.electionHistory.push({
-            year: GAME_STATE.year,
-            office: GAME_STATE.electionScrutiny.office,
-            votes: playerCand?.votes || 0,
-            pct: playerCand?.pct?.toFixed(1) || '0',
-            result: isWin ? 'Electo' : 'No electo',
-            reimbursement: reimbursement,
-            date: `Semana 44, ${GAME_STATE.year}`
-          });
-        }
-      };
-
-      window.renderScrutinyResults = function() {
-        const body = document.getElementById('en-results-body');
-        if (!body) return;
-        body.innerHTML = '';
-
-        const sorted = [...GAME_STATE.electionScrutiny.candidates].sort((a,b) => b.votes - a.votes);
-
-        sorted.forEach((c, idx) => {
-          const row = document.createElement('div');
-          const isLead = (idx === 0 && GAME_STATE.electionScrutiny.progressPct > 0);
-          row.className = `p-3 border-2 rounded ${c.isPlayer ? 'bg-blue-50/80 border-blue-600 ring-1 ring-blue-500' : 'bg-white border-stone-300'}`;
-
-          const pObj = CHILE_PARTIES.find(p => p.id === c.party) || { color: '#64748B' };
-
-          row.innerHTML = `
-            <div class="flex justify-between items-center mb-1.5">
-              <div class="flex items-center gap-2">
-                <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${pObj.color};"></span>
-                <div>
-                  <strong class="text-xs text-slate-900">${c.name} ${c.isPlayer ? '<span class="text-blue-800 font-black font-mono">(TÚ)</span>' : ''}</strong>
-                  <span class="text-[10px] text-stone-500 font-mono block">${c.party}</span>
-                </div>
-              </div>
-              <div class="text-right">
-                <span class="font-mono-num font-extrabold text-sm text-slate-900">${c.pct.toFixed(1)}%</span>
-                <span class="text-[10px] font-mono text-stone-500 block">${c.votes.toLocaleString('es-CL')} Votos</span>
-              </div>
-            </div>
-            <div class="w-full bg-stone-200 h-2.5 rounded overflow-hidden">
-              <div class="h-full transition-all duration-300" style="width: ${c.pct}%; background-color: ${pObj.color};"></div>
-            </div>
-          `;
-          body.appendChild(row);
-        });
-      };
-
-      // 3. CLOSE ELECTION NIGHT
-      window.closeElectionNight = function() {
-        document.getElementById('modal-election-night')?.classList?.add('hidden');
-        GAME_STATE.electionScrutiny.active = false;
-        GAME_STATE.player.declaredCandidacy = null;
-        window.showToast('Proclamación Oficial', 'El TRICEL ha concluido el proceso formal y cerrado el escrutinio electoral.', 'info');
-        window.renderAll();
-      };
-
-      // 4. OPEN PREDICT ELECTION MODAL
-      window.openPredictElectionModal = function() {
-        const modal = document.getElementById('modal-predict-election');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-
-        const comm = GAME_STATE.player.commune;
-        const dist = GAME_STATE.player.district;
-        document.getElementById('predict-modal-territory').textContent = `Proyección Electoral en ${comm} (${dist})`;
-
-        const body = document.getElementById('predict-modal-body');
-        body.innerHTML = `
-          <div class="p-3 bg-stone-50 border rounded text-xs space-y-2">
-            <h4 class="font-bold text-slate-900 uppercase">📊 Modelo Predictivo Local (Margen de Error ±3.1%)</h4>
-            <p class="text-stone-600">Simulación basada en el entusiasmo de bloques, reconocimiento comunal del ${GAME_STATE.player.nameRecognition.toFixed(1)}% y afinidad programática.</p>
-            <div class="space-y-1.5 pt-2">
-              <div class="flex justify-between items-center text-xs">
-                <span>Tu Proyección de Votación:</span>
-                <strong class="text-blue-900 font-mono-num text-sm">${(GAME_STATE.player.nameRecognition * 0.75 + GAME_STATE.player.approval * 0.25).toFixed(1)}%</strong>
-              </div>
-              <div class="flex justify-between items-center text-xs">
-                <span>Voto Jóvenes (18-34):</span>
-                <strong class="text-rose-700 font-mono-num">${(GAME_STATE.enthusiasm.left * 0.8 + 10).toFixed(1)}%</strong>
-              </div>
-              <div class="flex justify-between items-center text-xs">
-                <span>Voto Adultos Mayores (60+):</span>
-                <strong class="text-blue-800 font-mono-num">${(GAME_STATE.enthusiasm.right * 0.8 + 12).toFixed(1)}%</strong>
-              </div>
-              <div class="flex justify-between items-center text-xs">
-                <span>Probabilidad de Victoria Territorial:</span>
-                <strong class="text-emerald-700 font-mono-num">${Math.min(95, Math.max(5, Math.round(GAME_STATE.player.nameRecognition * 0.9)))}%</strong>
-              </div>
-            </div>
-          </div>
-        `;
-      };
-
-      // 5. OPEN DECLARE CANDIDACY MODAL
-      window.openDeclareCandidacyModal = function() {
-        const isElectionYear = (GAME_STATE.year % 4 === 0 || GAME_STATE.year % 4 === 1);
-        if (!isElectionYear) {
-          window.showToast('Gobernanza Intermedia', `El año ${GAME_STATE.year} no contempla elecciones populares. Próximo ciclo electoral SERVEL en 2028.`, 'warning');
-          return;
-        }
-
-        const modal = document.getElementById('modal-declare-candidacy');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-
-        const sel = document.getElementById('decl-office-select');
-        sel.innerHTML = '';
-
-        const isMunicipal = (GAME_STATE.year % 4 === 0);
-        const age = GAME_STATE.player.age;
-
-        const options = isMunicipal ? [
-          { val: 'concejal', label: 'Concejal Municipal', minAge: 18, cost: 5, funds: 500000 },
-          { val: 'alcalde', label: 'Alcalde/Alcaldesa', minAge: 18, cost: 10, funds: 1500000 },
-          { val: 'gobernador', label: 'Gobernador/a Regional', minAge: 21, cost: 15, funds: 3000000 }
-        ] : [
-          { val: 'diputado', label: 'Diputado/a de la República', minAge: 21, cost: 15, funds: 2500000 },
-          { val: 'senador', label: 'Senador/a de la República', minAge: 35, cost: 25, funds: 5000000 },
-          { val: 'presidente', label: 'Presidente/a de la República', minAge: 35, cost: 40, funds: 10000000 }
-        ];
-
-        options.forEach(o => {
-          if (age >= o.minAge) {
-            const opt = document.createElement('option');
-            opt.value = o.val;
-            opt.textContent = `${o.label} (Requiere ${o.cost} PP | $${(o.funds/1000000).toFixed(1)}M)`;
-            sel.appendChild(opt);
-          }
-        });
-
-        window.handleDeclOfficeChange(sel.value);
-      };
-
-      // 6. HANDLE DECL OFFICE CHANGE
-      window.handleDeclOfficeChange = function(val) {
-        const terrSelect = document.getElementById('decl-territory-select');
-        terrSelect.innerHTML = '';
-
-        if (val === 'concejal' || val === 'alcalde') {
-          const opt = document.createElement('option');
-          opt.value = GAME_STATE.player.commune;
-          opt.textContent = `Comuna de ${GAME_STATE.player.commune}`;
-          terrSelect.appendChild(opt);
-          document.getElementById('decl-req-age').textContent = '18 años cumplidos';
-          document.getElementById('decl-req-cost').textContent = (val === 'alcalde') ? '10 PP | $1.500.000 CLP' : '5 PP | $500.000 CLP';
-        } else if (val === 'diputado') {
-          const opt = document.createElement('option');
-          opt.value = GAME_STATE.player.district;
-          opt.textContent = `${GAME_STATE.player.district}`;
-          terrSelect.appendChild(opt);
-          document.getElementById('decl-req-age').textContent = '21 años cumplidos';
-          document.getElementById('decl-req-cost').textContent = '15 PP | $2.500.000 CLP';
-        } else if (val === 'gobernador' || val === 'senador') {
-          const opt = document.createElement('option');
-          opt.value = CHILE_GEO[GAME_STATE.player.region]?.name || 'Región';
-          opt.textContent = `${CHILE_GEO[GAME_STATE.player.region]?.name || 'Región'}`;
-          terrSelect.appendChild(opt);
-          document.getElementById('decl-req-age').textContent = (val === 'senador') ? '35 años cumplidos' : '21 años cumplidos';
-          document.getElementById('decl-req-cost').textContent = (val === 'senador') ? '25 PP | $5.000.000 CLP' : '15 PP | $3.000.000 CLP';
-        } else if (val === 'presidente') {
-          const opt = document.createElement('option');
-          opt.value = 'Chile Completo';
-          opt.textContent = 'Territorio Nacional (Chile)';
-          terrSelect.appendChild(opt);
-          document.getElementById('decl-req-age').textContent = '35 años cumplidos';
-          document.getElementById('decl-req-cost').textContent = '40 PP | $10.000.000 CLP';
-        }
-      };
-
-      // 7. CONFIRM CANDIDACY DECLARATION
-      window.confirmCandidacyDeclaration = function() {
-        const officeVal = document.getElementById('decl-office-select').value;
-        const terrVal = document.getElementById('decl-territory-select').value;
-
-        const costs = {
-          concejal: { pp: 5, funds: 500000 },
-          alcalde: { pp: 10, funds: 1500000 },
-          gobernador: { pp: 15, funds: 3000000 },
-          diputado: { pp: 15, funds: 2500000 },
-          senador: { pp: 25, funds: 5000000 },
-          presidente: { pp: 40, funds: 10000000 }
-        };
-
-        const cost = costs[officeVal] || { pp: 5, funds: 500000 };
-
-        if (GAME_STATE.player.politicalPoints < cost.pp) {
-          window.showToast('Capital Político Insuficiente', `Necesitas al menos ${cost.pp} PP para formalizar tu postulación ante el SERVEL.`, 'error');
-          return;
-        }
-
-        if (GAME_STATE.player.funds < cost.funds) {
-          window.showToast('Fondos Insuficientes', `Se exige una garantía legal SERVEL de $${cost.funds.toLocaleString('es-CL')} CLP.`, 'error');
-          return;
-        }
-
-        GAME_STATE.player.politicalPoints -= cost.pp;
-        GAME_STATE.player.funds -= cost.funds;
-
-        const officeLabels = {
-          concejal: `Concejal de ${terrVal}`,
-          alcalde: `Alcalde de ${terrVal}`,
-          gobernador: `Gobernador de ${terrVal}`,
-          diputado: `Diputado (${terrVal})`,
-          senador: `Senador (${terrVal})`,
-          presidente: `Presidente de la República`
-        };
-
-        GAME_STATE.player.declaredCandidacy = {
-          roleId: officeVal,
-          office: officeLabels[officeVal] || officeVal,
-          territory: terrVal,
-          year: GAME_STATE.year
-        };
-
-        document.getElementById('modal-declare-candidacy').classList.add('hidden');
-        window.showToast('¡Candidatura Oficializada!', `Declaraste formalmente tu candidatura a ${officeLabels[officeVal]} ante el SERVEL.`, 'success');
-        window.renderAll();
-      };
-
-      // 8. OPEN CHANGE DOMICILE MODAL
-      window.openChangeDomicileModal = function() {
-        const modal = document.getElementById('modal-change-domicile');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-
-        const regSelect = document.getElementById('cd-region');
-        regSelect.innerHTML = '';
-
-        for (const regKey in CHILE_GEO) {
-          const opt = document.createElement('option');
-          opt.value = regKey;
-          opt.textContent = CHILE_GEO[regKey].name;
-          if (regKey === GAME_STATE.player.region) opt.selected = true;
-          regSelect.appendChild(opt);
-        }
-
-        window.handleCdRegionChange(regSelect.value);
-      };
-
-      // 9. HANDLE CD REGION CHANGE
-      window.handleCdRegionChange = function(regKey) {
-        const distSelect = document.getElementById('cd-district');
-        distSelect.innerHTML = '';
-
-        const districts = CHILE_GEO[regKey]?.districts || {};
-        for (const distKey in districts) {
-          const opt = document.createElement('option');
-          opt.value = distKey;
-          opt.textContent = `${distKey} (${districts[distKey].seats} Escaños)`;
-          distSelect.appendChild(opt);
-        }
-
-        window.handleCdDistrictChange(distSelect.value);
-      };
-
-      // 10. HANDLE CD DISTRICT CHANGE
-      window.handleCdDistrictChange = function(distKey) {
-        const regKey = document.getElementById('cd-region').value;
-        const commSelect = document.getElementById('cd-commune');
-        commSelect.innerHTML = '';
-
-        const cleanDistKey = distKey.split(' (')[0];
-        const communes = CHILE_GEO[regKey]?.districts[cleanDistKey]?.communes || [];
-
-        communes.forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          commSelect.appendChild(opt);
-        });
-      };
-
-      // 11. CONFIRM CHANGE DOMICILE
-      window.confirmChangeDomicile = function() {
-        const reg = document.getElementById('cd-region').value;
-        const dist = document.getElementById('cd-district').value.split(' (')[0];
-        const comm = document.getElementById('cd-commune').value;
-
-        if (comm === GAME_STATE.player.commune) {
-          window.showToast('Mismo Domicilio', 'Ya estás registrado en esta comuna.', 'info');
-          document.getElementById('modal-change-domicile').classList.add('hidden');
-          return;
-        }
-
-        GAME_STATE.player.region = reg;
-        GAME_STATE.player.district = dist;
-        GAME_STATE.player.commune = comm;
-
-        // Penalizador temporal de Paracaidista
-        GAME_STATE.player.nameRecognition = Math.max(5.0, Number((GAME_STATE.player.nameRecognition * 0.85).toFixed(1)));
-
-        document.getElementById('modal-change-domicile').classList.add('hidden');
-        window.showToast('Domicilio Actualizado', `Trasladado a ${comm} (${dist}). Penalización temporal de -15% en conocimiento territorial por paracaidismo.`, 'warning');
-        window.renderAll();
-      };
-
-      // 12. EXECUTE CAMPAIGN ACTION
-      window.executeCampaignAction = function(actionType) {
-        if (actionType === 'puerta_a_puerta') {
-          if (GAME_STATE.player.hours < 12) {
-            window.showToast('Horas Insuficientes', 'Necesitas al menos 12 horas de campaña disponibles.', 'error');
-            return;
-          }
-          GAME_STATE.player.hours -= 12;
-          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + 1.2);
-          GAME_STATE.enthusiasm.ind = Math.min(100, GAME_STATE.enthusiasm.ind + 2);
-          window.showToast('Puerta a Puerta Realizado', 'Recorriste ferias y villas (+1.2% Reconocimiento, +2% Entusiasmo Independiente).', 'success');
-        } else if (actionType === 'cabildo') {
-          if (GAME_STATE.player.hours < 10) {
-            window.showToast('Horas Insuficientes', 'Necesitas al menos 10 horas disponibles.', 'error');
-            return;
-          }
-          if (GAME_STATE.player.funds < 200000) {
-            window.showToast('Fondos Insuficientes', 'Requiere $200.000 CLP para gastos de cafetería y logística.', 'error');
-            return;
-          }
-          GAME_STATE.player.hours -= 10;
-          GAME_STATE.player.funds -= 200000;
-          GAME_STATE.enthusiasm.center = Math.min(100, GAME_STATE.enthusiasm.center + 3);
-          GAME_STATE.player.politicalPoints += 1;
-          window.showToast('Cabildo Exitoso', 'Reunión vecinal productiva (+3% Entusiasmo Centro, +1 PP).', 'success');
-        } else if (actionType === 'prensa') {
-          if (GAME_STATE.player.hours < 8) {
-            window.showToast('Horas Insuficientes', 'Necesitas al menos 8 horas disponibles.', 'error');
-            return;
-          }
-          GAME_STATE.player.hours -= 8;
-          const boost = (GAME_STATE.player.attributes.oratory / 100) * 2.5;
-          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + boost);
-          window.showToast('Rueda de Prensa', `Entrevista en medios locales (+${boost.toFixed(1)}% Reconocimiento).`, 'success');
-        }
-
-        window.renderAll();
-      };
-
-      // 13. LAUNCH AD CAMPAIGN
-      window.launchAdCampaign = function(medium) {
-        if (medium === 'digital') {
-          if (GAME_STATE.player.funds < 1500000) {
-            window.showToast('Fondos Insuficientes', 'Requiere $1.500.000 CLP para contratar pauta digital en redes.', 'error');
-            return;
-          }
-          GAME_STATE.player.funds -= 1500000;
-          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + 3.5);
-          window.showToast('Campaña Digital Activa', 'Pauta en Meta, TikTok y YouTube desplegada (+3.5% Reconocimiento).', 'success');
-        } else if (medium === 'palomas') {
-          if (GAME_STATE.player.funds < 2500000) {
-            window.showToast('Fondos Insuficientes', 'Requiere $2.500.000 CLP para palomas y gigantografías.', 'error');
-            return;
-          }
-          GAME_STATE.player.funds -= 2500000;
-          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + 5.0);
-          window.showToast('Propaganda en Vía Pública', 'Palomas y letreros instalados en avenidas principales (+5.0% Reconocimiento).', 'success');
-        }
-
-        window.renderAll();
-      };
-
-      // 14. REST PLAYER HOURS
-      window.restPlayerHours = function() {
-        if (GAME_STATE.player.hours <= 0) {
-          window.showToast('Sin Horas', 'Ya has utilizado todas tus horas semanales.', 'info');
-          return;
-        }
-        GAME_STATE.player.hours = 0;
-        GAME_STATE.player.politicalPoints += 2;
-        GAME_STATE.player.approval = Math.min(100, GAME_STATE.player.approval + 0.5);
-        window.showToast('Descanso y Estudio', 'Has dedicado el resto de la semana a afinar tu programa de gobierno (+2 PP, +0.5% Aprobación).', 'success');
-        window.renderAll();
-      };
-
-      // 15. FUNDRAISE ACTION
-      window.fundraiseAction = function() {
-        if (GAME_STATE.player.hours < 12) {
-          window.showToast('Horas Insuficientes', 'Organizar una cena de recaudación requiere 12 horas.', 'error');
-          return;
-        }
-        GAME_STATE.player.hours -= 12;
-        const raised = 1200000 + (GAME_STATE.player.attributes.negotiation * 20000) + Math.round(GAME_STATE.player.nameRecognition * 15000);
-        GAME_STATE.player.funds += raised;
-        window.showToast('Cena de Recaudación', `Recaudaste $${raised.toLocaleString('es-CL')} CLP en aportes legales con simpatizantes.`, 'success');
-        window.renderAll();
-      };
-
-      // 16. PERSONAL CONTRIBUTION
-      window.personalContribution = function() {
-        if (GAME_STATE.player.politicalPoints < 2) {
-          window.showToast('PP Insuficientes', 'Inyectar aportes personales exige 2 PP de dedicación.', 'error');
-          return;
-        }
-        GAME_STATE.player.politicalPoints -= 2;
-        const contribution = 2000000;
-        GAME_STATE.player.funds += contribution;
-        window.showToast('Aporte Propio Ingresado', `Transferiste $${contribution.toLocaleString('es-CL')} CLP de tus ahorros personales a la cuenta electoral SERVEL.`, 'success');
-        window.renderAll();
-      };
-
-      // 17. COMMISSION POLL
-      window.commissionPoll = function() {
-        if (GAME_STATE.player.funds < 1000000) {
-          window.showToast('Fondos Insuficientes', 'El sondeo privado exige $1.000.000 CLP de financiamiento.', 'error');
-          return;
-        }
-        GAME_STATE.player.funds -= 1000000;
-        const sample = 800 + Math.floor(Math.random() * 400);
-        const margin = (3.5 - (sample / 1000)).toFixed(1);
-        const lead = GAME_STATE.player.nameRecognition > 45 ? `${GAME_STATE.player.name} (${GAME_STATE.player.nameRecognition.toFixed(1)}%)` : 'Rival de Oposición (44%)';
-
-        const poll = {
-          date: `Semana ${GAME_STATE.week}, ${GAME_STATE.year}`,
-          scope: `${GAME_STATE.player.commune} (${GAME_STATE.player.district})`,
-          sample: sample,
-          leadingCandidate: lead,
-          playerPct: `${GAME_STATE.player.nameRecognition.toFixed(1)}%`,
-          margin: `±${margin}%`
-        };
-
-        GAME_STATE.pollsHistory.unshift(poll);
-        window.showToast('Sondeo Publicado', `Encuesta comunal procesada: Marcaste ${poll.playerPct} de conocimiento territorial.`, 'success');
-        window.renderAll();
-      };
-
-      // 18. RECRUIT VOLUNTEERS
-      window.recruitVolunteers = function() {
-        if (GAME_STATE.player.hours < 10) {
-          window.showToast('Horas Insuficientes', 'Se requieren 10 horas para liderar la convocatoria de brigadistas.', 'error');
-          return;
-        }
-        if (GAME_STATE.player.funds < 150000) {
-          window.showToast('Fondos Insuficientes', 'Requiere $150.000 CLP para materiales y colaciones.', 'error');
-          return;
-        }
-        GAME_STATE.player.hours -= 10;
-        GAME_STATE.player.funds -= 150000;
-        const recruited = 30 + Math.floor(Math.random() * 25);
-        GAME_STATE.volunteers = (GAME_STATE.volunteers || 120) + recruited;
-        window.showToast('Brigadas Reforzadas', `Se han sumado ${recruited} nuevos voluntarios comprometidos con tu causa.`, 'success');
-        window.renderAll();
-      };
-
-      // 19. TRAIN VOLUNTEERS
-      window.trainVolunteers = function() {
-        if (GAME_STATE.player.hours < 8) {
-          window.showToast('Horas Insuficientes', 'Requiere 8 horas para dictar el taller electoral.', 'error');
-          return;
-        }
-        if (GAME_STATE.player.funds < 250000) {
-          window.showToast('Fondos Insuficientes', 'Requiere $250.000 CLP para manuales legales SERVEL.', 'error');
-          return;
-        }
-        GAME_STATE.player.hours -= 8;
-        GAME_STATE.player.funds -= 250000;
-        GAME_STATE.player.politicalPoints += 1;
-        window.showToast('Apoderados Capacitados', 'Capacitaste a 25 apoderados de mesa en defensa del voto y fiscalización SERVEL (+1 PP).', 'success');
-        window.renderAll();
-      };
-
-      // 20. SET CONGRESS CHAMBER
-      window.setCongressChamber = function(chamber) {
-        GAME_STATE.congress.activeChamber = chamber;
-        const isDip = (chamber === 'diputados');
-
-        const btnDip = document.getElementById('btn-cong-camara-dip');
-        const btnSen = document.getElementById('btn-cong-camara-sen');
-
-        if (btnDip) btnDip.className = isDip ? 'px-2.5 py-1 text-xs font-bold rounded bg-[#0047AB] text-white' : 'px-2.5 py-1 text-xs font-bold rounded text-stone-700 hover:bg-stone-200';
-        if (btnSen) btnSen.className = !isDip ? 'px-2.5 py-1 text-xs font-bold rounded bg-[#0047AB] text-white' : 'px-2.5 py-1 text-xs font-bold rounded text-stone-700 hover:bg-stone-200';
-
-        document.getElementById('cong-quorum-simple-disp').textContent = isDip ? '78 Votos' : '26 Votos';
-        document.getElementById('cong-quorum-47-disp').textContent = isDip ? '89 Votos' : '29 Votos';
-
-        const playerHasSeat = (isDip && GAME_STATE.player.currentOffice?.roleId === 'diputado') || (!isDip && GAME_STATE.player.currentOffice?.roleId === 'senador');
-        document.getElementById('cong-player-seat-disp').textContent = playerHasSeat ? '✅ Escaño Activo' : 'Sin Escaño';
-
-        window.renderCongressHemiciclo();
-      };
-
-      // 21. SIMULATE CONGRESS FLOOR VOTE
-      window.simulateCongressFloorVote = function() {
-        const isDip = (GAME_STATE.congress.activeChamber === 'diputados');
-        const totalSeats = isDip ? 155 : 50;
-        const requiredSimple = isDip ? 78 : 26;
-
-        const billsCatalog = [
-          { title: 'Reforma de Ley Antiterrorista e Inteligencia', area: 'crime', impact: 'Victimización -4.5%, Aprobación +3.0%' },
-          { title: 'Incentivos Tributarios a la Inversión en I+D', area: 'taxes', impact: 'PIB +0.5%, Inflación -0.2%' },
-          { title: 'Nuevo Estatuto de Protección Policial y RUF', area: 'crime', impact: 'Victimización -3.0%, Tensión +2.0%' },
-          { title: 'Subsidio Permanente a la Canasta Básica Familiar', area: 'taxes', impact: 'Tensión -4.0%, Aprobación +2.5%' }
-        ];
-
-        const selectedBill = billsCatalog[Math.floor(Math.random() * billsCatalog.length)];
-        
-        let yesVotes = Math.floor(totalSeats * 0.45) + Math.floor(Math.random() * 18);
-        let noVotes = totalSeats - yesVotes - Math.floor(Math.random() * 6);
-        let absVotes = totalSeats - yesVotes - noVotes;
-
-        const passed = (yesVotes >= requiredSimple);
-
-        document.getElementById('hemiciclo-count-yes').textContent = yesVotes;
-        document.getElementById('hemiciclo-count-no').textContent = noVotes;
-        document.getElementById('hemiciclo-count-abs').textContent = absVotes;
-
-        if (passed) {
-          const lawNumber = `Ley N° ${21600 + GAME_STATE.legislativeHistory.length + 1}`;
-          GAME_STATE.legislativeHistory.unshift({
-            number: lawNumber,
-            title: selectedBill.title,
-            date: `${GAME_STATE.month} ${GAME_STATE.year}`,
-            type: 'Simple',
-            quorum: `${yesVotes} / ${totalSeats}`,
-            yes: yesVotes,
-            no: noVotes,
-            abs: absVotes,
-            area: selectedBill.area,
-            impact: selectedBill.impact
-          });
-          window.showToast('¡Proyecto Aprobado!', `La Sala aprobó: ${selectedBill.title} (${yesVotes} a favor). Promulgada como ${lawNumber}.`, 'success');
-        } else {
-          window.showToast('Proyecto Rechazado', `La iniciativa ${selectedBill.title} no alcanzó el quórum mínimo (${yesVotes} de ${requiredSimple} requeridos).`, 'warning');
-        }
-
-        window.renderLegislativeHistory();
-      };
-
-      // 22. NEGOTIATE CONGRESS COCINA
-      window.negotiateCongressCocina = function() {
-        if (GAME_STATE.player.politicalPoints < 5) {
-          window.showToast('Capital Político Insuficiente', 'Una negociación reservada de cocina política exige al menos 5 PP.', 'error');
-          return;
-        }
-        GAME_STATE.player.politicalPoints -= 5;
-        window.showToast('Cocina Política Exitosa', 'Te reuniste en el comedor del Senado con las bancadas bisagra. Aseguraste 12 votos clave para la próxima votación.', 'success');
-        window.renderAll();
-      };
-
-      // =========================================================================
-      // MOTOR DE EVENTOS POLÍTICOS NACIONALES (FRECUENCIA MODERADA CADA 5-8 SEMANAS)
-      // =========================================================================
-      window.triggerNationalEvent = function() {
-        const ev = NATIONAL_EVENTS[Math.floor(Math.random() * NATIONAL_EVENTS.length)];
-        if (!ev) return;
-
-        const modal = document.getElementById('modal-national-event');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-
-        document.getElementById('ne-event-title').textContent = ev.title;
-        document.getElementById('ne-event-source').textContent = `${ev.source} • Cobertura en Vivo`;
-        document.getElementById('ne-event-desc').textContent = ev.desc;
-
-        const optsCont = document.getElementById('ne-options-container');
-        optsCont.innerHTML = '';
-
-        ev.options.forEach((opt, idx) => {
-          const btn = document.createElement('button');
-          btn.className = 'w-full text-left p-3 border-2 border-stone-300 hover:border-blue-600 bg-white hover:bg-blue-50 rounded text-xs transition cursor-pointer flex flex-col gap-1';
-          btn.innerHTML = `
-            <strong class="text-slate-900">${opt.text}</strong>
-            <span class="text-[10px] text-stone-500 font-mono">Impacto Estimado: Aprobación ${opt.deltaApp > 0 ? '+' : ''}${opt.deltaApp}% | Tensión ${opt.deltaTension > 0 ? '+' : ''}${opt.deltaTension}%</span>
-          `;
-          btn.onclick = () => window.selectEventOption(ev, idx);
-          optsCont.appendChild(btn);
-        });
-      };
-
-      window.selectEventOption = function(ev, optIdx) {
-        const opt = ev.options[optIdx];
-        if (!opt) return;
-
-        document.getElementById('modal-national-event')?.classList?.add('hidden');
-
-        GAME_STATE.player.approval = Math.min(100, Math.max(5, GAME_STATE.player.approval + opt.deltaApp));
-        GAME_STATE.socialTension = Math.min(100, Math.max(5, GAME_STATE.socialTension + opt.deltaTension));
-        GAME_STATE.player.funds += opt.deltaFunds;
-        GAME_STATE.player.politicalPoints = Math.max(0, GAME_STATE.player.politicalPoints + opt.deltaPP);
-
-        GAME_STATE.newsFeed.unshift({
-          date: `Semana ${GAME_STATE.week}, ${GAME_STATE.year}`,
-          source: ev.source,
-          title: `${ev.title}: ${opt.news}`
-        });
-
-        // Programar siguiente evento entre 5 y 8 semanas
-        GAME_STATE.nextNationalEventWeek = GAME_STATE.week + 5 + Math.floor(Math.random() * 4);
-
-        window.showToast('Decisión Registrada', `${opt.news} (Aprobación ${opt.deltaApp > 0 ? '+' : ''}${opt.deltaApp}%)`, 'info');
-        window.renderAll();
-      };
-
-      // =========================================================================
       // MOTOR DE TURNOS A PRUEBA DE FALLOS: window.advanceTurn
       // =========================================================================
       window.advanceTurn = function(weeksToAdvance = 1) {
@@ -4512,89 +2182,52 @@
         for (let w = 0; w < count; w++) {
           GAME_STATE.week += 1;
 
-          // 1. INGRESO SALARIAL SEMANAL POR CARGO PÚBLICO (Blindaje contra inanición económica)
-          const weeklySalary = GAME_STATE.player.currentOffice?.salaryWeekly || 0;
-          if (weeklySalary > 0) {
-            GAME_STATE.player.funds += weeklySalary;
-          }
-
-          // 2. PLANILLA DE ASESORES Y GESTIÓN DE HUELGA/RENUNCIAS
+          // 1. Deducir planilla semanal de sueldos de asesores
           const weeklyPayroll = hiredStaff.reduce((sum, s) => sum + s.salaryWeekly, 0);
           if (GAME_STATE.player.funds >= weeklyPayroll) {
             GAME_STATE.player.funds -= weeklyPayroll;
-            GAME_STATE.staffStrike = false;
-            GAME_STATE.unpaidStaffWeeks = 0;
           } else {
-            GAME_STATE.staffStrike = true;
-            GAME_STATE.unpaidStaffWeeks = (GAME_STATE.unpaidStaffWeeks || 0) + 1;
+            const unpaid = weeklyPayroll - GAME_STATE.player.funds;
             GAME_STATE.player.funds = 0;
-
             if (w === 0 && weeklyPayroll > 0) {
-              window.showToast('⚠️ Comando en Huelga', `No pudiste pagar la planilla semanal ($${weeklyPayroll.toLocaleString('es-CL')} CLP). Bonos suspendidos.`, 'warning');
-            }
-
-            // Tras 2 semanas impagas, el asesor más caro renuncia
-            if (GAME_STATE.unpaidStaffWeeks >= 2 && hiredStaff.length > 0) {
-              const highestPaid = [...hiredStaff].sort((a,b) => b.salaryWeekly - a.salaryWeekly)[0];
-              if (highestPaid) {
-                GAME_STATE.player.hiredStaffIds = GAME_STATE.player.hiredStaffIds.filter(id => id !== highestPaid.id);
-                window.showToast('Renuncia en el Comando', `${highestPaid.name} renunció a tu comando por 2 semanas consecutivas de sueldos impagos.`, 'error');
-                GAME_STATE.unpaidStaffWeeks = 0;
-              }
+              window.showToast('⚠️ Planilla Impaga', `Fondos insuficientes para cubrir el sueldo semanal de tu staff ($${unpaid.toLocaleString('es-CL')} CLP impagos).`, 'warning');
             }
           }
 
-          // 3. HORAS SEMANALES Y BONOS PASIVOS (solo si no están en huelga)
-          const bonusHours = GAME_STATE.staffStrike ? 0 : hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
+          // 2. Horas semanales disponibles (Base 60 hrs + bonos de Jefatura de Campaña)
+          const bonusHours = hiredStaff.reduce((sum, s) => sum + s.bonusHours, 0);
           GAME_STATE.player.maxHours = 60 + bonusHours;
           GAME_STATE.player.hours = GAME_STATE.player.maxHours;
 
-          if (!GAME_STATE.staffStrike) {
-            const bonusRecog = hiredStaff.reduce((sum, s) => sum + s.bonusRecogWeekly, 0);
-            GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + bonusRecog);
+          // 3. Bonos pasivos semanales de asesores
+          const bonusRecog = hiredStaff.reduce((sum, s) => sum + s.bonusRecogWeekly, 0);
+          GAME_STATE.player.nameRecognition = Math.min(100, GAME_STATE.player.nameRecognition + bonusRecog);
 
-            const bonusVol = hiredStaff.reduce((sum, s) => sum + s.bonusVolunteersWeekly, 0);
-            GAME_STATE.volunteers = (GAME_STATE.volunteers || 120) + bonusVol;
+          const bonusVol = hiredStaff.reduce((sum, s) => sum + s.bonusVolunteersWeekly, 0);
+          GAME_STATE.volunteers = (GAME_STATE.volunteers || 120) + bonusVol;
 
-            if (GAME_STATE.week % 4 === 0) {
-              const bonusPP = hiredStaff.reduce((sum, s) => sum + s.bonusPPMonthly, 0);
-              GAME_STATE.player.politicalPoints += bonusPP;
-            }
+          // Bono mensual de probidad y Puntos Políticos (cada 4 semanas)
+          if (GAME_STATE.week % 4 === 0) {
+            const bonusPP = hiredStaff.reduce((sum, s) => sum + s.bonusPPMonthly, 0);
+            GAME_STATE.player.politicalPoints += bonusPP;
           }
 
-          // 4. CICLO ELECTORAL SERVEL
           const isElectionYear = (GAME_STATE.year % 4 === 0 || GAME_STATE.year % 4 === 1);
           const cycleType = (GAME_STATE.year % 4 === 0) ? 'Municipales y Regionales' : ((GAME_STATE.year % 4 === 1) ? 'Presidenciales y Parlamentarias' : 'Gobernanza');
 
           if (GAME_STATE.week === 8 && isElectionYear) {
-            window.showToast('Semana 8: Inscripción SERVEL', `Se abre el plazo formal de inscripción de candidaturas para las Elecciones ${cycleType}.`, 'info');
+            window.showToast('Semana 8: Inscripción SERVEL', `Se abre formalmente el plazo legal de candidaturas para las Elecciones ${cycleType}. Postula en [Elecciones].`, 'info');
           } else if (GAME_STATE.week === 20 && isElectionYear) {
-            window.showToast('Semana 20: Primarias', 'Jornada de Elecciones Primarias Oficiales SERVEL en todo el país.', 'info');
+            window.showToast('Semana 20: Primarias', 'Jornada de Elecciones Primarias Oficiales SERVEL.', 'info');
           } else if (GAME_STATE.week === 44 && isElectionYear) {
             window.triggerElectionNight();
           }
 
-          // 5. EVENTOS NACIONALES COYUNTURALES (Moderados: cada 5 a 8 semanas)
-          if (GAME_STATE.week >= GAME_STATE.nextNationalEventWeek) {
-            window.triggerNationalEvent();
-          }
-
-          // 6. FIN DE AÑO Y ENVEJECIMIENTO
           if (GAME_STATE.week > 52) {
             GAME_STATE.week = 1;
             GAME_STATE.year += 1;
             GAME_STATE.player.age += 1;
-
-            // Envejecimiento de los 120 NPCs y retiro legal
-            GAME_STATE.politicians.forEach(p => {
-              p.age += 1;
-              if (p.age >= 75 && Math.random() < 0.25 || p.age >= 95) {
-                p.retired = true;
-                p.office = 'Ex-Político / Retirado';
-              }
-            });
-
-            window.showToast('¡Año Nuevo Constitucional!', `Comienza el año ${GAME_STATE.year}. Cumples ${GAME_STATE.player.age} años de edad.`, 'success');
+            window.showToast('¡Año Nuevo Constitucional!', `Comienza el año ${GAME_STATE.year}. Tienes ${GAME_STATE.player.age} años cumplidos.`, 'success');
           }
 
           const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -4606,20 +2239,14 @@
       };
 
       // =========================================================================
-      // RENDERIZADO GLOBAL MAESTRO DINÁMICO (CERO DATOS HARDCODEADOS)
+      // RENDERIZADO GLOBAL: window.renderAll()
       // =========================================================================
       window.renderAll = function() {
-        // Fila 1: Cabecera y Métricas Principales
         document.getElementById('stat-player-name').textContent = `${GAME_STATE.player.name || 'Sin Nombre'} (${GAME_STATE.player.age} años)`;
         document.getElementById('stat-player-party').textContent = GAME_STATE.player.partyId;
-        document.getElementById('stat-player-office').textContent = GAME_STATE.player.currentOffice?.roleLabel || 'Ciudadano sin Cargo';
+        document.getElementById('stat-player-office').textContent = GAME_STATE.player.currentOffice;
         document.getElementById('stat-pp').textContent = `${GAME_STATE.player.politicalPoints} PP`;
-        document.getElementById('stat-approval').textContent = `${(GAME_STATE.player.approval || 52).toFixed(1)}%`;
-        document.getElementById('stat-tension').textContent = `${GAME_STATE.socialTension || 35}%`;
-        document.getElementById('stat-padron').textContent = '15.4M';
         document.getElementById('clock-date-disp').textContent = `Semana ${GAME_STATE.week} / 52, ${GAME_STATE.month} ${GAME_STATE.year}`;
-        
-        // Tarjetas Resumen
         document.getElementById('card-funds-disp').textContent = `$${GAME_STATE.player.funds.toLocaleString('es-CL')}`;
         document.getElementById('card-hours-disp').textContent = `${GAME_STATE.player.hours} / ${GAME_STATE.player.maxHours} hrs`;
         document.getElementById('card-recognition-disp').textContent = `${GAME_STATE.player.nameRecognition.toFixed(1)}%`;
@@ -4630,17 +2257,6 @@
         const volDisp = document.getElementById('volunteers-count-disp');
         if (volDisp) volDisp.textContent = (GAME_STATE.volunteers || 120).toLocaleString('es-CL');
 
-        // Barras de Entusiasmo Electorales Dinámicas
-        document.getElementById('enth-left-val').textContent = `${Math.round(GAME_STATE.enthusiasm.left)}%`;
-        document.getElementById('enth-left-bar').style.width = `${Math.round(GAME_STATE.enthusiasm.left)}%`;
-        document.getElementById('enth-center-val').textContent = `${Math.round(GAME_STATE.enthusiasm.center)}%`;
-        document.getElementById('enth-center-bar').style.width = `${Math.round(GAME_STATE.enthusiasm.center)}%`;
-        document.getElementById('enth-right-val').textContent = `${Math.round(GAME_STATE.enthusiasm.right)}%`;
-        document.getElementById('enth-right-bar').style.width = `${Math.round(GAME_STATE.enthusiasm.right)}%`;
-        document.getElementById('enth-ind-val').textContent = `${Math.round(GAME_STATE.enthusiasm.ind)}%`;
-        document.getElementById('enth-ind-bar').style.width = `${Math.round(GAME_STATE.enthusiasm.ind)}%`;
-
-        // Badge de Próxima Elección
         const badgeEl = document.getElementById('clock-election-badge');
         if (badgeEl) {
           if (GAME_STATE.year % 4 === 0) {
@@ -4671,295 +2287,21 @@
         window.renderElectoralPactsCatalog();
         window.renderDHondtD3Visualization();
         window.renderProfileAttributes();
-        window.renderOpponentsList();
-        window.renderContactsList();
-        window.renderPollsHistory();
-        window.renderCalendarCards();
-        window.renderMacroMetrics();
-        window.renderOfficePanel();
-        window.renderCorePolicies();
       };
 
-      // RENDER: LISTA DE OPONENTES
-      window.renderOpponentsList = function() {
-        const cont = document.getElementById('opponents-list-container');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        const opponents = GAME_STATE.politicians
-          .filter(p => !p.retired && p.region === GAME_STATE.player.region && p.party !== GAME_STATE.player.partyId)
-          .slice(0, 4);
-
-        if (opponents.length === 0) {
-          cont.innerHTML = '<div class="p-3 text-xs text-stone-500 italic">No hay oponentes directos inscritos en este territorio actualmente.</div>';
-          return;
-        }
-
-        opponents.forEach(op => {
-          const card = document.createElement('div');
-          card.className = 'p-3 border rounded bg-stone-50 flex items-center justify-between text-xs';
-          const pObj = CHILE_PARTIES.find(p => p.id === op.party) || { color: '#64748B' };
-
-          card.innerHTML = `
-            <div class="flex items-center gap-2.5">
-              <span class="w-3.5 h-3.5 rounded-full shrink-0" style="background-color: ${pObj.color};"></span>
-              <div>
-                <strong class="text-slate-900 block">${op.name}</strong>
-                <span class="text-[10px] text-stone-500 font-mono">${op.party} • ${op.office}</span>
-              </div>
-            </div>
-            <div class="flex items-center gap-3">
-              <span class="font-mono text-[11px] text-stone-600">Aprobación: <strong>${op.app}%</strong></span>
-              <button onclick="window.showToast('Investigación Opositora', 'Has encargado un dossier de fiscalización sobre ${op.name.replace(/'/g, "\\'")}.', 'info')" class="px-2 py-1 bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-[10px] rounded border border-stone-400 cursor-pointer">
-                Fiscalizar
-              </button>
-            </div>
-          `;
-          cont.appendChild(card);
-        });
-      };
-
-      // RENDER: LISTA DE CONTACTOS TERRITORIALES
-      window.renderContactsList = function() {
-        const cont = document.getElementById('contacts-list-container');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        const contacts = [
-          { name: 'Marta Poblete', role: 'Presidenta Unión Comunal de JJ.VV.', icon: '🤝', rel: 65 },
-          { name: 'Hernán Carvacho', role: 'Presidente Sindicato Ferias Libres', icon: '🥬', rel: 58 },
-          { name: 'Dr. Patricio Alarcón', role: 'Director Hospital / Cesfam Local', icon: '🏥', rel: 50 },
-          { name: 'Soraya Meléndez', role: 'Líder Agrupación de Emprendedoras', icon: '💼', rel: 60 },
-          { name: 'Claudio Garrido', role: 'Pastor Consejo Pastoral Evangélico', icon: '⛪', rel: 45 },
-          { name: 'Beatriz Leiva', role: 'Coordinadora Colectivo Juvenil', icon: '🎨', rel: 70 }
-        ];
-
-        contacts.forEach(c => {
-          const item = document.createElement('div');
-          item.className = 'p-2.5 border rounded bg-white flex items-center justify-between text-xs';
-          item.innerHTML = `
-            <div class="flex items-center gap-2">
-              <span class="text-xl">${c.icon}</span>
-              <div>
-                <strong class="text-slate-900 block leading-tight">${c.name}</strong>
-                <span class="text-[10px] text-stone-500 leading-none">${c.role}</span>
-              </div>
-            </div>
-            <button onclick="window.showToast('Reunión Territorial', 'Te has reunido con ${c.name.replace(/'/g, "\\'")}. Afinidad consolidada (+1 PP).', 'success'); GAME_STATE.player.politicalPoints += 1; window.renderAll();" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-300 font-bold text-[10px] rounded cursor-pointer">
-              Contactar
-            </button>
-          `;
-          cont.appendChild(item);
-        });
-      };
-
-      // RENDER: HISTORIAL DE ENCUESTAS
-      window.renderPollsHistory = function() {
-        const cont = document.getElementById('polls-history-container');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        if (!GAME_STATE.pollsHistory || GAME_STATE.pollsHistory.length === 0) {
-          cont.innerHTML = '<div class="p-3 text-xs text-stone-500 italic">No se han encargado estudios de opinión en este período.</div>';
-          return;
-        }
-
-        GAME_STATE.pollsHistory.forEach(p => {
-          const row = document.createElement('div');
-          row.className = 'p-3 border rounded bg-white flex items-center justify-between text-xs';
-          row.innerHTML = `
-            <div>
-              <div class="flex items-center gap-2 font-mono text-[10px] text-stone-500">
-                <span>${p.date}</span>
-                <span>•</span>
-                <span>Alcance: ${p.scope}</span>
-                <span>•</span>
-                <span>Muestra: ${p.sample} casos (${p.margin})</span>
-              </div>
-              <div class="font-bold text-slate-900 mt-0.5">Lidera: ${p.leadingCandidate}</div>
-            </div>
-            <div class="text-right">
-              <span class="text-[10px] font-mono text-stone-500 block">Tu Intención de Voto:</span>
-              <strong class="text-blue-900 font-mono-num text-sm">${p.playerPct}</strong>
-            </div>
-          `;
-          cont.appendChild(row);
-        });
-      };
-
-      // RENDER: CALENDARIO OFICIAL SERVEL
-      window.renderCalendarCards = function() {
-        const cont = document.getElementById('elections-calendar-cards');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        const cycles = [
-          { title: 'Ciclo Municipal & Regional 2024', roles: 'Alcaldes, Concejales, Gobernadores', date: 'Octubre 2024 (Semana 44)', active: (GAME_STATE.year === 2024), color: 'border-blue-500 bg-blue-50/50' },
-          { title: 'Ciclo Presidencial & Congreso 2025', roles: 'La Moneda, Diputados, Senadores', date: 'Noviembre 2025 (Semana 44)', active: (GAME_STATE.year === 2025), color: 'border-purple-500 bg-purple-50/50' },
-          { title: 'Gobernanza Constitucional 2026', roles: 'Mitad de Período, Leyes & Reforma', date: 'Sin votación popular (2026)', active: (GAME_STATE.year === 2026), color: 'border-emerald-500 bg-emerald-50/50' }
-        ];
-
-        cycles.forEach(cy => {
-          const card = document.createElement('div');
-          card.className = `p-3.5 border-2 rounded ${cy.active ? cy.color : 'border-stone-300 bg-white'}`;
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-              <strong class="text-xs text-slate-900">${cy.title}</strong>
-              <span class="px-2 py-0.5 rounded text-[9px] font-mono font-bold ${cy.active ? 'bg-blue-600 text-white' : 'bg-stone-200 text-stone-700'}">
-                ${cy.active ? 'EN CURSO' : 'CRONOGRAMA'}
-              </span>
-            </div>
-            <div class="text-[11px] text-stone-600 mb-1">Cargos en disputa: <strong>${cy.roles}</strong></div>
-            <div class="text-[10px] font-mono text-stone-500">Fecha legal: ${cy.date}</div>
-          `;
-          cont.appendChild(card);
-        });
-      };
-
-      // RENDER: MACROECONOMÍA Y VARIABLES SOCIALES
-      window.renderMacroMetrics = function() {
-        const cont = document.getElementById('macro-metrics-grid');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        const m = GAME_STATE.macroMetrics;
-        const cards = [
-          { label: 'Inflación Anual (IPC)', val: `${m.inflation}%`, sub: 'Meta Banco Central 3.0%', good: m.inflation <= 4.0 },
-          { label: 'Crecimiento PIB', val: `+${m.gdpGrowth}%`, sub: 'Variación interanual real', good: m.gdpGrowth >= 2.0 },
-          { label: 'Tasa de Desempleo', val: `${m.unemployment}%`, sub: 'Fuerza de trabajo INE', good: m.unemployment <= 8.0 },
-          { label: 'Tasa de Victimización', val: `${m.victimizationRate}%`, sub: 'Encuesta ENUSC Seguridad', good: m.victimizationRate <= 55.0 },
-          { label: 'Sueldo Mínimo Legal', val: `$${(m.minimumWage || 500000).toLocaleString('es-CL')}`, sub: 'Ingreso mínimo garantizado', good: true },
-          { label: 'Precio del Cobre', val: `US$ ${(m.copperPrice || 4.25).toFixed(2)}/lb`, sub: 'Bolsa de Metales de Londres', good: m.copperPrice >= 4.0 }
-        ];
-
-        cards.forEach(c => {
-          const item = document.createElement('div');
-          item.className = 'p-3 border rounded bg-white shadow-2xs space-y-1';
-          item.innerHTML = `
-            <span class="text-[10px] uppercase font-bold text-stone-500 block">${c.label}</span>
-            <div class="text-xl font-mono-num font-extrabold ${c.good ? 'text-blue-900' : 'text-rose-700'}">${c.val}</div>
-            <span class="text-[10px] text-stone-400 block">${c.sub}</span>
-          `;
-          cont.appendChild(item);
-        });
-      };
-
-      // RENDER: PANEL DE CARGO (OFFICE)
-      window.renderOfficePanel = function() {
-        const off = GAME_STATE.player.currentOffice;
-        const titleEl = document.getElementById('office-title-disp');
-        if (titleEl) titleEl.textContent = off?.roleLabel || 'Ciudadano sin Cargo';
-
-        const subEl = document.getElementById('office-status-subtitle');
-        if (subEl) {
-          subEl.textContent = (off?.roleId && off.roleId !== 'none') 
-            ? `En ejercicio institucional en ${off.territoryLabel} • Período Constitucional ${off.startYear} - ${off.endYear}`
-            : 'Sin funciones institucionales activas. Construye tu liderazgo territorial.';
-        }
-
-        const badgeEl = document.getElementById('office-term-badge');
-        if (badgeEl) badgeEl.textContent = `Período ${off?.startYear || 2024} - ${off?.endYear || 2028}`;
-
-        const appEl = document.getElementById('office-approval-disp');
-        if (appEl) appEl.textContent = `${(GAME_STATE.player.approval || 52).toFixed(1)}%`;
-
-        const budEl = document.getElementById('office-budget-disp');
-        if (budEl) {
-          const annualBud = (off?.salaryWeekly || 0) * 52 * 10;
-          budEl.textContent = annualBud > 0 ? `$${annualBud.toLocaleString('es-CL')} CLP` : '$0 CLP';
-        }
-
-        const billsEl = document.getElementById('office-bills-disp');
-        if (billsEl) billsEl.textContent = (GAME_STATE.legislativeHistory?.length || 2);
-
-        // Registro de Proyectos en vista de Cargo
-        const billsCont = document.getElementById('office-passed-bills-container');
-        if (billsCont) {
-          billsCont.innerHTML = '';
-          GAME_STATE.legislativeHistory.slice(0, 3).forEach(b => {
-            const row = document.createElement('div');
-            row.className = 'p-3 border rounded bg-stone-50 flex items-center justify-between text-xs';
-            row.innerHTML = `
-              <div>
-                <strong class="text-blue-900 block">${b.number}: ${b.title}</strong>
-                <span class="text-[10px] text-stone-500 font-mono">Promulgada en ${b.date} • Quórum: ${b.quorum}</span>
-              </div>
-              <span class="px-2 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">PROMULGADA</span>
-            `;
-            billsCont.appendChild(row);
-          });
-        }
-      };
-
-      // RENDER: TUS 3 POLÍTICAS PRIORITARIAS
-      window.renderCorePolicies = function() {
-        const cont = document.getElementById('player-core-policies-container');
-        if (!cont) return;
-        cont.innerHTML = '';
-
-        const policyIds = GAME_STATE.player.corePolicies || [];
-        const policies = policyIds.map(id => window.resolvePolicy(id)).filter(Boolean);
-
-        policies.forEach(p => {
-          const card = document.createElement('div');
-          card.className = 'p-3 border rounded bg-white space-y-1.5 text-xs shadow-2xs';
-
-          const im = p.impactOnMetrics || {};
-          const impactParts = [];
-          if (im.crime) impactParts.push(`Delincuencia: ${im.crime > 0 ? '+' : ''}${im.crime}%`);
-          if (im.gdp) impactParts.push(`PIB: ${im.gdp > 0 ? '+' : ''}${im.gdp}%`);
-          if (im.tension) impactParts.push(`Tensión: ${im.tension > 0 ? '+' : ''}${im.tension}%`);
-          if (im.inflation) impactParts.push(`Inflación: ${im.inflation > 0 ? '+' : ''}${im.inflation}%`);
-          if (im.unemployment) impactParts.push(`Desempleo: ${im.unemployment > 0 ? '+' : ''}${im.unemployment}%`);
-
-          card.innerHTML = `
-            <div class="flex justify-between items-start gap-2">
-              <strong class="text-slate-900">${p.name}</strong>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-900 border border-blue-200 shrink-0">${p.category || p.issue}</span>
-            </div>
-            <div class="text-[11px] text-stone-600 font-mono">
-              Efecto País: <strong>${impactParts.length > 0 ? impactParts.join(' • ') : 'Equilibrio fiscal y social'}</strong>
-            </div>
-            <div class="text-[10px] text-stone-400 font-mono">
-              GSE Objetivo: <strong>${p.targetGSE || 'Transversal'}</strong> • Costo Fiscal: $${(p.costFiscal || 0).toLocaleString('es-CL')}M
-            </div>
-          `;
-          cont.appendChild(card);
-        });
-      };
-
-      // RENDER: ATRIBUTOS Y COMPÁS IDEOLÓGICO 2D
       window.renderProfileAttributes = function() {
         const list = document.getElementById('profile-attributes-list');
-        if (list) {
-          const attrs = GAME_STATE.player.attributes || { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
-          list.innerHTML = `
-            <div class="flex justify-between p-1 bg-white border rounded"><span>🎙️ Oratoria y Debate:</span><strong>${attrs.oratory}/100</strong></div>
-            <div class="flex justify-between p-1 bg-white border rounded"><span>✨ Carisma Popular:</span><strong>${attrs.charisma}/100</strong></div>
-            <div class="flex justify-between p-1 bg-white border rounded"><span>🤝 Negociación Política:</span><strong>${attrs.negotiation}/100</strong></div>
-            <div class="flex justify-between p-1 bg-white border rounded"><span>📊 Capacidad de Gestión:</span><strong>${attrs.management}/100</strong></div>
-            <div class="flex justify-between p-1 bg-blue-50 border border-blue-200 rounded text-blue-900"><span>🚩 Facción Interna:</span><strong>${GAME_STATE.player.faction || 'Sensibilidad Base'}</strong></div>
-          `;
-        }
-
-        // Posicionar el punto en el compás 2D (-100 a +100)
-        const dot = document.getElementById('compass-player-dot');
-        if (dot) {
-          let econ = 0;
-          const pId = GAME_STATE.player.partyId;
-          if (['PC', 'FA', 'PS', 'PPD'].includes(pId)) econ = -60;
-          else if (['DC', 'DEM', 'AMARILLOS'].includes(pId)) econ = 0;
-          else if (['EVOPOLI', 'RN', 'UDI'].includes(pId)) econ = 55;
-          else if (['PREP', 'PSC', 'PNL'].includes(pId)) econ = 80;
-
-          const leftPct = 50 + (econ * 0.4);
-          const topPct = 50 - ((GAME_STATE.player.approval - 50) * 0.5);
-          dot.style.left = `calc(${leftPct}% - 7px)`;
-          dot.style.top = `calc(${Math.min(90, Math.max(10, topPct))}% - 7px)`;
-        }
+        if (!list) return;
+        const attrs = GAME_STATE.player.attributes || { oratory: 60, charisma: 55, negotiation: 50, management: 55 };
+        list.innerHTML = `
+          <div class="flex justify-between p-1 bg-white border rounded"><span>🎙️ Oratoria y Debate:</span><strong>${attrs.oratory}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>✨ Carisma Popular:</span><strong>${attrs.charisma}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>🤝 Negociación Política:</span><strong>${attrs.negotiation}/100</strong></div>
+          <div class="flex justify-between p-1 bg-white border rounded"><span>📊 Capacidad de Gestión:</span><strong>${attrs.management}/100</strong></div>
+          <div class="flex justify-between p-1 bg-blue-50 border border-blue-200 rounded text-blue-900"><span>🚩 Facción Interna:</span><strong>${GAME_STATE.player.faction || 'Sensibilidad Base'}</strong></div>
+        `;
       };
 
-      // RENDER: MAPA CONTIGUO
       window.renderContiguousMap = function() {
         const svg = document.getElementById('svg-contiguous-map');
         if (!svg) return;
@@ -4969,10 +2311,7 @@
         const district = GAME_STATE.player.district;
         const regName = CHILE_GEO[GAME_STATE.player.region]?.name || 'REGIÓN METROPOLITANA';
 
-        const tTitle = document.getElementById('map-territory-title');
-        if (tTitle) {
-          tTitle.textContent = `RESUMEN DE ${commune.toUpperCase()} (${district.toUpperCase()} - ${regName.toUpperCase()})`;
-        }
+        document.getElementById('map-territory-title').textContent = `RESUMEN DE ${commune.toUpperCase()} (${district.toUpperCase()} - ${regName.toUpperCase()})`;
 
         const sectors = [
           { name: 'Centro Cívico y Plaza', path: 'M 200,100 L 280,100 L 290,150 L 210,150 Z', color: '#CBD5E1', pop: 48000 },
@@ -5009,7 +2348,6 @@
         });
       };
 
-      // RENDER: TABLA DE OPINIÓN PÚBLICA
       window.renderPublicOpinionTable = function() {
         const tbody = document.getElementById('public-opinion-table-body');
         if (!tbody) return;
@@ -5042,7 +2380,6 @@
         });
       };
 
-      // RENDER: NOTICIAS
       window.renderNewsFeed = function() {
         const cont = document.getElementById('news-feed-container');
         if (!cont) return;
@@ -5062,7 +2399,6 @@
         });
       };
 
-      // RENDER: HEMICICLO CONGRESO
       window.renderCongressHemiciclo = function() {
         const svg = document.getElementById('svg-congress-hemiciclo');
         if (!svg) return;
@@ -5109,18 +2445,12 @@
         });
       };
 
-      // RENDER: HISTORIAL LEGISLATIVO
       window.renderLegislativeHistory = function() {
         const tbody = document.getElementById('legislative-history-table-body');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const filter = document.getElementById('hist-filter-area')?.value || 'all';
-        const list = (filter === 'all') 
-          ? GAME_STATE.legislativeHistory 
-          : GAME_STATE.legislativeHistory.filter(l => l.area === filter);
-
-        list.forEach(l => {
+        GAME_STATE.legislativeHistory.forEach(l => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-stone-50 text-xs';
           tr.innerHTML = `
@@ -5136,37 +2466,37 @@
         });
       };
 
-      // RENDER: DIRECTORIO DE POLÍTICOS (ALIMENTADO DESDE GAME_STATE.politicians)
       window.renderPoliticiansDirectory = function() {
         const tbody = document.getElementById('politicians-table-body');
         if (!tbody) return;
         tbody.innerHTML = '';
 
-        const activePols = (GAME_STATE.politicians || []).filter(p => !p.retired).slice(0, 25);
+        const pols = [
+          { name: 'Gabriel Boric Font', party: 'FA', office: 'Presidente de la República', age: 38, econ: '-60 / -40', rel: 50, app: 31 },
+          { name: 'Camila Vallejo Dowling', party: 'PC', office: 'Ministra Vocera', age: 36, econ: '-80 / -50', rel: 45, app: 42 },
+          { name: 'Tomás Vodanovic Escudero', party: 'FA', office: 'Alcalde de Maipú', age: 33, econ: '-40 / +10', rel: 70, app: 58 },
+          { name: 'Evelyn Matthei Fornet', party: 'UDI', office: 'Alcaldesa de Providencia', age: 70, econ: '+60 / +50', rel: 40, app: 61 },
+          { name: 'José Antonio Kast Rist', party: 'PREP', office: 'Líder Opositor', age: 58, econ: '+85 / +80', rel: 30, app: 45 },
+          { name: 'Mario Desbordes Jiménez', party: 'RN', office: 'Alcalde de Santiago', age: 55, econ: '+40 / +65', rel: 60, app: 50 }
+        ];
 
-        activePols.forEach(p => {
+        pols.forEach(p => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-stone-50 text-xs';
-          const escapedName = (p.name || '').replace(/'/g, "\\'");
           tr.innerHTML = `
             <td class="py-2 px-3 font-bold text-slate-900">${p.name}</td>
             <td class="py-2 px-2 font-mono font-bold">${p.party}</td>
             <td class="py-2 px-2 text-stone-700">${p.office}</td>
             <td class="py-2 px-2 text-center font-mono">${p.age}</td>
-            <td class="py-2 px-2 text-center font-mono">${p.econ > 0 ? '+' : ''}${p.econ}</td>
+            <td class="py-2 px-2 text-center font-mono">${p.econ}</td>
             <td class="py-2 px-2 text-center font-mono font-bold text-blue-800">${p.rel}/100</td>
             <td class="py-2 px-2 text-center font-mono font-bold ${p.app >= 50 ? 'text-emerald-700' : 'text-slate-700'}">${p.app}%</td>
-            <td class="py-2 px-2 text-right">
-              <button class="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 border rounded font-bold text-[10px] cursor-pointer" onclick="window.showToast('Ficha de Político', '${escapedName} (${p.party}): En ejercicio en ${p.district || p.commune}.', 'info')">
-                Ver
-              </button>
-            </td>
+            <td class="py-2 px-2 text-right"><button class="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 border rounded font-bold text-[10px]" onclick="window.showToast('Ficha', '${p.name}: Liderazgo activo.', 'info')">Ver</button></td>
           `;
           tbody.appendChild(tr);
         });
       };
 
-      // RENDER: CATÁLOGO DE PACTOS ELECTORALES
       window.renderElectoralPactsCatalog = function() {
         const grid = document.getElementById('electoral-pacts-grid');
         if (!grid) return;
@@ -5192,7 +2522,7 @@
               <p class="text-[11px] text-stone-600 leading-snug mb-2">${p.desc}</p>
               <div class="text-[10px] font-mono text-stone-500">Partidos: <strong>${p.parties}</strong></div>
             </div>
-            <button onclick="window.togglePactMembership('${p.id}')" class="mt-3 w-full py-1 text-xs font-bold rounded border cursor-pointer ${isAct ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 border-rose-300' : 'bg-[#0047AB] hover:bg-[#003399] text-white border-[#002266]'}">
+            <button onclick="window.togglePactMembership('${p.id}')" class="mt-3 w-full py-1 text-xs font-bold rounded border ${isAct ? 'bg-rose-100 hover:bg-rose-200 text-rose-900 border-rose-300' : 'bg-[#0047AB] hover:bg-[#003399] text-white border-[#002266]'}">
               ${isAct ? 'Renunciar al Pacto' : 'Unirse al Pacto Electoral'}
             </button>
           `;
@@ -5339,7 +2669,7 @@
         const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(GAME_STATE, null, 2));
         const a = document.createElement('a');
         a.href = dataStr;
-        a.download = `partida_${(GAME_STATE.player.name || 'politico').replace(/\s+/g, '_')}_${GAME_STATE.year}.json`;
+        a.download = `partida_${GAME_STATE.player.name.replace(/\s+/g, '_')}_${GAME_STATE.year}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -5371,41 +2701,29 @@
         }
       };
 
-      // NOTIFICACIONES APILABLES EN COLA VERTICAL (SIN ALERT)
       window.showToast = function(title, msg, type = 'info') {
-        const container = document.getElementById('toast-container');
         const t = document.createElement('div');
         const color = type === 'success' ? 'bg-emerald-50 border-emerald-600 text-emerald-950' :
                       type === 'warning' ? 'bg-amber-50 border-amber-600 text-amber-950' :
                       type === 'error' ? 'bg-rose-50 border-rose-600 text-rose-950' : 'bg-blue-50 border-blue-600 text-blue-950';
 
-        t.className = `p-3 rounded border-2 shadow-2xl transition-all duration-300 pointer-events-auto ${color}`;
+        t.className = `fixed bottom-4 right-4 z-50 p-3 rounded border-2 shadow-2xl max-w-sm transition-all duration-200 ${color}`;
         t.innerHTML = `
-          <div class="font-extrabold text-xs uppercase mb-0.5 flex items-center justify-between">
-            <span>${title}</span>
-            <button onclick="this.parentElement.parentElement.remove()" class="text-stone-400 hover:text-black font-bold text-xs ml-2 cursor-pointer">✕</button>
-          </div>
+          <div class="font-extrabold text-xs uppercase mb-0.5">${title}</div>
           <div class="text-[11px] font-medium leading-tight">${msg}</div>
         `;
-
-        if (container) {
-          container.appendChild(t);
-        } else {
-          document.body.appendChild(t);
-        }
-
+        document.body.appendChild(t);
         setTimeout(() => {
           t.style.opacity = '0';
-          t.style.transform = 'translateY(10px)';
-          setTimeout(() => t.remove(), 300);
-        }, 4500);
+          setTimeout(() => t.remove(), 250);
+        }, 3500);
       };
 
       // Inicialización general
       window.addEventListener('DOMContentLoaded', () => {
         window.p1RenderParties();
         window.p1RenderFactions(CHILE_PARTIES.find(p => p.id === 'IND'));
-        window.p1HandleAgeChange(25);
+        window.p1UpdateProfessions(25);
 
         const saved = localStorage.getItem('tpp_chile_clean_save');
         if (saved) {

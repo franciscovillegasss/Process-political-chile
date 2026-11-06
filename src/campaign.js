@@ -1,3 +1,5 @@
+import { policyUrgency, publicAgenda } from './electorate.js';
+
 export const VOLUNTEER_LIMIT = 500;
 
 export const ADS = {
@@ -23,20 +25,24 @@ export function initialCampaign() {
     digital: 0, palomas: 0, fundraising: 0, trained: 0, mobilized: 0, policyWeek: 0,
     contactYear: 0, contacts: { vecinos: 0, productivo: 0, civico: 0 },
     polls: [], activity: [],
+    actionUses: { puerta_a_puerta: 0, cabildo: 0, prensa: 0 },
+    endorsements: { vecinos: false, productivo: false, civico: false },
   };
 }
 
 export function weeklyCampaign(state) {
   Object.assign(state.campaign, { digital: 0, palomas: 0, fundraising: 0, mobilized: 0, policyWeek: 0 });
+  for (const action of Object.keys(state.campaign.actionUses)) state.campaign.actionUses[action] = 0;
   if (state.week % 4 !== 0) return;
   const wave = [0.6, 0.25, -0.2, -0.55, -0.3, 0.1][(state.year * 13 + state.week / 4) % 6] ?? 0;
+  const agenda = publicAgenda(state);
   const prior = state.macroMetrics;
   const round = number => Math.round(number * 10) / 10;
   const next = {
-    inflation: round(Math.max(0.5, prior.inflation + (3.5 - prior.inflation) * 0.13 + wave)),
-    gdpGrowth: round(prior.gdpGrowth + (2.4 - prior.gdpGrowth) * 0.18 - wave * 0.8),
+    inflation: round(Math.max(0.5, prior.inflation + (3.5 - prior.inflation) * 0.13 + wave * 0.55 + (agenda.topics[0] === 'Economía' ? 0.15 : 0))),
+    gdpGrowth: round(prior.gdpGrowth + (2.4 - prior.gdpGrowth) * 0.18 - wave * 0.55 + (agenda.economy > 0.5 ? 0.27 : 0)),
     unemployment: round(Math.max(3, prior.unemployment + (7.7 - prior.unemployment) * 0.12 + wave * 0.4)),
-    victimizationRate: round(Math.max(0, prior.victimizationRate + (55 - prior.victimizationRate) * 0.09 - wave * 1.1)),
+    victimizationRate: round(Math.max(0, prior.victimizationRate + (55 - prior.victimizationRate) * 0.09 - wave * 0.45 + (agenda.topics[0] === 'Seguridad' ? 0.7 : 0))),
   };
   state.macroTrend = Object.fromEntries(METRICS.map(({key}) => [key, round(next[key] - prior[key])]));
   state.macroMetrics = next;
@@ -45,14 +51,5 @@ export function weeklyCampaign(state) {
 }
 
 export function issueDemand(state, issue) {
-  const { inflation, gdpGrowth, unemployment, victimizationRate } = state.macroMetrics;
-  const pressure = {
-    'Economía': inflation >= 4 || gdpGrowth < 2,
-    'Trabajo y transporte': unemployment >= 8,
-    'Seguridad': victimizationRate >= 57,
-    'Vivienda y ciudad': inflation >= 4,
-    'Instituciones y derechos': state.socialTension >= 45,
-    'Salud': state.socialTension >= 45,
-  };
-  return pressure[issue] === true;
+  return policyUrgency(state, issue) >= 0.75;
 }

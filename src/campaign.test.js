@@ -7,9 +7,11 @@ test('campaign activities reset each week without clearing contacts, polls or tr
   const campaign = initialCampaign();
   Object.assign(campaign, { digital: 1, palomas: 1, fundraising: 2, trained: 25, mobilized: 40, policyWeek: 1 });
   campaign.contacts.vecinos = 1;
+  campaign.actionUses.cabildo = 3;
   campaign.polls.push({ week: 8 });
   weeklyCampaign({ campaign, week: 9 });
   assert.deepEqual([campaign.digital, campaign.palomas, campaign.fundraising, campaign.mobilized, campaign.policyWeek], [0, 0, 0, 0, 0]);
+  assert.equal(campaign.actionUses.cabildo, 0);
   assert.equal(campaign.trained, 25);
   assert.equal(campaign.contacts.vecinos, 1);
   assert.equal(campaign.polls.length, 1);
@@ -24,7 +26,9 @@ test('monthly economic changes update trends and campaign demands', () => {
   weeklyCampaign(state);
   assert.notDeepEqual(state.macroMetrics, baseline);
   assert.equal(state.macroTrend.inflation, Math.round((state.macroMetrics.inflation - baseline.inflation) * 10) / 10);
-  assert.equal(issueDemand(state, 'Seguridad'), true);
+  assert.equal(issueDemand(state, 'Economía'), true);
+  assert.equal(issueDemand(state, 'Seguridad'), false);
+  assert.equal(issueDemand({ ...state, week: 9 }, 'Seguridad'), true);
   const monthly = state.macroMetrics;
   state.week++;
   weeklyCampaign(state);

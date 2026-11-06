@@ -33,16 +33,16 @@ const RIVAL_NAMES = [
   ['Daniel Silva', 'Camila Contreras', 'Javier Álvarez'],
 ];
 
-export function electionField(election, player, week = 8) {
+export function electionField(election, player, week = 8, climate) {
   const office = OFFICES[election.office || 'concejal'];
   const growth = Math.max(0, week - 8);
-  const votes = Math.max(0, Math.round(80 + player.nameRecognition * 3 + (player.approval - 52) * 4 + election.support));
+  const votes = Math.max(0, Math.round((80 + player.nameRecognition * 3 + (player.approval - 52) * 4 + election.support) * (climate?.multiplier ?? 1)));
   const lists = PACTS.map((pact, index) => {
     const bases = office.seats ? [980 - index * 95, 720 - index * 70, 490 - index * 55] : [[980, 720, 490, 360][index]];
     const candidates = bases.map((base, rank) => ({
       name: RIVAL_NAMES[index][rank],
       list: pact.name,
-      votes: Math.round(base * office.scale + growth * (4 - index + rank)),
+      votes: Math.round((base * office.scale + growth * (4 - index + rank)) * (climate?.rivalFactors[index] ?? 1)),
     }));
     return { ...pact, candidates };
   });
@@ -50,8 +50,8 @@ export function electionField(election, player, week = 8) {
   return { office, votes, lists, rivals, total: votes + rivals.reduce((sum, rival) => sum + rival.votes, 0) };
 }
 
-export function countElection(election, player, seats, week) {
-  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week);
+export function countElection(election, player, seats, week, climate) {
+  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week, climate);
   if (!office.seats) return countExecutive(office, candidateVotes, rivals);
 
   let ownList = lists.find(list => list.id === election.pact);

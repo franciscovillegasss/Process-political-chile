@@ -1,6 +1,7 @@
 import { CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './campaign.js';
 import { electionField } from './election.js';
 import { POLICIES_CATALOG } from './programs.js';
+import { campaignClimate, messageImpact, publicAgenda } from './electorate.js';
 
 const element = id => document.getElementById(id);
 
@@ -31,20 +32,27 @@ const pct = value => `${format(Number(value.toFixed(1)))} %`;
 
 export function renderCampaign(state, election) {
   const { player, campaign, volunteers } = state;
-  const field = election ? electionField(election, player, state.week) : null;
+  const climate = campaignClimate(state);
+  const field = election ? electionField(election, player, state.week, climate) : null;
   const chosen = player.corePolicies.map(id => POLICIES_CATALOG.find(policy => policy.id === id)).filter(Boolean);
   const chosenTopics = new Set(chosen.map(policy => policy.issue));
   element('opponents-list-container').replaceChildren(...(field
-    ? field.rivals.map(rival => card(rival.name, `${rival.list} · ${format(rival.votes)} votos proyectados`))
+    ? field.rivals.map(rival => {
+      const strength = rival.votes / field.rivals[0].votes;
+      const standing = strength >= 0.85 ? 'Competitivo' : strength >= 0.6 ? 'Presencia media' : 'Presencia baja';
+      return card(rival.name, `${rival.list} · ${standing}`);
+    })
     : [card('Sin contienda activa', 'Inscribe tu candidatura en Elecciones para ver a quienes compiten por el mismo cargo.')]));
 
   element('contacts-list-container').replaceChildren(...CONTACTS.map(contact => {
     const visits = campaign.contacts[contact.id];
     const aligned = contact.issues.some(issue => chosenTopics.has(issue));
     const needed = aligned ? 1 : 2;
-    return card(contact.name, `${contact.issues.join(' · ')}\n${visits >= needed ? 'Respaldo confirmado' : `Reuniones: ${visits}/${needed}`}`, {
+    const endorsed = campaign.endorsements[contact.id];
+    return card(contact.name, `${contact.issues.join(' · ')}
+${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${needed}`}`, {
       label: 'Reunirse (8 h)',
-      disabled: !election || visits >= needed,
+      disabled: !election || endorsed,
       run: () => window.meetContact(contact.id),
     });
   }));
@@ -63,17 +71,34 @@ export function renderCampaign(state, election) {
     : 'Inscribe una candidatura para contratar publicidad.';
   for (const key of ['digital', 'palomas']) element(`marketing-${key}`).disabled = !election || Boolean(campaign[key]);
 
-  element('player-core-policies-container').replaceChildren(...chosen.map(policy => {
-    const priority = issueDemand(state, policy.issue);
-    return card(policy.name, `${policy.issue} · ${priority ? 'Alta demanda nacional · bono de apoyo' : 'Demanda normal'}`, {
+  element('campaign-climate').textContent = `Agenda: ${climate.agenda.title} · ${climate.agenda.topics.join(', ')}
+Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
+  element('player-core-policies-container').replaceChildren(...climate.policyResults.map(item => {
+    const { policy, urgency, fit, coherence, emphasis } = item;
+    const demand = urgency >= 0.75 ? 'Alta demanda' : urgency >= 0.45 ? 'Demanda media' : 'Demanda baja';
+    const impact = messageImpact(item, player.attributes.oratory);
+    return card(policy.name, `${policy.issue} · ${demand}
+Afinidad con el electorado: ${pct(fit * 100)}${player.partyId === 'IND' ? '' : ` · coherencia partidaria: ${pct(coherence * 100)}`}
+Énfasis actual: ${format(Number(emphasis.toFixed(1)))} / 4 · efecto estimado al promover: +${impact} puntos`, {
       label: 'Promover este eje (10 h)',
       disabled: !election || Boolean(campaign.policyWeek),
       run: () => window.promotePolicy(policy.id),
     });
   }));
   element('policy-campaign-help').textContent = election
-    ? 'Puedes promover un eje por semana. Las prioridades del país cambian con las métricas.'
-    : 'Estos son tus ejes. Inscribe una candidatura para promover uno por semana.';
+    ? 'Promueve un eje por semana. La demanda y la afinidad pesan por separado. Repetir un mensaje saturado rinde menos.'
+    : 'Estos son tus ejes. Inscribe una candidatura para promoverlos y adaptar el programa.';
+  const revision = element('policy-revision');
+  revision.classList.toggle('hidden', !election);
+  if (election) {
+    element('revision-current').replaceChildren(...chosen.map(policy => new Option(policy.name, policy.id)));
+    element('revision-new').replaceChildren(...POLICIES_CATALOG.filter(policy => !player.corePolicies.includes(policy.id)).map(policy => new Option(`${policy.issue} · ${policy.name}`, policy.id)));
+    const remaining = election.lastRevision ? Math.max(0, 4 - (state.week - election.lastRevision)) : 0;
+    element('revision-apply').disabled = Boolean(remaining);
+    element('revision-status').textContent = remaining
+      ? `Podrás hacer otro cambio en ${remaining} semanas. Cambios en esta contienda: ${election.revisions}.`
+      : `Un cambio cuesta 12 h y 3 PP. Cada revisión reduce la confianza en esta contienda. Cambios: ${election.revisions}.`;
+  }
 
   const trained = Math.min(campaign.trained, volunteers);
   element('volunteers-count-disp').textContent = `${format(volunteers)} / ${VOLUNTEER_LIMIT}`;
@@ -96,6 +121,8 @@ export function renderCountry(state) {
   });
   cards.push(card('Tensión social', pct(state.socialTension)));
   element('macro-metrics-grid').replaceChildren(...cards);
+  const agenda = publicAgenda(state);
+  element('macro-agenda').textContent = `${agenda.title} · Electorado simulado: ${agenda.weights[0]} % reformista, ${agenda.weights[1]} % moderado, ${agenda.weights[2]} % orden y mercado.`;
   element('macro-priorities').textContent = signals.length
     ? `Prioridades del electorado: ${signals.join(' · ')}.`
     : 'Sin temas en alerta en este corte.';

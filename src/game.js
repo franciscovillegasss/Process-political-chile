@@ -2,8 +2,9 @@ import { PACTS, allocateSeats, LOCAL_REGISTRATION, LOCAL_ACTIONS, countElection,
 
 import { CHILE_GEO, CHILE_PARTIES, STAFF_CATALOG } from './catalogs.js';
 import { POLICIES_CATALOG, PROGRAM_PRESETS, programPosition } from './programs.js';
-import { ADS, CONTACTS, VOLUNTEER_LIMIT, initialCampaign, issueDemand, weeklyCampaign } from './campaign.js';
+import { ADS, CONTACTS, VOLUNTEER_LIMIT, initialCampaign, weeklyCampaign } from './campaign.js';
 import { renderCampaign, renderCountry } from './campaign-view.js';
+import { campaignClimate, decayMessages, messageImpact, newMessages, publicAgenda } from './electorate.js';
 
 const element = id => document.getElementById(id);
 const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -66,10 +67,11 @@ window.registerCandidate = function() {
   if (!selection) return warn('Selecciona un cargo disponible para tu edad y territorio.');
   if (!pay({ ...LOCAL_REGISTRATION, funds: registrationCost() })) return;
   const pact = PACTS.find(list => `pact-${list.id}` === player.activePactId)?.id || 'ind';
-  GAME_STATE.localElection = { year, office: id, pact, support: 0, result: '' };
+  GAME_STATE.localElection = { year, office: id, pact, support: 0, messages: newMessages(), revisions: 0, lastRevision: 0, result: '' };
   if (GAME_STATE.campaign.contactYear !== year) {
     GAME_STATE.campaign.contactYear = year;
-    GAME_STATE.campaign.contacts = initialCampaign().contacts;
+    const { contacts, endorsements } = initialCampaign();
+    Object.assign(GAME_STATE.campaign, { contacts, endorsements });
   }
   reportCampaign('Candidatura inscrita', `Ya puedes hacer campaña para ${OFFICES[id].name} y consultar a tus oponentes.`);
 };
@@ -79,12 +81,14 @@ window.executeCampaignAction = function(key) {
   const election = requireElection();
   const action = LOCAL_ACTIONS[key];
   if (!election || !pay(action)) return;
-  const { player } = GAME_STATE;
+  const { player, campaign } = GAME_STATE;
   const policies = POLICIES_CATALOG.filter(policy => player.corePolicies.includes(policy.id));
   const issueMatch = policies.some(policy => action.issues.includes(policy.issue));
-  const support = Math.round(action.support * (0.5 + player.attributes[action.attribute] / 100) * (issueMatch ? 1.15 : 1));
+  const repeats = campaign.actionUses[key]++;
+  const support = Math.round(action.support * (0.5 + player.attributes[action.attribute] / 100) *
+    (issueMatch ? 1.15 : 1) / (1 + repeats * 0.38));
   election.support += support;
-  reportCampaign('Actividad de campaña', `+${support} votos proyectados.${issueMatch ? ' Incluye el bono por afinidad programática.' : ''}`);
+  reportCampaign('Actividad de campaña', `+${support} puntos de campaña.${repeats ? ' La repetición de este formato reduce su efecto.' : ''}${issueMatch ? ' Incluye afinidad programática.' : ''}`);
 };
 
 window.fundraiseAction = function() {
@@ -111,7 +115,7 @@ window.launchAdCampaign = function(key) {
   player.nameRecognition += recognition;
   const support = Math.round(ad.support * (1 + bonuses.advertisingBonus));
   election.support += support;
-  reportCampaign(ad.name, `${clp(funds)} invertidos · +${recognition.toFixed(1)} pp de reconocimiento y +${support} votos proyectados.`);
+  reportCampaign(ad.name, `${clp(funds)} invertidos · +${recognition.toFixed(1)} pp de reconocimiento y +${support} puntos de campaña.`);
 };
 
 window.meetContact = function(id) {
@@ -121,11 +125,12 @@ window.meetContact = function(id) {
   const { campaign, player } = GAME_STATE;
   const aligned = POLICIES_CATALOG.some(policy => player.corePolicies.includes(policy.id) && contact.issues.includes(policy.issue));
   const needed = aligned ? 1 : 2;
-  if (campaign.contacts[id] >= needed || !pay({ hours: 8 })) return;
+  if (campaign.endorsements[id] || !pay({ hours: 8 })) return;
   campaign.contacts[id]++;
-  if (campaign.contacts[id] === needed) {
+  if (campaign.contacts[id] >= needed) {
+    campaign.endorsements[id] = true;
     election.support += contact.support;
-    reportCampaign('Respaldo confirmado', `${contact.name} · +${contact.support} votos proyectados.`);
+    reportCampaign('Respaldo confirmado', `${contact.name} · +${contact.support} puntos de campaña.`);
   } else reportCampaign('Contacto realizado', `${contact.name} · falta una reunión para conseguir su respaldo.`);
 };
 
@@ -134,7 +139,7 @@ window.commissionPoll = function() {
   const { campaign, player, year, week } = GAME_STATE;
   if (!election || campaign.polls.some(poll => poll?.year === year && poll.week === week) ||
       !pay({ hours: 0, funds: 1_000_000 })) return;
-  const field = electionField(election, player, week);
+  const field = electionField(election, player, week, campaignClimate(GAME_STATE));
   const rival = field.rivals[0];
   const precision = 1 - staffTotals().pollAccuracy;
   const margin = 3 * precision;
@@ -150,14 +155,35 @@ window.commissionPoll = function() {
 
 window.promotePolicy = function(id) {
   const election = requireElection();
+  if (!election) return;
   const { campaign, player } = GAME_STATE;
-  const policy = POLICIES_CATALOG.find(item => item.id === id && player.corePolicies.includes(id));
-  if (!election || !policy || campaign.policyWeek || !pay({ hours: 10 })) return;
+  const item = campaignClimate(GAME_STATE).policyResults.find(entry => entry.policy.id === id);
+  if (!item || campaign.policyWeek || !pay({ hours: 10 })) return;
   campaign.policyWeek = 1;
-  const priority = issueDemand(GAME_STATE, policy.issue);
-  const support = Math.round((priority ? 72 : 40) * (0.5 + player.attributes.oratory / 100));
+  const support = messageImpact(item, player.attributes.oratory);
+  election.messages[id] = Math.min(4, item.emphasis + 1.6);
   election.support += support;
-  reportCampaign('Eje promovido', `${policy.name} · +${support} votos proyectados${priority ? ' por alta demanda nacional' : ''}.`);
+  reportCampaign('Eje promovido', `${item.policy.name} · +${support} puntos de campaña. El énfasis irá perdiendo fuerza si dejas de comunicarlo.`);
+};
+
+window.revisePolicy = function() {
+  const election = requireElection();
+  if (!election) return;
+  const { player, week } = GAME_STATE;
+  const previous = element('revision-current').value;
+  const replacement = element('revision-new').value;
+  if (election.lastRevision && week - election.lastRevision < 4) return warn('Debes esperar cuatro semanas entre cambios de programa.');
+  const slot = player.corePolicies.indexOf(previous);
+  if (slot < 0 || player.corePolicies.includes(replacement) || !POLICIES_CATALOG.some(policy => policy.id === replacement)) {
+    return warn('Elige un eje nuevo y uno de tus tres compromisos para reemplazar.');
+  }
+  if (!pay({ hours: 12, points: 3 })) return;
+  player.corePolicies[slot] = replacement;
+  election.messages[previous] = 0;
+  election.lastRevision = week;
+  election.revisions++;
+  updateCompass('profile', player.corePolicies);
+  reportCampaign('Programa actualizado', 'El nuevo eje entra en vigor. Cada cambio resta confianza durante esta elección.');
 };
 
 window.manageVolunteers = function(action) {
@@ -178,7 +204,7 @@ window.manageVolunteers = function(action) {
     campaign.mobilized = Math.min(40, volunteers);
     const support = campaign.mobilized + Math.min(campaign.mobilized, campaign.trained);
     election.support += support;
-    reportCampaign('Brigada movilizada', `${campaign.mobilized} voluntarios · +${support} votos proyectados. Disponibles nuevamente la próxima semana.`);
+    reportCampaign('Brigada movilizada', `${campaign.mobilized} voluntarios · +${support} puntos de campaña. Disponibles nuevamente la próxima semana.`);
   }
 };
 
@@ -188,7 +214,7 @@ function resolveElection() {
   const candidate = localElection?.year === year && localElection.office ? localElection : null;
   const id = candidate?.office || 'concejal';
   const districtSeats = id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined;
-  const { won, summary } = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week)
+  const { won, summary } = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week, campaignClimate(GAME_STATE))
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
   GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), result: summary };
   const outgoing = player.officeEndYear > 0 ? player.officeEndYear === year
@@ -244,7 +270,7 @@ ${cycle.map(([id, office]) =>
       `${office.name} (${office.age}+)${eligible.some(([key]) => key === id) ? '' : ' · no habilitada'}`).join(' | ')}`
     : `Año sin elecciones regulares. Próximo ciclo: ${year + (4 - year % 4)}.`;
   const campaign = localElection?.year === year && !localElection.result
-    ? `Candidatura inscrita: ${officeTitle(localElection.office, player)} · ${localElection.support} votos proyectados por campaña.` : '';
+    ? `Candidatura inscrita: ${officeTitle(localElection.office, player)} · ${localElection.support.toLocaleString('es-CL')} puntos de campaña acumulados. Consulta Encuestas para estimar la intención de voto.` : '';
   const result = localElection?.result ? `Resultado ${localElection.year}
 ${localElection.result}` : '';
   element('elections-calendar-cards').textContent = [calendar, campaign, result].filter(Boolean).join('\n\n');
@@ -936,6 +962,8 @@ window.renderStaffPanel = function() {
 
 window.advanceTurn = function(weeksToAdvance = 1) {
   const count = [1, 4].includes(weeksToAdvance) ? weeksToAdvance : 1;
+  const previousAgenda = publicAgenda(GAME_STATE);
+  let announced = false;
   for (let w = 0; w < count; w++) {
     GAME_STATE.week += 1;
 
@@ -959,6 +987,7 @@ window.advanceTurn = function(weeksToAdvance = 1) {
     player.nameRecognition = Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly);
     GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
     weeklyCampaign(GAME_STATE);
+    if (GAME_STATE.localElection?.year === GAME_STATE.year) decayMessages(GAME_STATE.localElection);
     if (GAME_STATE.week % 4 === 0) player.politicalPoints += bonuses.bonusPPMonthly;
 
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -971,10 +1000,13 @@ window.advanceTurn = function(weeksToAdvance = 1) {
         window.showToast('Escrutinio electoral', 'El resultado está disponible en Elecciones.', 'info');
       } else window.showToast('Inscripciones abiertas', 'Elige un cargo en Elecciones para iniciar tu campaña.', 'info');
       window.switchMainView('view-elections');
+      announced = true;
       break;
     }
   }
 
+  const agenda = publicAgenda(GAME_STATE);
+  if (!announced && agenda !== previousAgenda) window.showToast('Cambió la agenda pública', `${agenda.title}. Revisa el efecto en tus tres ejes.`);
   refreshCampaign();
   renderCountry(GAME_STATE);
   window.renderStaffPanel();
@@ -1403,9 +1435,17 @@ function loadState(raw) {
       value.week < 1 || value.week > 52) throw new Error('Partida inválida');
   const next = restore(defaults, value);
   if (next.localElection !== null) {
-    next.localElection = restore({ year: 0, office: 'concejal', pact: '', support: 0, result: '' }, next.localElection);
+    next.localElection = restore({
+      year: 0, office: 'concejal', pact: '', support: 0, messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
+    }, next.localElection);
     if (next.localElection.office && !Object.hasOwn(OFFICES, next.localElection.office)) throw new Error('Cargo inválido');
-    if (!Number.isInteger(next.localElection.year) || next.localElection.support < 0) throw new Error('Elección inválida');
+    const election = next.localElection;
+    if (!Number.isInteger(election.year) || election.support < 0 ||
+        !Number.isInteger(election.revisions) || election.revisions < 0 ||
+        !Number.isInteger(election.lastRevision) || election.lastRevision < 0 || election.lastRevision > 52) {
+      throw new Error('Elección inválida');
+    }
+    for (const id of Object.keys(election.messages)) election.messages[id] = Math.max(0, Math.min(4, election.messages[id]));
   }
   if (!next.player.officeId) {
     const legacyTitle = /^(Concejal|Alcalde|Diputado|Gobernador|Senador|Presidente)\b/.exec(next.player.currentOffice);
@@ -1413,6 +1453,12 @@ function loadState(raw) {
   }
   if (next.player.commune === 'Santiago Centro') next.player.commune = 'Santiago';
   if (next.player.officeId && !Object.hasOwn(OFFICES, next.player.officeId)) throw new Error('Cargo inválido');
+  if (!value.campaign?.endorsements) {
+    for (const contact of CONTACTS) {
+      const aligned = POLICIES_CATALOG.some(policy => next.player.corePolicies.includes(policy.id) && contact.issues.includes(policy.issue));
+      next.campaign.endorsements[contact.id] = next.campaign.contacts[contact.id] >= (aligned ? 1 : 2);
+    }
+  }
   next.volunteers = Math.max(0, Math.min(VOLUNTEER_LIMIT, next.volunteers));
   next.campaign.trained = Math.max(0, Math.min(next.volunteers, next.campaign.trained));
   if (next.localManagement !== null && !['pending', 'agenda', 'audit'].includes(next.localManagement)) throw new Error('Gestión inválida');

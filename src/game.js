@@ -1,10 +1,13 @@
-import { PACTS, allocateSeats, LOCAL_REGISTRATION, LOCAL_ACTIONS, countElection, OFFICES, cycleOffices, electionWeek, officeTerritory } from './election.js';
+import { PACTS, allocateSeats, LOCAL_REGISTRATION, LOCAL_ACTIONS, countElection, electionField, OFFICES, cycleOffices, electionWeek, officeTerritory } from './election.js';
 
 import { CHILE_GEO, CHILE_PARTIES, STAFF_CATALOG } from './catalogs.js';
 import { POLICIES_CATALOG, PROGRAM_PRESETS, programPosition } from './programs.js';
+import { ADS, CONTACTS, VOLUNTEER_LIMIT, initialCampaign, issueDemand, weeklyCampaign } from './campaign.js';
+import { renderCampaign, renderCountry } from './campaign-view.js';
 
 const element = id => document.getElementById(id);
 const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+const clp = amount => `$${amount.toLocaleString('es-CL')}`;
 const warn = message => window.showToast('Acción no disponible', message, 'warning');
 
 function pay({ hours, funds = 0, points = 0 }) {
@@ -17,6 +20,32 @@ function pay({ hours, funds = 0, points = 0 }) {
   player.funds -= funds;
   player.politicalPoints -= points;
   return true;
+}
+
+function activeElection() {
+  const { localElection, year, week } = GAME_STATE;
+  return localElection?.year === year && localElection.office && !localElection.result &&
+    electionWeek(year) > week ? localElection : null;
+}
+
+function requireElection() {
+  const election = activeElection();
+  if (!election) warn('Inscribe una candidatura en Elecciones para usar esta acción.');
+  return election;
+}
+
+function refreshCampaign() {
+  renderPlayerStats();
+  renderLocalElection();
+  renderCampaign(GAME_STATE, activeElection());
+}
+
+function reportCampaign(title, detail) {
+  const { campaign, week } = GAME_STATE;
+  campaign.activity.unshift({ week, title, detail });
+  campaign.activity.length = Math.min(campaign.activity.length, 20);
+  window.showToast(title, detail, 'success');
+  refreshCampaign();
 }
 
 const registrationWeek = 8;
@@ -35,34 +64,122 @@ window.registerCandidate = function() {
   const id = element('election-office').value;
   const selection = eligibleOffices(player, year).find(([key]) => key === id);
   if (!selection) return warn('Selecciona un cargo disponible para tu edad y territorio.');
-  if (!pay(LOCAL_REGISTRATION)) return;
+  if (!pay({ ...LOCAL_REGISTRATION, funds: registrationCost() })) return;
   const pact = PACTS.find(list => `pact-${list.id}` === player.activePactId)?.id || 'ind';
   GAME_STATE.localElection = { year, office: id, pact, support: 0, result: '' };
-  renderLocalElection();
-  renderPlayerStats();
+  if (GAME_STATE.campaign.contactYear !== year) {
+    GAME_STATE.campaign.contactYear = year;
+    GAME_STATE.campaign.contacts = initialCampaign().contacts;
+  }
+  reportCampaign('Candidatura inscrita', `Ya puedes hacer campaña para ${OFFICES[id].name} y consultar a tus oponentes.`);
 };
 
 window.executeCampaignAction = function(key) {
-  const action = LOCAL_ACTIONS[key];
-  const { localElection, year, week, player } = GAME_STATE;
   if (!Object.hasOwn(LOCAL_ACTIONS, key)) return;
-  if (localElection?.year !== year || week >= electionWeek(year) || localElection.result) {
-    return warn('Primero inscribe tu candidatura en Elecciones.');
-  }
-  if (!pay(action)) return;
+  const election = requireElection();
+  const action = LOCAL_ACTIONS[key];
+  if (!election || !pay(action)) return;
+  const { player } = GAME_STATE;
   const policies = POLICIES_CATALOG.filter(policy => player.corePolicies.includes(policy.id));
   const issueMatch = policies.some(policy => action.issues.includes(policy.issue));
   const support = Math.round(action.support * (0.5 + player.attributes[action.attribute] / 100) * (issueMatch ? 1.15 : 1));
-  localElection.support += support;
-  window.showToast('Campaña', `+${support} votos proyectados.${issueMatch ? ' Incluye el bono por afinidad programática.' : ''}`, 'success');
-  renderLocalElection();
-  renderPlayerStats();
+  election.support += support;
+  reportCampaign('Actividad de campaña', `+${support} votos proyectados.${issueMatch ? ' Incluye el bono por afinidad programática.' : ''}`);
 };
 
 window.fundraiseAction = function() {
+  const { campaign, player } = GAME_STATE;
+  if (campaign.fundraising >= 2) return warn('Puedes organizar hasta dos cenas por semana.');
   if (!pay({ hours: 12 })) return;
-  GAME_STATE.player.funds += 350_000;
-  renderPlayerStats();
+  campaign.fundraising++;
+  const raised = Math.round(350_000 * (1 + staffTotals().fundraisingBonus));
+  player.funds += raised;
+  reportCampaign('Recaudación', `+${clp(raised)} en fondos de campaña.`);
+};
+
+window.launchAdCampaign = function(key) {
+  if (!Object.hasOwn(ADS, key)) return;
+  const election = requireElection();
+  const { campaign, player } = GAME_STATE;
+  if (!election || campaign[key]) return;
+  const ad = ADS[key];
+  const bonuses = staffTotals();
+  const funds = Math.round(ad.funds * (key === 'palomas' ? 1 - bonuses.territorialDiscount : 1));
+  if (!pay({ hours: ad.hours, funds })) return;
+  campaign[key] = 1;
+  const recognition = Math.min(100 - player.nameRecognition, ad.recognition);
+  player.nameRecognition += recognition;
+  const support = Math.round(ad.support * (1 + bonuses.advertisingBonus));
+  election.support += support;
+  reportCampaign(ad.name, `${clp(funds)} invertidos · +${recognition.toFixed(1)} pp de reconocimiento y +${support} votos proyectados.`);
+};
+
+window.meetContact = function(id) {
+  const election = requireElection();
+  const contact = CONTACTS.find(item => item.id === id);
+  if (!election || !contact) return;
+  const { campaign, player } = GAME_STATE;
+  const aligned = POLICIES_CATALOG.some(policy => player.corePolicies.includes(policy.id) && contact.issues.includes(policy.issue));
+  const needed = aligned ? 1 : 2;
+  if (campaign.contacts[id] >= needed || !pay({ hours: 8 })) return;
+  campaign.contacts[id]++;
+  if (campaign.contacts[id] === needed) {
+    election.support += contact.support;
+    reportCampaign('Respaldo confirmado', `${contact.name} · +${contact.support} votos proyectados.`);
+  } else reportCampaign('Contacto realizado', `${contact.name} · falta una reunión para conseguir su respaldo.`);
+};
+
+window.commissionPoll = function() {
+  const election = requireElection();
+  const { campaign, player, year, week } = GAME_STATE;
+  if (!election || campaign.polls.some(poll => poll?.year === year && poll.week === week) ||
+      !pay({ hours: 0, funds: 1_000_000 })) return;
+  const field = electionField(election, player, week);
+  const rival = field.rivals[0];
+  const precision = 1 - staffTotals().pollAccuracy;
+  const margin = 3 * precision;
+  const sampleOffset = ((week * 17 + year) % 7 - 3) / 2 * precision;
+  const share = Math.max(0, Math.min(100, field.votes / field.total * 100 + sampleOffset));
+  campaign.polls.unshift({
+    year, week, office: field.office.name, share, rival: rival.name,
+    rivalShare: Math.max(0, Math.min(100, rival.votes / field.total * 100 - sampleOffset)), margin,
+  });
+  campaign.polls.length = Math.min(campaign.polls.length, 12);
+  reportCampaign('Sondeo disponible', `Tu intención de voto estimada es ${share.toFixed(1)} % (±${margin.toLocaleString('es-CL')} pp). Consulta Encuestas.`);
+};
+
+window.promotePolicy = function(id) {
+  const election = requireElection();
+  const { campaign, player } = GAME_STATE;
+  const policy = POLICIES_CATALOG.find(item => item.id === id && player.corePolicies.includes(id));
+  if (!election || !policy || campaign.policyWeek || !pay({ hours: 10 })) return;
+  campaign.policyWeek = 1;
+  const priority = issueDemand(GAME_STATE, policy.issue);
+  const support = Math.round((priority ? 72 : 40) * (0.5 + player.attributes.oratory / 100));
+  election.support += support;
+  reportCampaign('Eje promovido', `${policy.name} · +${support} votos proyectados${priority ? ' por alta demanda nacional' : ''}.`);
+};
+
+window.manageVolunteers = function(action) {
+  const { campaign, volunteers } = GAME_STATE;
+  if (action === 'recruit') {
+    const recruits = Math.max(0, Math.min(30, VOLUNTEER_LIMIT - volunteers));
+    if (!recruits || !pay({ hours: 8, funds: 100_000 })) return;
+    GAME_STATE.volunteers += recruits;
+    reportCampaign('Reclutamiento', `+${recruits} voluntarios se sumaron a la brigada.`);
+  } else if (action === 'train') {
+    const trainees = Math.max(0, Math.min(25, volunteers - campaign.trained));
+    if (!trainees || !pay({ hours: 8 })) return;
+    campaign.trained += trainees;
+    reportCampaign('Capacitación', `${trainees} voluntarios capacitados para movilización electoral.`);
+  } else if (action === 'deploy') {
+    const election = requireElection();
+    if (!election || !volunteers || campaign.mobilized || !pay({ hours: 6 })) return;
+    campaign.mobilized = Math.min(40, volunteers);
+    const support = campaign.mobilized + Math.min(campaign.mobilized, campaign.trained);
+    election.support += support;
+    reportCampaign('Brigada movilizada', `${campaign.mobilized} voluntarios · +${support} votos proyectados. Disponibles nuevamente la próxima semana.`);
+  }
 };
 
 function resolveElection() {
@@ -71,7 +188,7 @@ function resolveElection() {
   const candidate = localElection?.year === year && localElection.office ? localElection : null;
   const id = candidate?.office || 'concejal';
   const districtSeats = id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined;
-  const { won, summary } = candidate ? countElection(candidate, player, districtSeats)
+  const { won, summary } = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week)
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
   GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), result: summary };
   const outgoing = player.officeEndYear > 0 ? player.officeEndYear === year
@@ -122,7 +239,7 @@ function renderLocalElection() {
   if (eligible.some(([id]) => id === previous)) select.value = previous;
   select.disabled = element('local-register').disabled = !canRegister(GAME_STATE) || !eligible.length;
   const calendar = votingWeek
-    ? `Elección ${year} · inscripción semanas ${registrationWeek} a ${votingWeek - 1} (10 PP y $1.000.000) · escrutinio semana ${votingWeek}.
+    ? `Elección ${year} · inscripción semanas ${registrationWeek} a ${votingWeek - 1} (10 PP y ${clp(registrationCost())}) · escrutinio semana ${votingWeek}.
 ${cycle.map(([id, office]) =>
       `${office.name} (${office.age}+)${eligible.some(([key]) => key === id) ? '' : ' · no habilitada'}`).join(' | ')}`
     : `Año sin elecciones regulares. Próximo ciclo: ${year + (4 - year % 4)}.`;
@@ -146,6 +263,8 @@ ${localElection.result}` : '';
 }
 
 const initialState = () => ({
+  campaign: initialCampaign(),
+  macroTrend: { inflation: 0, gdpGrowth: 0, unemployment: 0, victimizationRate: 0 },
   localElection: null,
   localManagement: null,
   week: 1,
@@ -672,13 +791,20 @@ window.filterStaffRole = function(role) {
 };
 
 function staffTotals() {
-  const totals = { salaryWeekly: 0, bonusHours: 0, bonusRecogWeekly: 0, bonusVolunteersWeekly: 0, bonusPPMonthly: 0 };
+  const totals = {
+    salaryWeekly: 0, bonusHours: 0, bonusRecogWeekly: 0, bonusVolunteersWeekly: 0, bonusPPMonthly: 0,
+    fundraisingBonus: 0, pollAccuracy: 0, advertisingBonus: 0, territorialDiscount: 0, registrationDiscount: 0,
+  };
   for (const staff of STAFF_CATALOG) {
     if (GAME_STATE.player.hiredStaffIds.includes(staff.id)) {
       for (const key of Object.keys(totals)) totals[key] += staff[key] || 0;
     }
   }
   return totals;
+}
+
+function registrationCost() {
+  return Math.round(LOCAL_REGISTRATION.funds * (1 - staffTotals().registrationDiscount));
 }
 
 function updateStaffHours() {
@@ -691,17 +817,12 @@ window.hireStaff = function(staffId) {
   const staff = STAFF_CATALOG.find(s => s.id === staffId);
   if (!staff) return;
 
-  if (GAME_STATE.player.funds < staff.salaryWeekly) {
-    window.showToast('Fondos Insuficientes', `Necesitas al menos $${staff.salaryWeekly.toLocaleString('es-CL')} CLP para financiar la primera semana de sueldo.`, 'error');
-    return;
-  }
-
-  // Si ya hay alguien contratado en este mismo rol, se reemplaza
-  const existingInRole = STAFF_CATALOG.find(s => s.role === staff.role && GAME_STATE.player.hiredStaffIds.includes(s.id));
-  if (existingInRole && existingInRole.id !== staff.id) {
-    GAME_STATE.player.hiredStaffIds = GAME_STATE.player.hiredStaffIds.filter(id => id !== existingInRole.id);
-    window.showToast('Reemplazo de Asesor', `Has reemplazado a ${existingInRole.name} por ${staff.name} en el cargo de ${staff.roleLabel}.`, 'info');
-  }
+  const player = GAME_STATE.player;
+  const existing = STAFF_CATALOG.find(item => item.role === staff.role && player.hiredStaffIds.includes(item.id));
+  if (existing?.id === staff.id) return;
+  const payroll = staffTotals().salaryWeekly - (existing?.salaryWeekly || 0) + staff.salaryWeekly;
+  if (player.funds < payroll) return warn(`La planilla completa costaría ${clp(payroll)} por semana.`);
+  if (existing) player.hiredStaffIds = player.hiredStaffIds.filter(id => id !== existing.id);
 
   if (!GAME_STATE.player.hiredStaffIds.includes(staff.id)) {
     GAME_STATE.player.hiredStaffIds.push(staff.id);
@@ -710,8 +831,9 @@ window.hireStaff = function(staffId) {
   // Recalcular horas máximas
   updateStaffHours();
 
-  window.showToast('¡Asesor Incorporado!', `${staff.name} se ha sumado a tu comando como ${staff.roleLabel}.`, 'success');
-  renderPlayerStats();
+  const change = existing ? ` Reemplaza a ${existing.name}.` : '';
+  window.showToast('Asesor incorporado', `${staff.name} se sumó al comando como ${staff.roleLabel}.${change}`, 'success');
+  refreshCampaign();
   window.renderStaffPanel();
 };
 
@@ -725,7 +847,7 @@ window.fireStaff = function(staffId) {
   updateStaffHours();
 
   window.showToast('Contrato Concluido', `Has desvinculado a ${staff.name} del comando de campaña.`, 'info');
-  renderPlayerStats();
+  refreshCampaign();
   window.renderStaffPanel();
 };
 
@@ -835,7 +957,8 @@ window.advanceTurn = function(weeksToAdvance = 1) {
     const bonuses = staffTotals();
     player.hours = player.maxHours = 60 + bonuses.bonusHours;
     player.nameRecognition = Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly);
-    GAME_STATE.volunteers += bonuses.bonusVolunteersWeekly;
+    GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
+    weeklyCampaign(GAME_STATE);
     if (GAME_STATE.week % 4 === 0) player.politicalPoints += bonuses.bonusPPMonthly;
 
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
@@ -843,15 +966,18 @@ window.advanceTurn = function(weeksToAdvance = 1) {
     GAME_STATE.month = months[mIdx];
     const votingWeek = electionWeek(GAME_STATE.year);
     if (votingWeek && [registrationWeek, votingWeek].includes(GAME_STATE.week)) {
-      if (GAME_STATE.week === votingWeek) resolveElection();
+      if (GAME_STATE.week === votingWeek) {
+        resolveElection();
+        window.showToast('Escrutinio electoral', 'El resultado está disponible en Elecciones.', 'info');
+      } else window.showToast('Inscripciones abiertas', 'Elige un cargo en Elecciones para iniciar tu campaña.', 'info');
       window.switchMainView('view-elections');
       break;
     }
   }
 
-  renderPlayerStats();
+  refreshCampaign();
+  renderCountry(GAME_STATE);
   window.renderStaffPanel();
-  renderLocalElection();
 };
 
 function renderPlayerStats() {
@@ -866,9 +992,6 @@ function renderPlayerStats() {
 
   const finFunds = document.getElementById('finance-total-funds');
   if (finFunds) finFunds.textContent = `$${GAME_STATE.player.funds.toLocaleString('es-CL')}`;
-
-  const volDisp = document.getElementById('volunteers-count-disp');
-  if (volDisp) volDisp.textContent = (GAME_STATE.volunteers || 120).toLocaleString('es-CL');
 
   const badgeEl = document.getElementById('clock-election-badge');
   if (badgeEl) {
@@ -903,6 +1026,8 @@ window.renderAll = function() {
   window.renderProfileAttributes();
   updateCompass('profile', GAME_STATE.player.corePolicies);
   renderLocalElection();
+  renderCampaign(GAME_STATE, activeElection());
+  renderCountry(GAME_STATE);
 };
 
 window.renderProfileAttributes = function() {
@@ -1186,6 +1311,13 @@ window.switchMainView = function(viewId) {
   }
 };
 
+window.openCampaignPolls = function() {
+  const tab = element('campaign-polls-tab');
+  window.switchMainView('view-campaign');
+  window.switchSubpanel('campaign', 'polls', tab);
+  tab.focus();
+};
+
 window.switchSubpanel = function(view, key, button) {
   document.querySelectorAll(`#subtabs-${view} .subfolder-tab`).forEach(tab => {
     tab.classList.toggle('active', tab === button);
@@ -1213,6 +1345,8 @@ window.openNewGameWizard = function() {
   p1SelectedParty = 'IND';
   p1SelectedFaction = 'Ciudadano Independiente';
   p2SelectedPolicies = ['p1', 'p4', 'p9'];
+  window.dismissNotice();
+  element('p1-validation-alert').classList.add('hidden');
   element('p2-initial-office').value = 'none';
   element('p2-policy-topic').value = '';
 
@@ -1279,6 +1413,8 @@ function loadState(raw) {
   }
   if (next.player.commune === 'Santiago Centro') next.player.commune = 'Santiago';
   if (next.player.officeId && !Object.hasOwn(OFFICES, next.player.officeId)) throw new Error('Cargo inválido');
+  next.volunteers = Math.max(0, Math.min(VOLUNTEER_LIMIT, next.volunteers));
+  next.campaign.trained = Math.max(0, Math.min(next.volunteers, next.campaign.trained));
   if (next.localManagement !== null && !['pending', 'agenda', 'audit'].includes(next.localManagement)) throw new Error('Gestión inválida');
   const previous = GAME_STATE;
   GAME_STATE = next;
@@ -1297,8 +1433,10 @@ function loadState(raw) {
 window.loadGameQuick = function(silent = false) {
   try {
     const raw = localStorage.getItem(saveKey);
-    if (raw) loadState(raw);
-    else if (!silent) window.showToast('Sin partida', 'No se encontró un guardado.', 'warning');
+    if (raw) {
+      loadState(raw);
+      if (!silent) window.showToast('Partida cargada', 'Se recuperaron tu progreso y tu historial de campaña.', 'success');
+    } else if (!silent) window.showToast('Sin partida', 'No se encontró un guardado.', 'warning');
   } catch {
     window.showToast('Error', 'No se pudo recuperar la partida.', 'error');
   }
@@ -1342,24 +1480,21 @@ window.resetGameConfirm = function() {
   }
 };
 
-window.showToast = function(title, msg, type = 'info') {
-  const t = document.createElement('div');
-  const color = type === 'success' ? 'bg-emerald-50 border-emerald-600 text-emerald-950' :
-                type === 'warning' ? 'bg-amber-50 border-amber-600 text-amber-950' :
-                type === 'error' ? 'bg-rose-50 border-rose-600 text-rose-950' : 'bg-blue-50 border-blue-600 text-blue-950';
+window.dismissNotice = () => { element('game-notice').hidden = true; };
 
-  t.className = `fixed bottom-4 right-4 z-50 p-3 rounded border-2 shadow-2xl max-w-sm transition-all duration-200 ${color}`;
-  t.innerHTML = `
-    <div class="font-extrabold text-xs uppercase mb-0.5"></div>
-    <div class="text-[11px] font-medium leading-tight"></div>
-  `;
-  t.children[0].textContent = title;
-  t.children[1].textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => {
-    t.style.opacity = '0';
-    setTimeout(() => t.remove(), 250);
-  }, 3500);
+window.showToast = function(title, message, type = 'info') {
+  const wizard = element('screen-page-1-identity');
+  if (!wizard.classList.contains('hidden')) {
+    const inline = element('p1-validation-alert');
+    inline.textContent = `${title}. ${message}`;
+    inline.classList.remove('hidden');
+    return;
+  }
+  const notice = element('game-notice');
+  notice.dataset.type = type;
+  element('notice-title').textContent = title;
+  element('notice-message').textContent = message;
+  notice.hidden = false;
 };
 
 // Inicialización general

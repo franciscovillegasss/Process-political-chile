@@ -68,6 +68,7 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.2,
     bonusVolunteersWeekly: 5,
     bonusPPMonthly: 0,
+    fundraisingBonus: 0.1,
     perkDesc: '+8 hrs semanales ejecutivas | +10% en recaudación de cenas'
   },
   {
@@ -84,7 +85,8 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.5,
     bonusVolunteersWeekly: 10,
     bonusPPMonthly: 0,
-    perkDesc: '+14 hrs semanales | +25% de precisión en sondeos privados'
+    pollAccuracy: 0.25,
+    perkDesc: '+14 hrs semanales | margen de error de sondeos un 25% menor'
   },
   {
     id: 'staff_comm_navarrete',
@@ -100,7 +102,8 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.8,
     bonusVolunteersWeekly: 0,
     bonusPPMonthly: 0,
-    perkDesc: '+0.8% Reconocimiento comunal semanal automático | +15% impacto de marketing'
+    advertisingBonus: 0.15,
+    perkDesc: '+0,8 pp de reconocimiento semanal | +15% de votos proyectados por publicidad'
   },
   {
     id: 'staff_comm_diaz',
@@ -116,7 +119,7 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 1.6,
     bonusVolunteersWeekly: 8,
     bonusPPMonthly: 0,
-    perkDesc: '+1.6% Reconocimiento semanal | Amortigua -50% el desgaste de ataques opositores'
+    perkDesc: '+1,6 pp de reconocimiento, +2 horas y +8 voluntarios semanales'
   },
   {
     id: 'staff_field_albornoz',
@@ -132,7 +135,7 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.3,
     bonusVolunteersWeekly: 20,
     bonusPPMonthly: 0,
-    perkDesc: '+20 Voluntarios nuevos/semana | +10% entusiasmo en barrios populares'
+    perkDesc: '+20 voluntarios y +0,3 pp de reconocimiento semanales'
   },
   {
     id: 'staff_field_benitez',
@@ -148,6 +151,7 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.6,
     bonusVolunteersWeekly: 40,
     bonusPPMonthly: 0,
+    territorialDiscount: 0.25,
     perkDesc: '+40 Voluntarios nuevos/semana | -25% costo de propaganda en vía pública'
   },
   {
@@ -164,7 +168,8 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.1,
     bonusVolunteersWeekly: 0,
     bonusPPMonthly: 0,
-    perkDesc: 'Inmunidad ante multas SERVEL | Descuento del 30% en costos de inscripción'
+    registrationDiscount: 0.3,
+    perkDesc: 'Descuento del 30% en el costo monetario de inscripción'
   },
   {
     id: 'staff_legal_silva',
@@ -180,6 +185,6 @@ export const STAFF_CATALOG = [
     bonusRecogWeekly: 0.2,
     bonusVolunteersWeekly: 0,
     bonusPPMonthly: 2,
-    perkDesc: '+2 Puntos Políticos (PP) al mes por probidad | +3% aprobación pública'
+    perkDesc: '+2 puntos políticos cada cuatro semanas y +0,2 pp de reconocimiento semanal'
   }
 ];

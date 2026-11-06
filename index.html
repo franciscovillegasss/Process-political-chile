@@ -80,6 +80,10 @@
       ::-webkit-scrollbar-thumb:hover {
         background: #7D735F;
       }
+      #game-notice[hidden] { display: none; }
+      #game-notice[data-type="success"] { background: #065f46; }
+      #game-notice[data-type="warning"] { background: #92400e; }
+      #game-notice[data-type="error"] { background: #9f1239; }
     </style>
   </head>
   <body class="h-screen w-screen flex flex-col overflow-hidden bg-[#242A35]">
@@ -495,6 +499,14 @@
       </div>
     </header>
 
+    <aside id="game-notice" hidden class="shrink-0 flex items-center justify-between gap-4 px-4 py-2 bg-[#0047AB] text-white shadow">
+      <div role="status" aria-live="polite" aria-atomic="true" class="text-sm">
+        <strong id="notice-title"></strong>
+        <span id="notice-message"></span>
+      </div>
+      <button type="button" onclick="window.dismissNotice()" class="border border-white rounded px-2 py-1 text-xs font-bold">Cerrar aviso</button>
+    </aside>
+
     <!-- FILA 2: LAS 8 PESTAÑAS PRINCIPALES ESTILO CARPETA CLÁSICA (#E6D595)        -->
     <nav id="app-row-2-maintabs" class="h-9 bg-[#C9BEA7] border-b-2 border-[#665C47] px-3 flex items-end gap-1 shrink-0 overflow-x-auto shadow-inner select-none z-20">
       <button class="folder-tab active px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-campaign" onclick="window.switchMainView('view-campaign')">
@@ -532,7 +544,7 @@
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'marketing', this)">Marketing</button>
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'opponents', this)">Oponentes</button>
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'contacts', this)">Contactos</button>
-        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'polls', this)">Encuestas</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" id="campaign-polls-tab" onclick="window.switchSubpanel('campaign', 'polls', this)">Encuestas</button>
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'finance', this)">Finanzas</button>
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'staff', this)">Staff</button>
         <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'policies', this)">★ Políticas (Tus 3 Ejes)</button>
@@ -709,13 +721,17 @@
               <!-- Botón Inferior: Predecir Elección -->
               <div class="pt-2 flex justify-between items-center border-t border-stone-200">
                 <span class="text-[11px] text-stone-500 font-mono">Proyección electoral local basada en encuestas y territorio</span>
-                <button disabled title="Función aún no disponible" class="px-4 py-2 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-extrabold text-xs rounded shadow-2xs cursor-pointer select-none">
-                  📊 PREDECIR ELECCIÓN
+                <button type="button" onclick="window.openCampaignPolls()" class="px-4 py-2 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-extrabold text-xs rounded shadow-2xs cursor-pointer select-none">
+                  📊 VER SONDEOS
                 </button>
               </div>
             </div>
           </div>
 
+          <section class="bg-white border border-stone-300 rounded p-3 space-y-2">
+            <h3 class="font-bold text-sm">Actividad reciente de campaña</h3>
+            <div id="campaign-activity" class="grid gap-2 md:grid-cols-2"></div>
+          </section>
         </div>
 
         <!-- Subpanel: Eventos -->
@@ -758,20 +774,21 @@
         <!-- Subpanel: Marketing -->
         <div id="campaign-panel-marketing" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Estrategia Publicitaria & Franja</h3>
+          <p id="marketing-status" class="text-sm font-semibold" aria-live="polite"></p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="border p-3 rounded bg-stone-50 space-y-2">
               <strong class="text-xs text-slate-900 block">Lanzar Campaña Digital (Meta / TikTok / YouTube)</strong>
-              <p class="text-[11px] text-stone-600">Aumenta el reconocimiento entre el electorado menor de 40 años.</p>
-              <div class="text-xs font-mono">Costo: $1.500.000 CLP | +3.5% Reconocimiento</div>
-              <button disabled title="Función aún no disponible" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+              <p class="text-[11px] text-stone-600">Da visibilidad a tu candidatura en redes sociales.</p>
+              <div class="text-xs font-mono">Precio base: $1.500.000 CLP | Hasta +3,5 pp de reconocimiento · +85 votos proyectados</div>
+              <button type="button" id="marketing-digital" onclick="window.launchAdCampaign('digital')" class="disabled:opacity-50 px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
                 Contratar Pauta Digital
               </button>
             </div>
             <div class="border p-3 rounded bg-stone-50 space-y-2">
               <strong class="text-xs text-slate-900 block">Palomas y Gigantografías en Vía Pública</strong>
               <p class="text-[11px] text-stone-600">Presencia en grandes avenidas, paraderos y esquinas clave.</p>
-              <div class="text-xs font-mono">Costo: $2.500.000 CLP | +5.0% Reconocimiento</div>
-              <button disabled title="Función aún no disponible" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+              <div class="text-xs font-mono">Precio base: $2.500.000 CLP | Hasta +5 pp de reconocimiento · +145 votos proyectados</div>
+              <button type="button" id="marketing-palomas" onclick="window.launchAdCampaign('palomas')" class="disabled:opacity-50 px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
                 Instalar Propaganda
               </button>
             </div>
@@ -787,14 +804,15 @@
         <!-- Subpanel: Contactos -->
         <div id="campaign-panel-contacts" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Red de Contactos y Líderes de Opinión</h3>
+          <p id="contacts-help" class="text-xs text-stone-700"></p>
           <div id="contacts-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
         </div>
 
         <!-- Subpanel: Encuestas -->
         <div id="campaign-panel-polls" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
-            <h3 class="font-extrabold text-sm text-slate-900 uppercase">Sondeos y Estudios Electorales (CADEM / Criteria / Pulso)</h3>
-            <button disabled title="Función aún no disponible" class="px-3 py-1 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase">Encuestas de la contienda simulada</h3>
+            <button type="button" id="commission-poll" onclick="window.commissionPoll()" class="disabled:opacity-50 px-3 py-1 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
               📊 Encargar Sondeo Privado ($1.000.000 CLP)
             </button>
           </div>
@@ -812,7 +830,7 @@
             <div class="border p-3 rounded bg-stone-50">
               <span class="text-[10px] uppercase font-bold text-stone-500">Cena de Recaudación</span>
               <button onclick="window.fundraiseAction()" class="mt-2 w-full py-1 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
-                Organizar cena (+$350.000 · 12 h)
+                Organizar cena (base $350.000 · 12 h)
               </button>
             </div>
             <div class="border p-3 rounded bg-stone-50">
@@ -880,6 +898,7 @@
             <h3 class="font-extrabold text-sm text-slate-900 uppercase">Tus 3 Políticas Prioritarias de Campaña</h3>
             <span class="text-xs text-stone-500 font-mono">Definen tu plataforma territorial ante los electores</span>
           </div>
+          <p id="policy-campaign-help" class="text-xs text-stone-700"></p>
           <div id="player-core-policies-container" class="space-y-2"></div>
         </div>
 
@@ -893,17 +912,21 @@
             </div>
             <div class="border p-3 rounded bg-stone-50">
               <span class="text-[10px] uppercase font-bold text-stone-500">Reclutar Brigada</span>
-              <button disabled title="Función aún no disponible" class="mt-2 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
-                Convocatoria en Redes
+              <button type="button" id="recruit-volunteers" onclick="window.manageVolunteers('recruit')" class="disabled:opacity-50 mt-2 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Reclutar (+30 · 8 h · $100.000)
               </button>
             </div>
             <div class="border p-3 rounded bg-stone-50">
               <span class="text-[10px] uppercase font-bold text-stone-500">Capacitar Apoderados</span>
-              <button disabled title="Función aún no disponible" class="mt-2 w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
-                Capacitación Electoral
+              <button type="button" id="train-volunteers" onclick="window.manageVolunteers('train')" class="disabled:opacity-50 mt-2 w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
+                Capacitar (+25 · 8 h)
               </button>
             </div>
           </div>
+          <p id="volunteer-status" class="text-sm font-semibold"></p>
+          <button type="button" id="deploy-volunteers" onclick="window.manageVolunteers('deploy')" class="px-3 py-2 bg-[#0047AB] text-white text-xs font-bold rounded disabled:opacity-50">
+            Movilizar brigada (hasta 40 · 6 h)
+          </button>
         </div>
 
       </div>
@@ -1183,7 +1206,9 @@
       <div id="view-metrics" class="main-view hidden h-full space-y-3">
         <div class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Macroeconomía y Variables Sociales de Chile</h3>
+          <p class="text-xs text-stone-600">Datos simulados. Las cifras se actualizan cada cuatro semanas y cambian las prioridades de campaña.</p>
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="macro-metrics-grid"></div>
+          <p id="macro-priorities" class="text-sm font-bold text-blue-950"></p>
         </div>
       </div>
 

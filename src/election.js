@@ -26,15 +26,34 @@ export const LOCAL_ACTIONS = {
   prensa: { hours: 8, funds: 0, support: 17, attribute: 'oratory', issues: ['Economía', 'Pensiones', 'Trabajo y transporte'] },
 };
 
-export function countElection(election, player, seats) {
-  const office = OFFICES[election.office || 'concejal'];
-  const candidateVotes = Math.max(0, Math.round(80 + player.nameRecognition * 3 + (player.approval - 52) * 4 + election.support));
-  if (!office.seats) return countExecutive(office, candidateVotes);
+const RIVAL_NAMES = [
+  ['Paula Rojas', 'Luis Muñoz', 'Natalia Torres'],
+  ['Marcelo Vera', 'Andrea Fuentes', 'Gabriel Araya'],
+  ['Inés Morales', 'Tomás Sepúlveda', 'Patricia Soto'],
+  ['Daniel Silva', 'Camila Contreras', 'Javier Álvarez'],
+];
 
-  const lists = PACTS.map((pact, index) => ({
-    ...pact, candidates: [980 - index * 95, 720 - index * 70, 490 - index * 55]
-      .map(votes => Math.round(votes * office.scale)),
-  }));
+export function electionField(election, player, week = 8) {
+  const office = OFFICES[election.office || 'concejal'];
+  const growth = Math.max(0, week - 8);
+  const votes = Math.max(0, Math.round(80 + player.nameRecognition * 3 + (player.approval - 52) * 4 + election.support));
+  const lists = PACTS.map((pact, index) => {
+    const bases = office.seats ? [980 - index * 95, 720 - index * 70, 490 - index * 55] : [[980, 720, 490, 360][index]];
+    const candidates = bases.map((base, rank) => ({
+      name: RIVAL_NAMES[index][rank],
+      list: pact.name,
+      votes: Math.round(base * office.scale + growth * (4 - index + rank)),
+    }));
+    return { ...pact, candidates };
+  });
+  const rivals = lists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
+  return { office, votes, lists, rivals, total: votes + rivals.reduce((sum, rival) => sum + rival.votes, 0) };
+}
+
+export function countElection(election, player, seats, week) {
+  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week);
+  if (!office.seats) return countExecutive(office, candidateVotes, rivals);
+
   let ownList = lists.find(list => list.id === election.pact);
   if (!ownList) {
     ownList = { id: 'ind', name: 'Independiente fuera de pacto', candidates: [] };
@@ -42,11 +61,11 @@ export function countElection(election, player, seats) {
   }
   for (const list of lists) {
     list.capacity = list.candidates.length + Number(list === ownList);
-    list.votes = list.candidates.reduce((sum, votes) => sum + votes, 0);
+    list.votes = list.candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
     if (list === ownList) list.votes += candidateVotes;
   }
   allocateSeats(lists, seats || office.seats);
-  const rank = 1 + ownList.candidates.filter(votes => votes >= candidateVotes).length;
+  const rank = 1 + ownList.candidates.filter(candidate => candidate.votes >= candidateVotes).length;
   const won = rank <= ownList.seats;
   const reason = ownList.seats === 0 ? 'Tu lista quedó sin escaños.'
     : won ? 'Tu votación personal alcanzó para ocupar un escaño de la lista.'
@@ -62,8 +81,8 @@ export function countElection(election, player, seats) {
   };
 }
 
-function countExecutive(office, votes) {
-  const [leader, runnerUp, ...others] = [980, 720, 490, 360].map(base => Math.round(base * office.scale));
+function countExecutive(office, votes, rivals) {
+  const [leader, runnerUp, ...others] = rivals.map(rival => rival.votes);
   const total = votes + leader + runnerUp + others.reduce((sum, value) => sum + value, 0);
   const share = votes / total;
   const pct = value => `${(value * 100).toFixed(1)} %`;

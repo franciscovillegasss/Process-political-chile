@@ -1,0 +1,182 @@
+export const CHILE_GEO = {
+  rm: {
+    name: 'Región Metropolitana de Santiago',
+    districts: {
+      'Distrito 8': { seats: 8, communes: ['Maipú', 'Pudahuel', 'Cerrillos', 'Estación Central', 'Quilicura', 'Colina', 'Lampa', 'Tiltil'] },
+      'Distrito 9': { seats: 7, communes: ['Recoleta', 'Independencia', 'Conchalí', 'Huechuraba', 'Renca', 'Cerro Navia', 'Lo Prado', 'Quinta Normal'] },
+      'Distrito 10': { seats: 8, communes: ['Santiago Centro', 'Providencia', 'Ñuñoa', 'Macul', 'San Joaquín', 'La Granja'] },
+      'Distrito 11': { seats: 6, communes: ['Las Condes', 'Vitacura', 'Lo Barnechea', 'La Reina', 'Peñalolén'] },
+      'Distrito 12': { seats: 7, communes: ['Puente Alto', 'La Florida', 'La Pintana', 'Pirque', 'San José de Maipo'] },
+      'Distrito 13': { seats: 5, communes: ['El Bosque', 'La Cisterna', 'San Ramón', 'San Miguel', 'Lo Espejo', 'Pedro Aguirre Cerda'] },
+      'Distrito 14': { seats: 6, communes: ['San Bernardo', 'Buin', 'Paine', 'Melipilla', 'Talagante', 'Peñaflor', 'Padre Hurtado'] }
+    }
+  },
+  valpo: {
+    name: 'Región de Valparaíso',
+    districts: {
+      'Distrito 6': { seats: 8, communes: ['Quilpué', 'Villa Alemana', 'Quillota', 'San Felipe', 'Los Andes', 'La Calera', 'Limache'] },
+      'Distrito 7': { seats: 8, communes: ['Valparaíso', 'Viña del Mar', 'Concón', 'San Antonio', 'Casablanca', 'Cartagena', 'Algarrobo'] }
+    }
+  }
+};
+
+export const CHILE_PARTIES = [
+  { id: 'PC', name: 'Partido Comunista', bloc: 'Oficialismo', color: '#DC2626', factions: ['Sindical y Juvenil', 'Institucional y Cuadros'] },
+  { id: 'FA', name: 'Frente Amplio', bloc: 'Oficialismo', color: '#E11D48', factions: ['Tercerismo Universitario', 'Desbordar lo Posible / Ecologista'] },
+  { id: 'PS', name: 'Partido Socialista', bloc: 'Oficialismo', color: '#991B1B', factions: ['Renovación Socialdemócrata', 'Izquierda Socialista Histórica'] },
+  { id: 'PPD', name: 'Partido por la Democracia', bloc: 'Oficialismo', color: '#B91C1C', factions: ['Laica Reformista', 'Progresismo Ciudadano'] },
+  { id: 'DC', name: 'Democracia Cristiana', bloc: 'Centro', color: '#2563EB', factions: ['Comunitaria Histórica', 'Centro Progresista'] },
+  { id: 'DEM', name: 'Demócratas Chile', bloc: 'Centro', color: '#3B82F6', factions: ['Ex-Concertación Moderada', 'Centro Pragmatico'] },
+  { id: 'AMARILLOS', name: 'Amarillos por Chile', bloc: 'Centro', color: '#F59E0B', factions: ['Institucional Republicana', 'Diálogo Transversal'] },
+  { id: 'EVOPOLI', name: 'Evolución Política', bloc: 'Chile Vamos', color: '#0284C7', factions: ['Liberalismo Social', 'Modernización Económica'] },
+  { id: 'RN', name: 'Renovación Nacional', bloc: 'Chile Vamos', color: '#1D4ED8', factions: ['Derecha Territorial y Social', 'Conservadurismo Tradicional'] },
+  { id: 'UDI', name: 'Unión Demócrata Indep.', bloc: 'Chile Vamos', color: '#1E3A8A', factions: ['Gremialismo Clásico', 'Renovación Liberal de Derecha'] },
+  { id: 'PREP', name: 'Partido Republicano', bloc: 'Derecha / Rep', color: '#172554', factions: ['Identidad Republicana', 'Soberanía y Orden'] },
+  { id: 'PSC', name: 'Partido Social Cristiano', bloc: 'Derecha / Rep', color: '#4338CA', factions: ['Valórica Tradicional', 'Acción Social Comunitaria'] },
+  { id: 'PNL', name: 'Partido Nacional Libertario', bloc: 'Derecha / Rep', color: '#0F172A', factions: ['Minarquismo Radical', 'Libertad Económica Total'] },
+  { id: 'PDG', name: 'Partido de la Gente', bloc: 'Centro', color: '#059669', factions: ['Democracia Digital', 'Clase Media Emprendedora'] },
+  { id: 'IND', name: 'Independiente Fuera de Pacto', bloc: 'Independientes', color: '#64748B', factions: ['Ciudadano Independiente', 'Dirigente Social sin Partido'] }
+];
+
+export const POLICIES_CATALOG = [
+  { id: 'p1', name: 'Militarización de Infraestructura Crítica y Fronteras', issue: 'Seguridad', deltaCrime: -8.0, deltaTension: 3.0 },
+  { id: 'p2', name: 'Cárceles de Alta Seguridad y Aislamiento de Bandas', issue: 'Seguridad', deltaCrime: -7.5, deltaTension: 1.0 },
+  { id: 'p3', name: 'Expulsión Administrativa Express en 48 Horas de Irregulares', issue: 'Seguridad', deltaCrime: -5.0, deltaTension: 4.0 },
+  { id: 'p4', name: 'Rebaja del Impuesto Corporativo a 23% para Inversión', issue: 'Economía', deltaGrowth: 0.6, deltaTension: -1.0 },
+  { id: 'p5', name: 'Fast-Track de Permisología para Grandes Proyectos', issue: 'Economía', deltaGrowth: 0.5, deltaTension: -2.0 },
+  { id: 'p6', name: 'Sueldo Mínimo de $650.000 con Subsidio Estatal a PyMEs', issue: 'Economía', deltaGrowth: -0.3, deltaTension: -4.0 },
+  { id: 'p7', name: '6% Previsional Completo a Cuentas Individuales Heredables', issue: 'Pensiones', deltaGrowth: 0.3, deltaTension: 2.0 },
+  { id: 'p8', name: 'Fondo Solidario Mixto Estatal para Pensiones', issue: 'Pensiones', deltaGrowth: -0.2, deltaTension: -5.0 },
+  { id: 'p9', name: 'Plan Cero Listas de Espera en Salud con Derivación AUGE', issue: 'Salud', deltaApproval: 4.0, deltaTension: -4.0 }
+];
+
+export const STAFF_CATALOG = [
+  {
+    id: 'staff_mgr_morales',
+    role: 'manager',
+    roleLabel: 'Jefe de Campaña',
+    roleIcon: '👔',
+    name: 'Esteban Morales',
+    avatar: '👨‍💼',
+    title: 'Operador Territorial Tradicional',
+    exp: '20 años en campañas distritales y municipales en la Región Metropolitana.',
+    salaryWeekly: 450000,
+    bonusHours: 8,
+    bonusRecogWeekly: 0.2,
+    bonusVolunteersWeekly: 5,
+    bonusPPMonthly: 0,
+    perkDesc: '+8 hrs semanales ejecutivas | +10% en recaudación de cenas'
+  },
+  {
+    id: 'staff_mgr_valenzuela',
+    role: 'manager',
+    roleLabel: 'Jefe de Campaña',
+    roleIcon: '👔',
+    name: 'Catalina Valenzuela',
+    avatar: '👩‍💼',
+    title: 'Estratega Electoral de Datos (Data & Analytics)',
+    exp: 'Master en Políticas Públicas. Diseña franjas y microsegmentación por mesa de votación.',
+    salaryWeekly: 800000,
+    bonusHours: 14,
+    bonusRecogWeekly: 0.5,
+    bonusVolunteersWeekly: 10,
+    bonusPPMonthly: 0,
+    perkDesc: '+14 hrs semanales | +25% de precisión en sondeos privados'
+  },
+  {
+    id: 'staff_comm_navarrete',
+    role: 'communications',
+    roleLabel: 'Dir. de Comunicaciones',
+    roleIcon: '📢',
+    name: 'Gonzalo Navarrete',
+    avatar: '🎙️',
+    title: 'Ex-Editor de Prensa y Televisión',
+    exp: 'Vínculos de primer nivel con conductores radiales, diarios y matinales de TV.',
+    salaryWeekly: 500000,
+    bonusHours: 0,
+    bonusRecogWeekly: 0.8,
+    bonusVolunteersWeekly: 0,
+    bonusPPMonthly: 0,
+    perkDesc: '+0.8% Reconocimiento comunal semanal automático | +15% impacto de marketing'
+  },
+  {
+    id: 'staff_comm_diaz',
+    role: 'communications',
+    roleLabel: 'Dir. de Comunicaciones',
+    roleIcon: '📢',
+    name: 'Valentina Díaz',
+    avatar: '📱',
+    title: 'Directora Digital y Viralización en Redes',
+    exp: 'Especialista en streaming, TikTok y contenido de alto impacto para votantes jóvenes.',
+    salaryWeekly: 750000,
+    bonusHours: 2,
+    bonusRecogWeekly: 1.6,
+    bonusVolunteersWeekly: 8,
+    bonusPPMonthly: 0,
+    perkDesc: '+1.6% Reconocimiento semanal | Amortigua -50% el desgaste de ataques opositores'
+  },
+  {
+    id: 'staff_field_albornoz',
+    role: 'field',
+    roleLabel: 'Estratega Territorial',
+    roleIcon: '🚩',
+    name: 'Rosa Albornoz',
+    avatar: '🤝',
+    title: 'Dirigente Social y Líder Vecinal',
+    exp: 'Conexión histórica con juntas de vecinos, clubes deportivos y ferias libres.',
+    salaryWeekly: 350000,
+    bonusHours: 0,
+    bonusRecogWeekly: 0.3,
+    bonusVolunteersWeekly: 20,
+    bonusPPMonthly: 0,
+    perkDesc: '+20 Voluntarios nuevos/semana | +10% entusiasmo en barrios populares'
+  },
+  {
+    id: 'staff_field_benitez',
+    role: 'field',
+    roleLabel: 'Estratega Territorial',
+    roleIcon: '🚩',
+    name: 'Javier Benítez',
+    avatar: '🗺️',
+    title: 'Coordinador General de Despliegue y Logística',
+    exp: 'Especialista en copamiento de avenidas, instalación de brigadas y banderazos.',
+    salaryWeekly: 650000,
+    bonusHours: 0,
+    bonusRecogWeekly: 0.6,
+    bonusVolunteersWeekly: 40,
+    bonusPPMonthly: 0,
+    perkDesc: '+40 Voluntarios nuevos/semana | -25% costo de propaganda en vía pública'
+  },
+  {
+    id: 'staff_legal_vergara',
+    role: 'legal',
+    roleLabel: 'Contralor & SERVEL',
+    roleIcon: '⚖️',
+    name: 'Andrés Vergara',
+    avatar: '👨‍⚖️',
+    title: 'Abogado Electoralista SERVEL & TRICEL',
+    exp: 'Litigante ante tribunales electorales, especialista en la Ley 18.700 sobre votaciones.',
+    salaryWeekly: 400000,
+    bonusHours: 0,
+    bonusRecogWeekly: 0.1,
+    bonusVolunteersWeekly: 0,
+    bonusPPMonthly: 0,
+    perkDesc: 'Inmunidad ante multas SERVEL | Descuento del 30% en costos de inscripción'
+  },
+  {
+    id: 'staff_legal_silva',
+    role: 'legal',
+    roleLabel: 'Contralor & SERVEL',
+    roleIcon: '⚖️',
+    name: 'Loreto Silva',
+    avatar: '👩‍⚖️',
+    title: 'Auditora de Cuentas y Probidad Pública',
+    exp: 'Ex-fiscalizadora de Contraloría. Blindaje total en rendición de gastos electorales.',
+    salaryWeekly: 600000,
+    bonusHours: 0,
+    bonusRecogWeekly: 0.2,
+    bonusVolunteersWeekly: 0,
+    bonusPPMonthly: 2,
+    perkDesc: '+2 Puntos Políticos (PP) al mes por probidad | +3% aprobación pública'
+  }
+];

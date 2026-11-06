@@ -1,10 +1,17 @@
 export const CHILE_GEO = {
   rm: {
     name: 'Región Metropolitana de Santiago',
+    provinces: {
+      Chacabuco: ['Colina', 'Lampa', 'Tiltil'],
+      Cordillera: ['Puente Alto', 'Pirque', 'San José de Maipo'],
+      Maipo: ['San Bernardo', 'Buin', 'Paine'],
+      Melipilla: ['Melipilla'],
+      Talagante: ['Talagante', 'Peñaflor', 'Padre Hurtado'],
+    },
     districts: {
       'Distrito 8': { seats: 8, communes: ['Maipú', 'Pudahuel', 'Cerrillos', 'Estación Central', 'Quilicura', 'Colina', 'Lampa', 'Tiltil'] },
       'Distrito 9': { seats: 7, communes: ['Recoleta', 'Independencia', 'Conchalí', 'Huechuraba', 'Renca', 'Cerro Navia', 'Lo Prado', 'Quinta Normal'] },
-      'Distrito 10': { seats: 8, communes: ['Santiago Centro', 'Providencia', 'Ñuñoa', 'Macul', 'San Joaquín', 'La Granja'] },
+      'Distrito 10': { seats: 8, communes: ['Santiago', 'Providencia', 'Ñuñoa', 'Macul', 'San Joaquín', 'La Granja'] },
       'Distrito 11': { seats: 6, communes: ['Las Condes', 'Vitacura', 'Lo Barnechea', 'La Reina', 'Peñalolén'] },
       'Distrito 12': { seats: 7, communes: ['Puente Alto', 'La Florida', 'La Pintana', 'Pirque', 'San José de Maipo'] },
       'Distrito 13': { seats: 5, communes: ['El Bosque', 'La Cisterna', 'San Ramón', 'San Miguel', 'Lo Espejo', 'Pedro Aguirre Cerda'] },
@@ -13,6 +20,14 @@ export const CHILE_GEO = {
   },
   valpo: {
     name: 'Región de Valparaíso',
+    provinces: {
+      'Marga Marga': ['Quilpué', 'Villa Alemana', 'Limache'],
+      Quillota: ['Quillota', 'La Calera'],
+      'San Felipe de Aconcagua': ['San Felipe'],
+      'Los Andes': ['Los Andes'],
+      Valparaíso: ['Valparaíso', 'Viña del Mar', 'Concón', 'Casablanca'],
+      'San Antonio': ['San Antonio', 'Cartagena', 'Algarrobo'],
+    },
     districts: {
       'Distrito 6': { seats: 8, communes: ['Quilpué', 'Villa Alemana', 'Quillota', 'San Felipe', 'Los Andes', 'La Calera', 'Limache'] },
       'Distrito 7': { seats: 8, communes: ['Valparaíso', 'Viña del Mar', 'Concón', 'San Antonio', 'Casablanca', 'Cartagena', 'Algarrobo'] }
@@ -36,18 +51,6 @@ export const CHILE_PARTIES = [
   { id: 'PNL', name: 'Partido Nacional Libertario', bloc: 'Derecha / Rep', color: '#0F172A', factions: ['Minarquismo Radical', 'Libertad Económica Total'] },
   { id: 'PDG', name: 'Partido de la Gente', bloc: 'Centro', color: '#059669', factions: ['Democracia Digital', 'Clase Media Emprendedora'] },
   { id: 'IND', name: 'Independiente Fuera de Pacto', bloc: 'Independientes', color: '#64748B', factions: ['Ciudadano Independiente', 'Dirigente Social sin Partido'] }
-];
-
-export const POLICIES_CATALOG = [
-  { id: 'p1', name: 'Militarización de Infraestructura Crítica y Fronteras', issue: 'Seguridad', deltaCrime: -8.0, deltaTension: 3.0 },
-  { id: 'p2', name: 'Cárceles de Alta Seguridad y Aislamiento de Bandas', issue: 'Seguridad', deltaCrime: -7.5, deltaTension: 1.0 },
-  { id: 'p3', name: 'Expulsión Administrativa Express en 48 Horas de Irregulares', issue: 'Seguridad', deltaCrime: -5.0, deltaTension: 4.0 },
-  { id: 'p4', name: 'Rebaja del Impuesto Corporativo a 23% para Inversión', issue: 'Economía', deltaGrowth: 0.6, deltaTension: -1.0 },
-  { id: 'p5', name: 'Fast-Track de Permisología para Grandes Proyectos', issue: 'Economía', deltaGrowth: 0.5, deltaTension: -2.0 },
-  { id: 'p6', name: 'Sueldo Mínimo de $650.000 con Subsidio Estatal a PyMEs', issue: 'Economía', deltaGrowth: -0.3, deltaTension: -4.0 },
-  { id: 'p7', name: '6% Previsional Completo a Cuentas Individuales Heredables', issue: 'Pensiones', deltaGrowth: 0.3, deltaTension: 2.0 },
-  { id: 'p8', name: 'Fondo Solidario Mixto Estatal para Pensiones', issue: 'Pensiones', deltaGrowth: -0.2, deltaTension: -5.0 },
-  { id: 'p9', name: 'Plan Cero Listas de Espera en Salud con Derivación AUGE', issue: 'Salud', deltaApproval: 4.0, deltaTension: -4.0 }
 ];
 
 export const STAFF_CATALOG = [

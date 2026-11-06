@@ -135,7 +135,7 @@
                   </div>
                   <input type="range" id="p1-age" min="18" max="85" value="25" oninput="window.p1HandleAgeChange(this.value)" class="w-full cursor-pointer accent-[#0047AB]" />
                   <div id="p1-age-status-box" class="mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight">
-                    Habilitado para: Concejal, Alcalde, Diputado y Gobernador Regional
+                    Los cargos disponibles dependen de tu edad, territorio y ciclo electoral.
                   </div>
                 </div>
 
@@ -290,13 +290,15 @@
                 <div>
                   <label class="block text-[11px] uppercase font-bold text-stone-700 mb-1">Elige en qué año arranca tu carrera *</label>
                   <select id="p2-start-year" onchange="window.p2HandleYearChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
-                    <option value="2024" selected>2024 - Elección de concejales</option>
-                    <option value="2025">2025 - Entre ciclos municipales</option>
+                    <option value="2024" selected>2024 · Municipal y regional</option>
+                    <option value="2025">2025 · Presidencial y parlamentario</option>
                     <option value="2026">2026 - Gobernanza Plena (Mitad de Período Constitucional, Leyes y Alianzas)</option>
+                    <option value="2028">2028 · Municipal y regional</option>
+                    <option value="2029">2029 · Presidencial y parlamentario</option>
                   </select>
                 </div>
                 <div id="p2-year-description" class="p-2.5 bg-blue-50 border border-blue-200 text-blue-900 rounded text-[11px] leading-snug">
-                  📅 <strong>Año 2024:</strong> Elección de concejales en la semana 44. Puedes inscribirte desde la semana 8.
+                  📅 <strong>Año 2024:</strong> Elecciones municipales y regionales en la semana 44. Inscripción desde la semana 8.
                 </div>
               </div>
 
@@ -345,12 +347,6 @@
                   <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Elige tu rol de inicio *</label>
                   <select id="p2-initial-office" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
                     <option value="none" selected>Ciudadano sin Cargo (Recomendado - Carrera política desde cero)</option>
-                    <option value="concejal">Concejal Municipal (Requiere 18+ años)</option>
-                    <option value="alcalde">Alcalde/Alcaldesa (Requiere 18+ años)</option>
-                    <option value="diputado">Diputado/a de la República (Requiere 21+ años)</option>
-                    <option value="gobernador">Gobernador/a Regional (Requiere 21+ años)</option>
-                    <option value="senador">Senador/a de la República (Requiere 35+ años)</option>
-                    <option value="presidente">Presidente/a de la República (Requiere 35+ años)</option>
                   </select>
                 </div>
 
@@ -374,12 +370,18 @@
 
                 <!-- Presets Rápidos -->
                 <div class="space-y-1">
-                  <span class="text-[10px] uppercase font-bold text-stone-600">Presets Programáticos Rápidos:</span>
+                  <span class="text-[10px] uppercase font-bold text-stone-600">Programas predefinidos editables, con o sin partido</span>
                   <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5" id="p2-presets-container"></div>
                 </div>
 
                 <!-- Catálogo de Políticas -->
                 <div class="space-y-1 pt-2 border-t">
+                  <div id="p2-selected-policies" class="flex flex-wrap gap-1" aria-label="Políticas seleccionadas"></div>
+                  <label class="block text-xs">Filtrar por tema
+                    <select id="p2-policy-topic" onchange="window.p2RenderPoliciesCatalog()" class="ml-1 p-1 border rounded">
+                      <option value="">Todos los temas</option>
+                    </select>
+                  </label>
                   <div class="max-h-60 overflow-y-auto border border-stone-300 rounded bg-white p-2 space-y-1.5" id="p2-policies-catalog"></div>
                 </div>
               </div>
@@ -388,7 +390,7 @@
               <div class="bg-[#FAF8F5] border border-[#A89E88] p-3 rounded shadow-xs flex items-center justify-between">
                 <div>
                   <h3 class="font-extrabold text-xs text-slate-900 uppercase">Orientación Programática Estimada</h3>
-                  <span class="text-xs text-stone-600" id="p2-ideology-summary-text">Estatismo / Socialdemocracia moderada</span>
+                  <span class="text-xs text-stone-600" id="p2-ideology-summary-text"></span>
                 </div>
                 <div class="w-20 h-20 bg-white border border-stone-400 relative flex items-center justify-center font-mono text-[7px] text-stone-400">
                   <div class="absolute w-px h-full bg-stone-300"></div>
@@ -912,7 +914,7 @@
           <div id="local-management" class="hidden p-3 border rounded space-y-2">
             <p id="local-management-status" class="text-sm"></p>
             <button class="px-2 py-1 bg-blue-800 text-white rounded" onclick="window.manageLocalOffice('agenda')">Impulsar primer eje (12 h · 8 PP)</button>
-            <button class="px-2 py-1 bg-blue-800 text-white rounded" onclick="window.manageLocalOffice('audit')">Fiscalizar el municipio (12 h)</button>
+            <button id="management-audit" class="px-2 py-1 bg-blue-800 text-white rounded" onclick="window.manageLocalOffice('audit')">Fiscalizar el municipio (12 h)</button>
           </div>
           <div class="flex justify-between items-center border-b pb-2">
             <div>
@@ -1162,11 +1164,16 @@
           <div class="flex justify-between items-center border-b pb-2">
             <div>
               <h3 class="font-extrabold text-sm text-slate-900 uppercase">Calendario electoral de la simulación</h3>
-              <span class="text-xs text-stone-500 font-mono" id="elections-cycle-subtitle">Ciclo Cuatrienal Chileno</span>
+              <span class="text-xs text-stone-500 font-mono" id="elections-cycle-subtitle">Cargos según edad, territorio y ciclo</span>
             </div>
-            <button id="local-register" onclick="window.registerLocalCandidate()" class="px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-extrabold text-xs rounded shadow-2xs cursor-pointer">
-              🗳️ Inscribir candidatura a concejal
-            </button>
+            <div class="flex flex-wrap items-center gap-2">
+              <label class="text-xs font-bold">Cargo a disputar
+                <select id="election-office" class="ml-1 p-1.5 border rounded bg-white"></select>
+              </label>
+              <button id="local-register" onclick="window.registerCandidate()" class="px-4 py-1.5 bg-[#0047AB] text-white disabled:opacity-50 font-extrabold text-xs rounded">
+                Inscribir candidatura
+              </button>
+            </div>
           </div>
           <div class="text-sm whitespace-pre-line" id="elections-calendar-cards" aria-live="polite"></div>
         </div>
@@ -1206,8 +1213,9 @@
                 <span class="absolute bottom-1">Libertades (-100)</span>
                 <span class="absolute left-1">Estatismo (-100)</span>
                 <span class="absolute right-1">Mercado (+100)</span>
-                <div id="compass-player-dot" class="w-3.5 h-3.5 rounded-full bg-blue-700 border-2 border-white absolute shadow"></div>
+                <div id="profile-compass-dot" class="w-3.5 h-3.5 rounded-full bg-blue-700 border-2 border-white absolute shadow"></div>
               </div>
+              <p id="profile-ideology-summary-text" class="text-xs text-stone-600"></p>
             </div>
           </div>
         </div>

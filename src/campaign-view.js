@@ -33,7 +33,7 @@ const pct = value => `${format(Number(value.toFixed(1)))} %`;
 export function renderCampaign(state, election) {
   const { player, campaign, volunteers } = state;
   const climate = campaignClimate(state);
-  const field = election ? electionField(election, player, state.week, climate) : null;
+  const field = election ? electionField(election, player, state.week, climate, state.roster) : null;
   const chosen = player.corePolicies.map(id => POLICIES_CATALOG.find(policy => policy.id === id)).filter(Boolean);
   const chosenTopics = new Set(chosen.map(policy => policy.issue));
   element('opponents-list-container').replaceChildren(...(field
@@ -72,7 +72,7 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
   for (const key of ['digital', 'palomas']) element(`marketing-${key}`).disabled = !election || Boolean(campaign[key]);
 
   element('campaign-climate').textContent = `Agenda: ${climate.agenda.title} · ${climate.agenda.topics.join(', ')}
-Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
+Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
   element('player-core-policies-container').replaceChildren(...climate.policyResults.map(item => {
     const { policy, urgency, fit, coherence, emphasis } = item;
     const demand = urgency >= 0.75 ? 'Alta demanda' : urgency >= 0.45 ? 'Demanda media' : 'Demanda baja';

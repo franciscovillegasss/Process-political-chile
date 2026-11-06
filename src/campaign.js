@@ -2,6 +2,14 @@ import { policyUrgency, publicAgenda } from './electorate.js';
 
 export const VOLUNTEER_LIMIT = 500;
 
+const SECTOR_TOPICS = ['Instituciones y derechos', 'Trabajo y transporte', 'Economía', 'Educación',
+  'Vivienda y ciudad', 'Medioambiente', 'Seguridad', 'Salud'];
+
+export function focusBonus(state) {
+  const topic = SECTOR_TOPICS[state.campaign.focus];
+  return topic ? Math.round(6 + 22 * policyUrgency(state, topic)) : 0;
+}
+
 export const ADS = {
   digital: { name: 'Pauta digital', hours: 0, funds: 1_500_000, recognition: 3.5, support: 85 },
   palomas: { name: 'Propaganda territorial', hours: 0, funds: 2_500_000, recognition: 5, support: 145 },
@@ -22,7 +30,7 @@ export const METRICS = [
 
 export function initialCampaign() {
   return {
-    digital: 0, palomas: 0, fundraising: 0, trained: 0, mobilized: 0, policyWeek: 0,
+    digital: 0, palomas: 0, fundraising: 0, donorFatigue: 0, lastCommunity: -100, rested: false, focus: -1, trained: 0, mobilized: 0, policyWeek: 0,
     contactYear: 0, contacts: { vecinos: 0, productivo: 0, civico: 0 },
     polls: [], activity: [],
     actionUses: { puerta_a_puerta: 0, cabildo: 0, prensa: 0 },
@@ -31,7 +39,8 @@ export function initialCampaign() {
 }
 
 export function weeklyCampaign(state) {
-  Object.assign(state.campaign, { digital: 0, palomas: 0, fundraising: 0, mobilized: 0, policyWeek: 0 });
+  if (!state.campaign.fundraising) state.campaign.donorFatigue = Math.max(0, state.campaign.donorFatigue - 1);
+  Object.assign(state.campaign, { digital: 0, palomas: 0, fundraising: 0, rested: false, mobilized: 0, policyWeek: 0 });
   for (const action of Object.keys(state.campaign.actionUses)) state.campaign.actionUses[action] = 0;
   if (state.week % 4 !== 0) return;
   const wave = [0.6, 0.25, -0.2, -0.55, -0.3, 0.1][(state.year * 13 + state.week / 4) % 6] ?? 0;

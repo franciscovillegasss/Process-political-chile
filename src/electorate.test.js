@@ -52,3 +52,11 @@ test('emphasis saturates and decays, and public mood affects both sides of the p
   assert.notEqual(field.votes, neutral.votes);
   assert.notEqual(field.rivals[0].votes, neutral.rivals[0].votes);
 });
+
+test('completed work remains electorally relevant after approval returns to baseline', () => {
+  const state = { ...country, player: social, localElection: race() };
+  const withoutProjects = campaignClimate(state);
+  const withProjects = campaignClimate({ ...state, mandate: { completed: 2 } });
+  assert.equal(withProjects.trackRecord, 1.05);
+  assert.ok(withProjects.multiplier > withoutProjects.multiplier);
+});

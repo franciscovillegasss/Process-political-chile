@@ -33,26 +33,37 @@ const RIVAL_NAMES = [
   ['Daniel Silva', 'Camila Contreras', 'Javier Álvarez'],
 ];
 
-export function electionField(election, player, week = 8, climate) {
+export function electionField(election, player, week = 8, climate, roster) {
   const office = OFFICES[election.office || 'concejal'];
   const growth = Math.max(0, week - 8);
   const votes = Math.max(0, Math.round((80 + player.nameRecognition * 3 + (player.approval - 52) * 4 + election.support) * (climate?.multiplier ?? 1)));
   const lists = PACTS.map((pact, index) => {
     const bases = office.seats ? [980 - index * 95, 720 - index * 70, 490 - index * 55] : [[980, 720, 490, 360][index]];
     const candidates = bases.map((base, rank) => ({
-      name: RIVAL_NAMES[index][rank],
+      slot: index * 3 + rank,
+      name: roster?.[index * 3 + rank]?.name || RIVAL_NAMES[index][rank],
       list: pact.name,
-      votes: Math.round((base * office.scale + growth * (4 - index + rank)) * (climate?.rivalFactors[index] ?? 1)),
+      votes: Math.round((base * office.scale + growth * (4 - index + rank) + Math.min(200, (roster?.[index * 3 + rank]?.victories || 0) * 18)) * (climate?.rivalFactors[index] ?? 1)),
     }));
     return { ...pact, candidates };
   });
-  const rivals = lists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
+  const eligibleLists = election.runoffWeek ? lists.map(list => ({
+    ...list, candidates: list.candidates.filter(rival => rival.slot === election.runoffRival),
+  })) : lists;
+  const rivals = eligibleLists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
   return { office, votes, lists, rivals, total: votes + rivals.reduce((sum, rival) => sum + rival.votes, 0) };
 }
 
-export function countElection(election, player, seats, week, climate) {
-  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week, climate);
-  if (!office.seats) return countExecutive(office, candidateVotes, rivals);
+export function countElection(election, player, seats, week, climate, roster, stageRunoff = false) {
+  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week, climate, roster);
+  if (!office.seats) {
+    if (election.runoffWeek) {
+      const rival = rivals[0];
+      const won = candidateVotes > rival.votes;
+      return { won, summary: `${won ? 'Candidatura electa' : 'Candidatura no electa'} · ${office.name}. Segunda vuelta: ${candidateVotes} votos frente a ${rival.votes} de ${rival.name}.` };
+    }
+    return countExecutive(office, candidateVotes, rivals, stageRunoff);
+  }
 
   let ownList = lists.find(list => list.id === election.pact);
   if (!ownList) {
@@ -81,7 +92,7 @@ export function countElection(election, player, seats, week, climate) {
   };
 }
 
-function countExecutive(office, votes, rivals) {
+function countExecutive(office, votes, rivals, stageRunoff) {
   const [leader, runnerUp, ...others] = rivals.map(rival => rival.votes);
   const total = votes + leader + runnerUp + others.reduce((sum, value) => sum + value, 0);
   const share = votes / total;
@@ -96,6 +107,10 @@ function countExecutive(office, votes, rivals) {
     else if (rivalMajority) { won = false; detail = 'Un rival ganó en primera vuelta.'; }
     else if (votes <= runnerUp) { won = false; detail = 'Quedaste fuera de la segunda vuelta.'; }
     else {
+      if (stageRunoff) return {
+        runoff: rivals[0].slot,
+        summary: `Clasificaste a segunda vuelta contra ${rivals[0].name} con ${pct(share)} de los votos.`,
+      };
       const yourRunoff = votes + Math.round((total - votes - leader) * 0.48);
       const rivalRunoff = total - yourRunoff;
       won = yourRunoff > rivalRunoff;

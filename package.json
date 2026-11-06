@@ -7,9 +7,13 @@
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "test": "node --test"
+    "test": "node --test",
+    "test:e2e": "node e2e/career.mjs"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.4",
+    "playwright": "^1.65.0",
+    "tailwindcss": "^4.3.4",
     "vite": "^8.3.0"
   }
 }

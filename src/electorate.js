@@ -1,3 +1,4 @@
+import { CHILE_PARTIES } from './catalogs.js';
 import { POLICIES_CATALOG } from './programs.js';
 
 const AGENDAS = [
@@ -68,6 +69,13 @@ export function campaignClimate(state) {
   const agenda = publicAgenda(state);
   const groups = voterGroups(state);
   const party = partyPosition(state.player.partyId);
+  const factions = CHILE_PARTIES.find(entry => entry.id === state.player.partyId)?.factions ?? [];
+  const faction = factions.indexOf(state.player.faction);
+  if (state.player.partyId !== 'IND' && faction >= 0) {
+    const style = faction === 0 ? 0.93 : 1.07;
+    party.economy = clamp(party.economy * style, -2, 2);
+    party.authority = clamp(party.authority * style, -2, 2);
+  }
   const independent = !Object.hasOwn(PARTY_POSITIONS, state.player.partyId);
   const policies = state.player.corePolicies.map(id => POLICIES_CATALOG.find(policy => policy.id === id)).filter(Boolean);
   const election = state.localElection?.year === state.year && !state.localElection.result ? state.localElection : null;
@@ -86,9 +94,10 @@ export function campaignClimate(state) {
   const coherence = average('coherence');
   const partyFit = independent ? fit : voterFit(groups, party);
   const trust = clamp(1 - (election?.revisions ?? 0) * 0.045, 0.82, 1);
-  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24);
+  const trackRecord = 1 + Math.min(0.15, (state.mandate?.completed || 0) * 0.025);
+  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24) * trackRecord;
   return {
-    agenda, groups, policyResults, fit, coherence, trust, multiplier,
+    agenda, groups, policyResults, fit, coherence, trust, trackRecord, multiplier,
     rivalFactors: RIVAL_PARTIES.map(id => 0.8 + 0.29 * voterFit(groups, partyPosition(id))),
   };
 }

@@ -1,10 +1,12 @@
+import './styles.css';
 import { PACTS, allocateSeats, LOCAL_REGISTRATION, LOCAL_ACTIONS, countElection, electionField, OFFICES, cycleOffices, electionWeek, officeTerritory } from './election.js';
 
 import { CHILE_GEO, CHILE_PARTIES, STAFF_CATALOG } from './catalogs.js';
 import { POLICIES_CATALOG, PROGRAM_PRESETS, programPosition } from './programs.js';
-import { ADS, CONTACTS, VOLUNTEER_LIMIT, initialCampaign, weeklyCampaign } from './campaign.js';
+import { ADS, CONTACTS, VOLUNTEER_LIMIT, initialCampaign, focusBonus, weeklyCampaign } from './campaign.js';
 import { renderCampaign, renderCountry } from './campaign-view.js';
-import { campaignClimate, decayMessages, messageImpact, newMessages, publicAgenda } from './electorate.js';
+import { campaignClimate, policyUrgency, decayMessages, messageImpact, newMessages, publicAgenda } from './electorate.js';
+import { calendarWeek, completeProject, fundraisingYield, giveUpOffice, newRoster, openMandate, PROJECT_COST, recordCareer, renewRoster, RETIREMENT_AGE } from './career.js';
 
 const element = id => document.getElementById(id);
 const escapeHtml = value => String(value).replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -26,7 +28,7 @@ function pay({ hours, funds = 0, points = 0 }) {
 function activeElection() {
   const { localElection, year, week } = GAME_STATE;
   return localElection?.year === year && localElection.office && !localElection.result &&
-    electionWeek(year) > week ? localElection : null;
+    (localElection.runoffWeek || electionWeek(year)) > week ? localElection : null;
 }
 
 function requireElection() {
@@ -67,12 +69,13 @@ window.registerCandidate = function() {
   if (!selection) return warn('Selecciona un cargo disponible para tu edad y territorio.');
   if (!pay({ ...LOCAL_REGISTRATION, funds: registrationCost() })) return;
   const pact = PACTS.find(list => `pact-${list.id}` === player.activePactId)?.id || 'ind';
-  GAME_STATE.localElection = { year, office: id, pact, support: 0, messages: newMessages(), revisions: 0, lastRevision: 0, result: '' };
+  GAME_STATE.localElection = { year, office: id, pact, support: 0, runoffWeek: 0, runoffRival: 0, firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '' };
   if (GAME_STATE.campaign.contactYear !== year) {
     GAME_STATE.campaign.contactYear = year;
     const { contacts, endorsements } = initialCampaign();
     Object.assign(GAME_STATE.campaign, { contacts, endorsements });
   }
+  recordCareer(GAME_STATE, 'Candidatura', `Inscripción para ${OFFICES[id].name}.`);
   reportCampaign('Candidatura inscrita', `Ya puedes hacer campaña para ${OFFICES[id].name} y consultar a tus oponentes.`);
 };
 
@@ -86,7 +89,7 @@ window.executeCampaignAction = function(key) {
   const issueMatch = policies.some(policy => action.issues.includes(policy.issue));
   const repeats = campaign.actionUses[key]++;
   const support = Math.round(action.support * (0.5 + player.attributes[action.attribute] / 100) *
-    (issueMatch ? 1.15 : 1) / (1 + repeats * 0.38));
+    (issueMatch ? 1.15 : 1) * (key === 'puerta_a_puerta' ? 1 + focusBonus(GAME_STATE) / 100 : 1) / (1 + repeats * 0.38));
   election.support += support;
   reportCampaign('Actividad de campaña', `+${support} puntos de campaña.${repeats ? ' La repetición de este formato reduce su efecto.' : ''}${issueMatch ? ' Incluye afinidad programática.' : ''}`);
 };
@@ -95,8 +98,9 @@ window.fundraiseAction = function() {
   const { campaign, player } = GAME_STATE;
   if (campaign.fundraising >= 2) return warn('Puedes organizar hasta dos cenas por semana.');
   if (!pay({ hours: 12 })) return;
+  const raised = fundraisingYield(GAME_STATE, staffTotals().fundraisingBonus);
   campaign.fundraising++;
-  const raised = Math.round(350_000 * (1 + staffTotals().fundraisingBonus));
+  campaign.donorFatigue = Math.min(8, campaign.donorFatigue + 1);
   player.funds += raised;
   reportCampaign('Recaudación', `+${clp(raised)} en fondos de campaña.`);
 };
@@ -139,7 +143,7 @@ window.commissionPoll = function() {
   const { campaign, player, year, week } = GAME_STATE;
   if (!election || campaign.polls.some(poll => poll?.year === year && poll.week === week) ||
       !pay({ hours: 0, funds: 1_000_000 })) return;
-  const field = electionField(election, player, week, campaignClimate(GAME_STATE));
+  const field = electionField(election, player, week, campaignClimate(GAME_STATE), GAME_STATE.roster);
   const rival = field.rivals[0];
   const precision = 1 - staffTotals().pollAccuracy;
   const margin = 3 * precision;
@@ -214,21 +218,39 @@ function resolveElection() {
   const candidate = localElection?.year === year && localElection.office ? localElection : null;
   const id = candidate?.office || 'concejal';
   const districtSeats = id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined;
-  const { won, summary } = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week, campaignClimate(GAME_STATE))
+  const climate = campaignClimate(GAME_STATE);
+  const result = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week, climate, GAME_STATE.roster, true)
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
+  if (year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
+  if (result.runoff !== undefined) {
+    Object.assign(candidate, { runoffWeek: GAME_STATE.week + 4, runoffRival: result.runoff, firstRound: result.summary });
+    recordCareer(GAME_STATE, 'Primera vuelta', result.summary);
+    return;
+  }
+  const { won, summary } = result;
   GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), result: summary };
+  if (candidate) {
+    recordCareer(GAME_STATE, 'Elección', summary);
+    if (!won) {
+      const rival = electionField(candidate, player, GAME_STATE.week, climate, GAME_STATE.roster).rivals[0];
+      const person = GAME_STATE.roster[rival.slot];
+      person.victories++;
+      person.office = id;
+      recordCareer(GAME_STATE, 'Contienda', `${person.name} encabezó el voto rival en ${OFFICES[id].name}.`);
+    }
+  }
   const outgoing = player.officeEndYear > 0 ? player.officeEndYear === year
     : player.officeId && cycleOffices(year, player.region).some(([officeId]) => officeId === player.officeId);
   if (won) {
+    if (GAME_STATE.mandate?.project) recordCareer(GAME_STATE, 'Mandato', 'Un proyecto del mandato anterior quedó pendiente al cambiar de período.');
     player.officeId = id;
     player.currentOffice = officeTitle(id, player);
     player.officeEndYear = year + (id === 'senador' ? 8 : 4);
+    openMandate(GAME_STATE);
     GAME_STATE.localManagement = 'pending';
   } else if (outgoing) {
-    player.officeId = '';
-    player.officeEndYear = 0;
-    player.currentOffice = 'Ciudadano sin Cargo';
-    GAME_STATE.localManagement = null;
+    recordCareer(GAME_STATE, 'Mandato', `Finalizó el mandato en ${player.currentOffice}.`);
+    giveUpOffice(GAME_STATE);
   }
 }
 
@@ -249,8 +271,108 @@ window.manageLocalOffice = function(choice) {
     player.approval = Math.min(100, player.approval + 2);
     player.politicalPoints += 5;
   }
+  recordCareer(GAME_STATE, 'Gestión', choice === 'agenda' ? 'Presentó su agenda de mandato.' : 'Realizó la fiscalización inicial.');
   renderPlayerStats();
   renderLocalElection();
+};
+
+window.buildPoliticalCapital = function() {
+  const { campaign, player } = GAME_STATE;
+  if (calendarWeek(GAME_STATE) - campaign.lastCommunity < 4) return warn('El trabajo territorial da PP una vez cada cuatro semanas.');
+  if (!pay({ hours: 12 })) return;
+  campaign.lastCommunity = calendarWeek(GAME_STATE);
+  const points = player.politicalPoints < 10 ? 5 : 3;
+  player.politicalPoints += points;
+  reportCampaign('Trabajo territorial', `+${points} PP al organizar una actividad comunitaria.`);
+};
+
+window.restPolitician = function() {
+  const { campaign, player } = GAME_STATE;
+  if (campaign.rested || player.hours >= player.maxHours) return warn('Puedes recuperar horas una vez por semana, después de una actividad.');
+  campaign.rested = true;
+  const recovered = Math.min(6, player.maxHours - player.hours);
+  player.hours += recovered;
+  reportCampaign('Descanso', `+${recovered} horas recuperadas esta semana.`);
+};
+
+window.personalContribution = function() {
+  const { player } = GAME_STATE;
+  const amount = Math.min(500_000, player.personalFunds);
+  if (!amount) return warn('Agotaste tus ahorros personales.');
+  player.personalFunds -= amount;
+  player.funds += amount;
+  reportCampaign('Aporte propio', `${clp(amount)} transferidos desde tus ahorros personales.`);
+};
+
+window.proposeProject = function() {
+  const { mandate, player } = GAME_STATE;
+  const policy = POLICIES_CATALOG.find(item => item.id === element('mandate-policy').value && player.corePolicies.includes(item.id));
+  if (!mandate || mandate.project || mandate.budget < PROJECT_COST || !policy) return warn('Necesitas un cargo, presupuesto disponible y un eje programático.');
+  if (!pay({ hours: 10, points: 3 })) return;
+  const scope = OFFICES[player.officeId].scope;
+  const projectName = scope === 'commune' ? `Plan comunal de ${policy.issue.toLowerCase()}`
+    : player.officeId === 'gobernador' || player.officeId === 'core' ? `Programa regional de ${policy.issue.toLowerCase()}` : policy.name;
+  mandate.project = { name: projectName, issue: policy.issue, due: 0, relevant: false };
+  mandate.hearings = 0;
+  recordCareer(GAME_STATE, 'Proyecto', `Presentó: ${projectName} · eje ${policy.name}.`);
+  reportCampaign('Proyecto presentado', 'Reúnete con dos grupos de interés antes de votar.');
+};
+
+window.holdHearing = function(chamber = false) {
+  if (chamber && GAME_STATE.player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
+    return warn('Solo puedes negociar en la cámara en la que ocupas un escaño.');
+  }
+  const { mandate } = GAME_STATE;
+  if (!mandate?.project || mandate.project.due || mandate.hearings >= 2) return warn('Necesitas un proyecto pendiente de acuerdo.');
+  if (!pay({ hours: 8 })) return;
+  mandate.hearings++;
+  reportCampaign('Acuerdo de gestión', `Respaldo conseguido (${mandate.hearings}/2).`);
+};
+
+window.voteProject = function(chamber) {
+  const { mandate, player } = GAME_STATE;
+  if (chamber && player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
+    return warn('Solo puedes votar en la cámara en la que ocupas un escaño.');
+  }
+  if (!mandate?.project || mandate.project.due || mandate.hearings < 2) return warn('Consigue dos respaldos antes de votar.');
+  if (!pay({ hours: 8 })) return;
+  mandate.budget -= PROJECT_COST;
+  mandate.project.relevant = policyUrgency(GAME_STATE, mandate.project.issue) >= 0.75;
+  const delay = Math.max(3, 10 - Math.floor(player.attributes.management / 15));
+  mandate.project.due = calendarWeek(GAME_STATE) + delay;
+  if (['diputado', 'senador'].includes(player.officeId)) {
+    const total = player.officeId === 'senador' ? 50 : 155;
+    const votes = Math.floor(total / 2) + 1 + mandate.hearings;
+    GAME_STATE.legislativeHistory.unshift({
+      number: `Proyecto ${GAME_STATE.year}-${GAME_STATE.week}`, title: mandate.project.name,
+      date: `Semana ${GAME_STATE.week}, ${GAME_STATE.year}`, type: 'Simulación', quorum: `${votes} / ${total}`,
+      yes: votes, no: total - votes, abs: 0, area: mandate.project.issue === 'Seguridad' ? 'crime' : 'taxes',
+      impact: 'Aprobado en la cámara de origen. Ejecución simulada programada.',
+    });
+    window.renderLegislativeHistory();
+  }
+  recordCareer(GAME_STATE, 'Votación', `Aprobado: ${mandate.project.name}.`);
+  reportCampaign('Proyecto aprobado', `Presupuesto asignado. Resultados en ${delay} semanas.`);
+};
+
+function retire() {
+  const { player, year } = GAME_STATE;
+  recordCareer(GAME_STATE, 'Retiro', `${player.name} deja la primera línea a los ${player.age} años.`);
+  giveUpOffice(GAME_STATE);
+  const heir = element('successor-name').value.trim().slice(0, 60) || `${player.name.split(' ')[0]} ${player.name.split(' ').at(-1)} (${year})`;
+  Object.assign(player, { name: heir, age: 25, approval: 52, politicalPoints: 20,
+    nameRecognition: Math.round(player.nameRecognition * 0.4), funds: Math.round(3_000_000 + player.funds * 0.25), hiredStaffIds: [], hours: 60, maxHours: 60, personalFunds: 2_000_000 });
+  GAME_STATE.campaign = initialCampaign();
+  GAME_STATE.volunteers = Math.max(30, Math.floor(GAME_STATE.volunteers / 2));
+  recordCareer(GAME_STATE, 'Sucesión', `${heir} continúa la trayectoria política de la familia.`);
+  element('successor-name').value = '';
+  window.renderAll();
+  window.showToast('Nueva generación', `${heir} continúa con el legado y parte de la red territorial.`);
+}
+
+window.retirePolitician = function() {
+  if (GAME_STATE.player.age < 70 || activeElection()) return warn('El retiro voluntario está disponible desde los 70 años entre campañas.');
+  retire();
 };
 
 function renderLocalElection() {
@@ -271,9 +393,12 @@ ${cycle.map(([id, office]) =>
     : `Año sin elecciones regulares. Próximo ciclo: ${year + (4 - year % 4)}.`;
   const campaign = localElection?.year === year && !localElection.result
     ? `Candidatura inscrita: ${officeTitle(localElection.office, player)} · ${localElection.support.toLocaleString('es-CL')} puntos de campaña acumulados. Consulta Encuestas para estimar la intención de voto.` : '';
+  const firstRound = localElection?.firstRound && !localElection.result ? `${localElection.firstRound} Votación en la semana ${localElection.runoffWeek}.` : '';
   const result = localElection?.result ? `Resultado ${localElection.year}
 ${localElection.result}` : '';
-  element('elections-calendar-cards').textContent = [calendar, campaign, result].filter(Boolean).join('\n\n');
+  element('elections-calendar-cards').textContent = [calendar, campaign, firstRound, result].filter(Boolean).join('\n\n');
+  const missing = Math.max(0, LOCAL_REGISTRATION.points - player.politicalPoints);
+  element('registration-recovery').textContent = missing ? `Faltan ${missing} PP. Puedes recuperarlos con trabajo territorial cada cuatro semanas.` : 'El trabajo territorial da puntos políticos dentro y fuera de campaña.';
   element('local-management').classList.toggle('hidden', !localManagement);
   element('management-audit').textContent = OFFICES[player.officeId]?.scope === 'commune'
     ? 'Fiscalizar el municipio (12 h)' : 'Revisar el uso de recursos públicos (12 h)';
@@ -286,9 +411,72 @@ ${localElection.result}` : '';
   element('local-management').querySelectorAll('button').forEach(button => {
     button.disabled = localManagement !== 'pending';
   });
+  renderMandate();
+}
+
+function renderMandate() {
+  const { mandate, career, player } = GAME_STATE;
+  element('mandate-actions').classList.toggle('hidden', !mandate);
+  element('office-budget-disp').textContent = clp(mandate?.budget || 0);
+  element('office-bills-disp').textContent = mandate?.completed || 0;
+  if (mandate) {
+    const select = element('mandate-policy');
+    const previous = select.value;
+    select.replaceChildren(...POLICIES_CATALOG.filter(policy => player.corePolicies.includes(policy.id))
+      .map(policy => new Option(policy.name, policy.id)));
+    if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    element('mandate-status').textContent = mandate.project
+      ? `${mandate.project.name} · ${mandate.project.due ? `ejecución en ${Math.max(0, mandate.project.due - calendarWeek(GAME_STATE))} semanas` : `${mandate.hearings}/2 respaldos`}`
+      : `Selecciona un eje. El presupuesto de ejecución es ${clp(PROJECT_COST)} por proyecto.`;
+  }
+  element('lobby-audiences-container').textContent = !mandate?.project ? 'Presenta un proyecto para convocar audiencias.'
+    : mandate.project.due ? 'Las audiencias finalizaron. El proyecto está en ejecución.'
+      : `Respaldo obtenido: ${mandate.hearings}/2. Participan juntas vecinales y organizaciones del territorio.`;
+  const records = career.filter(entry => entry.name === player.name && ['Proyecto','Votación','Gestión'].includes(entry.type)).slice(0, 12);
+  element('office-passed-bills-container').textContent = records.length ? records.map(entry => `${entry.date} · ${entry.title}`).join('\n')
+    : 'Todavía no hay decisiones de gestión registradas.';
+}
+
+function renderCareer() {
+  const list = element('career-timeline');
+  list.replaceChildren(...GAME_STATE.career.map(entry => {
+    const row = document.createElement('li');
+    row.className = 'whitespace-pre-line border-b border-stone-200 pb-1';
+    row.textContent = `${entry.date} · ${entry.name} · ${entry.type} · ${entry.title}`;
+    return row;
+  }));
+}
+
+window.changeDomicile = function() {
+  if (GAME_STATE.player.officeId || activeElection()) return warn('Puedes cambiar de domicilio entre mandatos y fuera de campaña.');
+  const select = element('domicile-select');
+  if (!select.value) return warn('Selecciona tu nuevo domicilio.');
+  const [region, district, commune] = JSON.parse(select.value);
+  if (!CHILE_GEO[region]?.districts[district]?.communes.includes(commune) || GAME_STATE.player.commune === commune) {
+    return warn('Elige una comuna distinta.');
+  }
+  Object.assign(GAME_STATE.player, { region, district, commune });
+  GAME_STATE.player.nameRecognition = Math.max(8, GAME_STATE.player.nameRecognition - 8);
+  GAME_STATE.campaign.focus = -1;
+  recordCareer(GAME_STATE, 'Domicilio', `Cambió su domicilio electoral a ${commune}.`);
+  window.renderAll();
+  window.showToast('Domicilio actualizado', `La siguiente candidatura utilizará ${commune} y su distrito.`, 'success');
+};
+
+function initDomicile() {
+  const select = element('domicile-select');
+  select.add(new Option('Selecciona una comuna', ''));
+  for (const [region, data] of Object.entries(CHILE_GEO)) {
+    for (const [district, entry] of Object.entries(data.districts)) {
+      for (const commune of entry.communes) select.add(new Option(`${commune} · ${district}`, JSON.stringify([region, district, commune])));
+    }
+  }
 }
 
 const initialState = () => ({
+  career: [],
+  roster: newRoster(2024),
+  mandate: null,
   campaign: initialCampaign(),
   macroTrend: { inflation: 0, gdpGrowth: 0, unemployment: 0, victimizationRate: 0 },
   localElection: null,
@@ -319,6 +507,7 @@ const initialState = () => ({
     hours: 60,
     maxHours: 60,
     funds: 10000000,
+    personalFunds: 2000000,
     politicalPoints: 25,
     nameRecognition: 25.0,
     approval: 52.0,
@@ -334,14 +523,16 @@ const initialState = () => ({
     victimizationRate: 58.0
   },
   congress: {
-    activeChamber: 'diputados'
+    activeChamber: 'diputados',
+    lower: { ofic: 38, cv: 32, rep: 18, cent: 12 },
+    upper: { ofic: 36, cv: 34, rep: 16, cent: 14 },
   },
   legislativeHistory: [
-    { number: 'Ley N° 21.601', title: 'Ley Marco de Ciberseguridad e Infraestructura Crítica', date: 'Enero 2024', type: 'Simple', quorum: '88 / 155', yes: 88, no: 52, abs: 15, area: 'crime', impact: 'Victimización -3.2%, Certeza jurídica +1.5%' },
-    { number: 'Ley N° 21.602', title: 'Ley de Alivio Tributario y Fomento a las PyMEs', date: 'Marzo 2024', type: 'Simple', quorum: '94 / 155', yes: 94, no: 41, abs: 20, area: 'taxes', impact: 'Crecimiento PIB +0.4%, Empleo formal +1.2%' }
+    { number: 'Archivo A1', title: 'Ley Marco de Ciberseguridad e Infraestructura Crítica', date: 'Enero 2024', type: 'Simple', quorum: '88 / 155', yes: 88, no: 52, abs: 15, area: 'crime', impact: 'Victimización -3.2%, Certeza jurídica +1.5%' },
+    { number: 'Archivo A2', title: 'Ley de Alivio Tributario y Fomento a las PyMEs', date: 'Marzo 2024', type: 'Simple', quorum: '94 / 155', yes: 94, no: 41, abs: 20, area: 'taxes', impact: 'Crecimiento PIB +0.4%, Empleo formal +1.2%' }
   ],
   newsFeed: [
-    { date: 'Semana 1, 2024', source: 'SERVEL / Diario Oficial', title: 'Se abre el año electoral municipal y regional 2024 en todo el territorio chileno.' }
+    { date: 'Semana 1, 2024', source: 'Crónica de la simulación', title: 'Comienza el calendario electoral simulado.' }
   ],
 });
 let GAME_STATE = initialState();
@@ -673,12 +864,18 @@ window.finishFullCharacterCreation = function() {
 
   GAME_STATE = initialState();
   GAME_STATE.year = startYear;
+  GAME_STATE.roster = newRoster(startYear);
   GAME_STATE.week = 1;
   GAME_STATE.month = 'Enero';
   GAME_STATE.volunteers = 120;
   GAME_STATE.player.name = name;
   GAME_STATE.player.age = age;
   GAME_STATE.player.profession = profession;
+  if (/Dirigente|Líder|Activista/.test(profession)) {
+    GAME_STATE.player.nameRecognition += 8;
+    GAME_STATE.volunteers += 25;
+  } else if (/Economista|Comercial|Emprendedor/.test(profession)) GAME_STATE.player.personalFunds += 1_000_000;
+  else GAME_STATE.player.politicalPoints += 3;
   GAME_STATE.player.region = reg;
   GAME_STATE.player.district = dist;
   GAME_STATE.player.commune = comm;
@@ -688,6 +885,11 @@ window.finishFullCharacterCreation = function() {
   GAME_STATE.player.attributes = { ...p1Attributes };
   GAME_STATE.player.officeId = officeVal === 'none' ? '' : officeVal;
   GAME_STATE.player.currentOffice = officeTitle(GAME_STATE.player.officeId, GAME_STATE.player);
+  if (GAME_STATE.player.officeId) {
+    openMandate(GAME_STATE);
+    GAME_STATE.localManagement = 'pending';
+  }
+  recordCareer(GAME_STATE, 'Inicio', `Comienza la trayectoria como ${GAME_STATE.player.currentOffice}.`);
   GAME_STATE.player.corePolicies = [...p2SelectedPolicies];
 
   // Ocultar pantallas de creación y abrir tablero
@@ -744,7 +946,6 @@ window.renderDHondtD3Visualization = function() {
     document.getElementById('dhondt-cifra-repartidora-disp').textContent = 'Ingresa votos para repartir escaños.';
     return;
   }
-  if (!window.d3) return;
   const lists = PACTS.map(list => ({
     ...list, votes: Math.round(totalVotes * d3SimShares[list.id] / sumShares),
   }));
@@ -758,48 +959,20 @@ window.renderDHondtD3Visualization = function() {
   document.getElementById('dhondt-cifra-repartidora-disp').textContent =
     `Cifra Repartidora de Corte: ${lastWinning ? lastWinning.quotient.toLocaleString('es-CL') : '0'} Votos`;
 
-  // Renderizado Hemiciclo D3.js
-  const width = 280;
-  const height = 150;
-  const radius = 110;
-
-  const svg = d3.select(container)
-    .append('svg')
-    .attr('viewBox', `0 0 ${width} ${height}`)
-    .attr('class', 'w-full h-full select-none');
-
-  const g = svg.append('g')
-    .attr('transform', `translate(${width / 2}, ${height - 15})`);
-
-  // Generar coordenadas semicirculares para los escaños ganados
-  const seatDots = [];
-  winningQuotients.sort((a,b) => {
-    const order = { ofic: 1, cent: 2, cv: 3, rep: 4 };
-    return order[a.listId] - order[b.listId];
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 280 150');
+  svg.setAttribute('class', 'w-full h-full');
+  winningQuotients.forEach((seat, index) => {
+    const theta = Math.PI * (1 - index / Math.max(1, totalSeats - 1));
+    const circle = document.createElementNS(ns, 'circle');
+    circle.setAttribute('cx', 140 - 110 * Math.cos(theta));
+    circle.setAttribute('cy', 135 - 110 * Math.sin(theta));
+    circle.setAttribute('r', 11);
+    circle.setAttribute('fill', seat.color);
+    svg.append(circle);
   });
-
-  const step = Math.PI / Math.max(1, totalSeats - 1);
-  winningQuotients.forEach((wq, idx) => {
-    const theta = Math.PI - (idx * step);
-    const x = - (radius * Math.cos(theta));
-    const y = - (radius * Math.sin(theta));
-    seatDots.push({ x, y, color: wq.color, listId: wq.listId });
-  });
-
-  // Dibujar los escaños con animación D3
-  g.selectAll('circle')
-    .data(seatDots)
-    .enter()
-    .append('circle')
-    .attr('cx', d => d.x)
-    .attr('cy', d => d.y)
-    .attr('r', 0)
-    .attr('fill', d => d.color)
-    .attr('stroke', '#FFFFFF')
-    .attr('stroke-width', 2)
-    .transition()
-    .duration(300)
-    .attr('r', 11);
+  container.append(svg);
 };
 
 let currentStaffRoleFilter = 'all';
@@ -964,6 +1137,7 @@ window.advanceTurn = function(weeksToAdvance = 1) {
   const count = [1, 4].includes(weeksToAdvance) ? weeksToAdvance : 1;
   const previousAgenda = publicAgenda(GAME_STATE);
   let announced = false;
+  let payrollWarning = false;
   for (let w = 0; w < count; w++) {
     GAME_STATE.week += 1;
 
@@ -971,6 +1145,12 @@ window.advanceTurn = function(weeksToAdvance = 1) {
       GAME_STATE.week = 1;
       GAME_STATE.year += 1;
       GAME_STATE.player.age += 1;
+      renewRoster(GAME_STATE);
+      GAME_STATE.newsFeed.unshift({ date: `Enero ${GAME_STATE.year}`, source: 'Crónica de la simulación',
+        title: `Comienza el año político. Agenda pública: ${publicAgenda(GAME_STATE).title}.` });
+      GAME_STATE.newsFeed.length = Math.min(36, GAME_STATE.newsFeed.length);
+      if (GAME_STATE.player.age >= RETIREMENT_AGE) retire();
+      window.renderPoliticiansDirectory();
       window.showToast('¡Año Nuevo Constitucional!', `Comienza el año ${GAME_STATE.year}. Tienes ${GAME_STATE.player.age} años cumplidos.`, 'success');
     }
 
@@ -978,15 +1158,20 @@ window.advanceTurn = function(weeksToAdvance = 1) {
     const payroll = staffTotals().salaryWeekly;
     if (payroll > player.funds) {
       player.hiredStaffIds = [];
+      payrollWarning = true;
       window.showToast('Equipo desvinculado', 'El presupuesto no alcanza para pagar la planilla.', 'warning');
     } else {
       player.funds -= payroll;
     }
     const bonuses = staffTotals();
     player.hours = player.maxHours = 60 + bonuses.bonusHours;
-    player.nameRecognition = Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly);
+    player.nameRecognition = Math.max(8, Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly - 0.15));
     GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
     weeklyCampaign(GAME_STATE);
+    if (completeProject(GAME_STATE)) window.showToast('Proyecto ejecutado', 'Consulta el efecto en Cargo e Historial.', 'success');
+    if (GAME_STATE.week % 4 === 0 && GAME_STATE.mandate && !GAME_STATE.mandate.project && player.approval > 52) {
+      player.approval = Math.max(52, player.approval - 0.35);
+    }
     if (GAME_STATE.localElection?.year === GAME_STATE.year) decayMessages(GAME_STATE.localElection);
     if (GAME_STATE.week % 4 === 0) player.politicalPoints += bonuses.bonusPPMonthly;
 
@@ -994,21 +1179,26 @@ window.advanceTurn = function(weeksToAdvance = 1) {
     const mIdx = Math.min(11, Math.floor((GAME_STATE.week - 1) / 4.33));
     GAME_STATE.month = months[mIdx];
     const votingWeek = electionWeek(GAME_STATE.year);
-    if (votingWeek && [registrationWeek, votingWeek].includes(GAME_STATE.week)) {
-      if (GAME_STATE.week === votingWeek) {
+    const runoffWeek = GAME_STATE.localElection?.year === GAME_STATE.year ? GAME_STATE.localElection.runoffWeek : 0;
+    if (votingWeek && [registrationWeek, votingWeek, runoffWeek].includes(GAME_STATE.week)) {
+      if (GAME_STATE.week === votingWeek || GAME_STATE.week === runoffWeek) {
         resolveElection();
-        window.showToast('Escrutinio electoral', 'El resultado está disponible en Elecciones.', 'info');
+        if (GAME_STATE.localElection.result) window.showToast('Escrutinio electoral', 'El resultado está disponible en Elecciones.', 'info');
+        else window.showToast('Segunda vuelta', GAME_STATE.localElection.firstRound, 'info');
+        window.renderPoliticiansDirectory();
       } else window.showToast('Inscripciones abiertas', 'Elige un cargo en Elecciones para iniciar tu campaña.', 'info');
       window.switchMainView('view-elections');
       announced = true;
       break;
     }
+    if (payrollWarning) break;
   }
 
   const agenda = publicAgenda(GAME_STATE);
-  if (!announced && agenda !== previousAgenda) window.showToast('Cambió la agenda pública', `${agenda.title}. Revisa el efecto en tus tres ejes.`);
+  if (!announced && !payrollWarning && agenda !== previousAgenda) window.showToast('Cambió la agenda pública', `${agenda.title}. Revisa el efecto en tus tres ejes.`);
   refreshCampaign();
   renderCountry(GAME_STATE);
+  window.renderPublicOpinionTable();
   window.renderStaffPanel();
 };
 
@@ -1039,6 +1229,9 @@ function renderPlayerStats() {
   }
 
   const player = GAME_STATE.player;
+  renderMapFocus();
+  element('donor-outlook').textContent = `Próxima cena: ${clp(fundraisingYield(GAME_STATE, staffTotals().fundraisingBonus))} · fatiga ${GAME_STATE.campaign.donorFatigue}/8`;
+  element('personal-funds').textContent = `Ahorros: ${clp(player.personalFunds)}`;
   element('stat-approval').textContent = element('office-approval-disp').textContent = `${player.approval.toFixed(1)}%`;
   element('office-title-disp').textContent = player.currentOffice;
   element('office-status-subtitle').textContent = player.officeEndYear ? `Próxima renovación: ${player.officeEndYear}` : '';
@@ -1057,6 +1250,7 @@ window.renderAll = function() {
   window.renderDHondtD3Visualization();
   window.renderProfileAttributes();
   updateCompass('profile', GAME_STATE.player.corePolicies);
+  renderCareer();
   renderLocalElection();
   renderCampaign(GAME_STATE, activeElection());
   renderCountry(GAME_STATE);
@@ -1075,6 +1269,13 @@ window.renderProfileAttributes = function() {
   `;
   document.getElementById('profile-faction').textContent = GAME_STATE.player.faction;
 };
+
+function renderMapFocus() {
+  const selected = element('svg-contiguous-map').children[GAME_STATE.campaign.focus];
+  element('map-sector-inspected').textContent = selected
+    ? `${selected.getAttribute('aria-label')} · +${focusBonus(GAME_STATE)} % en puerta a puerta`
+    : 'Elige un sector para el puerta a puerta';
+}
 
 window.renderContiguousMap = function() {
   const svg = document.getElementById('svg-contiguous-map');
@@ -1098,28 +1299,41 @@ window.renderContiguousMap = function() {
     { name: 'Sector Satélite Sur', path: 'M 120,190 L 200,200 L 190,260 L 110,250 Z', color: '#94A3B8', pop: 42000 }
   ];
 
-  sectors.forEach(s => {
+  element('map-sector-inspected').textContent = 'Elige un sector para el puerta a puerta';
+  sectors.forEach((s, index) => {
     const poly = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     poly.setAttribute('d', s.path);
     poly.setAttribute('fill', s.color);
     poly.setAttribute('stroke', '#475569');
     poly.setAttribute('stroke-width', '1.5');
-    poly.setAttribute('class', 'hover:fill-blue-500 transition-colors duration-150');
+    poly.setAttribute('class', 'hover:fill-blue-500 transition-colors duration-150 cursor-pointer');
+    poly.setAttribute('tabindex', '0');
+    poly.setAttribute('role', 'button');
+    poly.setAttribute('aria-label', s.name);
 
     poly.onmouseover = () => {
       const tip = document.getElementById('map-hover-tooltip');
-      tip.innerHTML = `<strong>${s.name}</strong><br>Población: ${s.pop.toLocaleString('es-CL')} electores`;
+      tip.innerHTML = `<strong>${s.name}</strong><br>Población simulada: ${s.pop.toLocaleString('es-CL')} electores`;
       tip.classList.remove('hidden');
     };
     poly.onmouseout = () => {
       document.getElementById('map-hover-tooltip').classList.add('hidden');
     };
     poly.onclick = () => {
-      window.showToast('Barrio Seleccionado', `Has enfocado el despliegue territorial en ${s.name} (${commune}).`, 'info');
+      GAME_STATE.campaign.focus = index;
+      renderMapFocus();
+      window.showToast('Barrio seleccionado', `El puerta a puerta se concentra en ${s.name}.`, 'info');
     };
 
+    poly.onkeydown = event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        poly.onclick();
+      }
+    };
     svg.appendChild(poly);
   });
+  renderMapFocus();
 };
 
 window.renderPublicOpinionTable = function() {
@@ -1127,13 +1341,17 @@ window.renderPublicOpinionTable = function() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const issues = [
-    { name: 'Seguridad Ciudadana & Narcotráfico', imp: 88, val: 6.5 },
-    { name: 'Economía, Crecimiento y PyMEs', imp: 75, val: 4.0 },
-    { name: 'Salud Pública y Listas de Espera', imp: 82, val: 5.2 },
-    { name: 'Reforma de Pensiones (AFP)', imp: 78, val: -1.5 },
-    { name: 'Control Migratorio y Fronteras', imp: 80, val: 7.0 }
-  ];
+  const issues = [...new Set(POLICIES_CATALOG.map(policy => policy.issue))]
+    .map(name => ({ name, imp: Math.round(policyUrgency(GAME_STATE, name) * 100) }))
+    .sort((a, b) => b.imp - a.imp).slice(0, 5)
+    .map(issue => ({ ...issue, val: (issue.imp - 50) / 10 }));
+  const groups = campaignClimate(GAME_STATE).groups;
+  const shares = { left: groups[0].weight, center: groups[1].weight, right: groups[2].weight };
+  for (const [id, share] of Object.entries(shares)) {
+    const value = Math.round(share * 100);
+    element(`enth-${id}-val`).textContent = `${value}%`;
+    element(`enth-${id}-bar`).style.width = `${value}%`;
+  }
 
   issues.forEach(i => {
     const tr = document.createElement('tr');
@@ -1183,6 +1401,16 @@ window.setCongressChamber = function(chamber) {
   window.renderCongressHemiciclo();
 };
 
+function updateCongress(climate) {
+  const { congress } = GAME_STATE;
+  const preferences = climate.groups.map(group => group.weight * 100);
+  const targets = [preferences[0], preferences[1] * 0.58, preferences[2], preferences[1] * 0.42];
+  PACTS.forEach((pact, index) => {
+    congress.lower[pact.id] = targets[index];
+    congress.upper[pact.id] = (congress.upper[pact.id] + targets[index]) / 2;
+  });
+}
+
 window.renderCongressHemiciclo = function() {
   const svg = document.getElementById('svg-congress-hemiciclo');
   if (!svg) return;
@@ -1190,6 +1418,14 @@ window.renderCongressHemiciclo = function() {
 
   const isDip = (GAME_STATE.congress.activeChamber === 'diputados');
   const total = isDip ? 155 : 50;
+  element('cong-quorum-simple-disp').textContent = `${Math.floor(total / 2) + 1} votos`;
+  element('cong-quorum-47-disp').textContent = `${Math.ceil(total * 4 / 7)} votos`;
+  element('cong-player-seat-disp').textContent = GAME_STATE.player.officeId === (isDip ? 'diputado' : 'senador')
+    ? GAME_STATE.player.currentOffice : 'Sin escaño en esta cámara';
+  for (const [id, active] of [['dip', isDip], ['sen', !isDip]]) {
+    element(`btn-cong-camara-${id}`).classList.toggle('bg-[#0047AB]', active);
+    element(`btn-cong-camara-${id}`).classList.toggle('text-white', active);
+  }
   const cx = 320, cy = 280;
   const rows = isDip ? [
     { r: 130, count: 32 }, { r: 165, count: 38 }, { r: 200, count: 41 }, { r: 235, count: 44 }
@@ -1197,6 +1433,10 @@ window.renderCongressHemiciclo = function() {
     { r: 140, count: 14 }, { r: 185, count: 17 }, { r: 230, count: 19 }
   ];
 
+  const shares = isDip ? GAME_STATE.congress.lower : GAME_STATE.congress.upper;
+  const parties = PACTS.map(pact => ({ ...pact, votes: Math.round(shares[pact.id] * 100) }));
+  allocateSeats(parties, total);
+  const colors = parties.flatMap(pact => Array(pact.seats).fill(pact.color));
   let dotCoords = [];
   rows.forEach(row => {
     const step = Math.PI / (row.count - 1);
@@ -1217,12 +1457,7 @@ window.renderCongressHemiciclo = function() {
     circle.setAttribute('cy', c.y);
     circle.setAttribute('r', isDip ? '5.5' : '8');
 
-    let color = '#2563EB';
-    if (idx < total * 0.42) color = '#DC2626';
-    else if (idx < total * 0.54) color = '#F59E0B';
-    else if (idx > total * 0.88) color = '#172554';
-
-    circle.setAttribute('fill', color);
+    circle.setAttribute('fill', colors[idx] || '#64748B');
     circle.setAttribute('stroke', '#FFFFFF');
     circle.setAttribute('stroke-width', '1');
     svg.appendChild(circle);
@@ -1234,7 +1469,8 @@ window.renderLegislativeHistory = function() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  GAME_STATE.legislativeHistory.forEach(l => {
+  const filter = element('hist-filter-area').value;
+  GAME_STATE.legislativeHistory.filter(law => filter === 'all' || law.area === filter).forEach(l => {
     const tr = document.createElement('tr');
     tr.className = 'hover:bg-stone-50 text-xs';
     tr.innerHTML = `
@@ -1244,7 +1480,7 @@ window.renderLegislativeHistory = function() {
       <td class="py-2 px-2 text-center font-bold text-slate-800 font-mono">${escapeHtml(l.quorum)}</td>
       <td class="py-2 px-2 text-center font-mono text-[11px]"><span class="text-emerald-700">${escapeHtml(l.yes)} Sí</span> / <span class="text-rose-700">${escapeHtml(l.no)} No</span></td>
       <td class="py-2 px-3 text-stone-700 text-[11px]">${escapeHtml(l.impact)}</td>
-      <td class="py-2 px-2 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">VIGENTE</span></td>
+      <td class="py-2 px-2 text-center"><span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">${l.type === 'Simulación' ? 'VOTADO' : 'ARCHIVO'}</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -1255,30 +1491,29 @@ window.renderPoliticiansDirectory = function() {
   if (!tbody) return;
   tbody.innerHTML = '';
 
-  const pols = [
-    { name: 'Gabriel Boric Font', party: 'FA', office: 'Presidente de la República', age: 38, econ: '-60 / -40', rel: 50, app: 31 },
-    { name: 'Camila Vallejo Dowling', party: 'PC', office: 'Ministra Vocera', age: 36, econ: '-80 / -50', rel: 45, app: 42 },
-    { name: 'Tomás Vodanovic Escudero', party: 'FA', office: 'Alcalde de Maipú', age: 33, econ: '-40 / +10', rel: 70, app: 58 },
-    { name: 'Evelyn Matthei Fornet', party: 'UDI', office: 'Alcaldesa de Providencia', age: 70, econ: '+60 / +50', rel: 40, app: 61 },
-    { name: 'José Antonio Kast Rist', party: 'PREP', office: 'Líder Opositor', age: 58, econ: '+85 / +80', rel: 30, app: 45 },
-    { name: 'Mario Desbordes Jiménez', party: 'RN', office: 'Alcalde de Santiago', age: 55, econ: '+40 / +65', rel: 60, app: 50 }
-  ];
-
-  pols.forEach(p => {
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-stone-50 text-xs';
-    tr.innerHTML = `
-      <td class="py-2 px-3 font-bold text-slate-900">${p.name}</td>
-      <td class="py-2 px-2 font-mono font-bold">${p.party}</td>
-      <td class="py-2 px-2 text-stone-700">${p.office}</td>
-      <td class="py-2 px-2 text-center font-mono">${p.age}</td>
-      <td class="py-2 px-2 text-center font-mono">${p.econ}</td>
-      <td class="py-2 px-2 text-center font-mono font-bold text-blue-800">${p.rel}/100</td>
-      <td class="py-2 px-2 text-center font-mono font-bold ${p.app >= 50 ? 'text-emerald-700' : 'text-slate-700'}">${p.app}%</td>
-      <td class="py-2 px-2 text-right"><button class="px-2 py-0.5 bg-stone-100 hover:bg-stone-200 border rounded font-bold text-[10px]" onclick="window.showToast('Ficha', '${p.name}: Liderazgo activo.', 'info')">Ver</button></td>
-    `;
-    tbody.appendChild(tr);
-  });
+  const filter = element('pol-filter-bloc').value;
+  for (const person of GAME_STATE.roster) {
+    const party = CHILE_PARTIES.find(entry => entry.id === person.party);
+    if (filter !== 'all' && party?.bloc !== filter) continue;
+    const row = document.createElement('tr');
+    const office = OFFICES[person.office]?.name || 'Sin contienda registrada';
+    const cells = [person.name, person.party, office, GAME_STATE.year - person.born,
+      party?.bloc || 'Independientes', person.victories, person.generation];
+    for (const value of cells) {
+      const cell = document.createElement('td');
+      cell.className = 'py-2 px-2';
+      cell.textContent = value;
+      row.append(cell);
+    }
+    const action = document.createElement('td');
+    const button = document.createElement('button');
+    button.className = 'px-2 py-1 border rounded';
+    button.textContent = 'Ver ficha';
+    button.onclick = () => window.showToast(person.name, `${party?.name || person.party} · ${office} · ${person.victories} contiendas lideradas · generación ${person.generation}.`);
+    action.append(button);
+    row.append(action);
+    tbody.append(row);
+  }
 };
 
 window.renderElectoralPactsCatalog = function() {
@@ -1338,6 +1573,9 @@ window.switchMainView = function(viewId) {
   document.getElementById('subtabs-politicians').classList.toggle('hidden', viewId !== 'view-politicians');
   document.getElementById('subtabs-office').classList.toggle('hidden', viewId !== 'view-office');
 
+  if (viewId === 'view-profile') renderCareer();
+  if (viewId === 'view-news') window.renderNewsFeed();
+  if (viewId === 'view-congress') window.renderCongressHemiciclo();
   if (viewId === 'view-politicians') {
     setTimeout(() => window.renderDHondtD3Visualization(), 50);
   }
@@ -1434,12 +1672,40 @@ function loadState(raw) {
   if (!value?.player || typeof value.player.name !== 'string' || !Number.isInteger(value.year) || !Number.isInteger(value.week) ||
       value.week < 1 || value.week > 52) throw new Error('Partida inválida');
   const next = restore(defaults, value);
+  const { player } = next;
+  const bounded = (number, min, max) => Number.isFinite(number) && number >= min && number <= max;
+  if (!bounded(next.year, 1900, 9999) || !bounded(player.age, 18, 110) ||
+      !bounded(player.funds, 0, Number.MAX_SAFE_INTEGER) || !bounded(player.personalFunds, 0, Number.MAX_SAFE_INTEGER) ||
+      !bounded(player.politicalPoints, 0, Number.MAX_SAFE_INTEGER) || !bounded(player.hours, 0, player.maxHours) ||
+      !bounded(player.maxHours, 60, 120) || !bounded(player.approval, 0, 100) || !bounded(player.nameRecognition, 0, 100) ||
+      !CHILE_PARTIES.some(party => party.id === player.partyId) || player.corePolicies.length !== 3 ||
+      new Set(player.corePolicies).size !== 3 || !player.corePolicies.every(id => POLICIES_CATALOG.some(policy => policy.id === id)) ||
+      !Object.values(player.attributes).every(score => bounded(score, 0, 100)) ||
+      !player.hiredStaffIds.every(id => STAFF_CATALOG.some(staff => staff.id === id))) throw new Error('Perfil inválido');
+  if (player.commune === 'Santiago Centro') player.commune = 'Santiago';
+  if (!CHILE_GEO[player.region]?.districts[player.district]?.communes.includes(player.commune)) throw new Error('Domicilio inválido');
+  if (!value.roster) next.roster = newRoster(next.year);
+  if (next.roster.length !== 12 || !next.roster.every(person => typeof person?.name === 'string' &&
+      CHILE_PARTIES.some(party => party.id === person.party) && Number.isInteger(person.born) &&
+      bounded(person.generation, 1, 1000) && bounded(person.victories, 0, 10000) &&
+      (person.office === '' || Object.hasOwn(OFFICES, person.office)))) throw new Error('Directorio inválido');
+  if (![...next.career, ...next.newsFeed, ...next.legislativeHistory].every(entry => entry && typeof entry === 'object' && !Array.isArray(entry))) {
+    throw new Error('Historial inválido');
+  }
   if (next.localElection !== null) {
     next.localElection = restore({
-      year: 0, office: 'concejal', pact: '', support: 0, messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
+      year: 0, office: 'concejal', pact: '', support: 0, runoffWeek: 0, runoffRival: 0, firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
     }, next.localElection);
     if (next.localElection.office && !Object.hasOwn(OFFICES, next.localElection.office)) throw new Error('Cargo inválido');
     const election = next.localElection;
+    if (election.office && !election.result && (election.year !== next.year ||
+        next.week < registrationWeek || next.week >= (election.runoffWeek || electionWeek(election.year)))) {
+      throw new Error('Fecha de candidatura inválida');
+    }
+    if (election.runoffWeek && (!['presidente', 'gobernador'].includes(election.office) ||
+      election.runoffWeek !== electionWeek(election.year) + 4 || ![0, 3, 6, 9].includes(election.runoffRival))) {
+      throw new Error('Segunda vuelta inválida');
+    }
     if (!Number.isInteger(election.year) || election.support < 0 ||
         !Number.isInteger(election.revisions) || election.revisions < 0 ||
         !Number.isInteger(election.lastRevision) || election.lastRevision < 0 || election.lastRevision > 52) {
@@ -1451,7 +1717,6 @@ function loadState(raw) {
     const legacyTitle = /^(Concejal|Alcalde|Diputado|Gobernador|Senador|Presidente)\b/.exec(next.player.currentOffice);
     next.player.officeId = legacyTitle?.[1].toLowerCase() || '';
   }
-  if (next.player.commune === 'Santiago Centro') next.player.commune = 'Santiago';
   if (next.player.officeId && !Object.hasOwn(OFFICES, next.player.officeId)) throw new Error('Cargo inválido');
   if (!value.campaign?.endorsements) {
     for (const contact of CONTACTS) {
@@ -1461,6 +1726,13 @@ function loadState(raw) {
   }
   next.volunteers = Math.max(0, Math.min(VOLUNTEER_LIMIT, next.volunteers));
   next.campaign.trained = Math.max(0, Math.min(next.volunteers, next.campaign.trained));
+  if (!value.mandate && next.player.officeId) openMandate(next);
+  if (next.mandate) {
+    const mandate = next.mandate;
+    if (!next.player.officeId || !bounded(mandate.budget, 0, 12_000_000) || !bounded(mandate.hearings, 0, 2) ||
+      !bounded(mandate.completed, 0, 6) || (mandate.project &&
+        (typeof mandate.project.name !== 'string' || !Number.isInteger(mandate.project.due) || mandate.project.due < 0))) throw new Error('Mandato inválido');
+  }
   if (next.localManagement !== null && !['pending', 'agenda', 'audit'].includes(next.localManagement)) throw new Error('Gestión inválida');
   const previous = GAME_STATE;
   GAME_STATE = next;
@@ -1546,6 +1818,7 @@ window.showToast = function(title, message, type = 'info') {
 // Inicialización general
 window.addEventListener('DOMContentLoaded', () => {
   initPrograms();
+  initDomicile();
   window.p1RenderParties();
   window.p1RenderFactions(CHILE_PARTIES.find(p => p.id === 'IND'));
   window.p1UpdateProfessions(25);

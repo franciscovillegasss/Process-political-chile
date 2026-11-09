@@ -1,0 +1,48 @@
+      <!-- ==================== VISTA 2: CARGO (OFFICE) ==================== -->
+      <div id="view-office" class="main-view hidden h-full">
+        <div id="office-panel-overview" class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <section id="mandate-actions" class="hidden p-3 border rounded space-y-2">
+            <p id="mandate-status" class="text-sm"></p>
+            <label class="text-xs">Eje para el proyecto <select id="mandate-policy" class="p-1 border rounded"></select></label>
+            <button onclick="window.proposeProject()" class="px-2 py-1 bg-blue-800 text-white rounded">Presentar proyecto (10 h · 3 PP)</button>
+            <button onclick="window.voteProject(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Votar proyecto (8 h)</button>
+          </section>
+          <div id="local-management" class="hidden p-3 border rounded space-y-2">
+            <p id="local-management-status" class="text-sm"></p>
+            <button class="px-2 py-1 bg-blue-800 text-white rounded" onclick="window.manageLocalOffice('agenda')">Impulsar primer eje (12 h · 8 PP)</button>
+            <button id="management-audit" class="px-2 py-1 bg-blue-800 text-white rounded" onclick="window.manageLocalOffice('audit')">Fiscalizar el municipio (12 h)</button>
+          </div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <div>
+              <h3 class="font-extrabold text-base text-slate-900 uppercase" id="office-title-disp">Ciudadano sin Cargo</h3>
+              <span class="text-xs text-stone-500 font-mono" id="office-status-subtitle">Sin funciones institucionales activas</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Aprobación Institucional</span>
+              <div class="text-2xl font-mono-num font-black text-emerald-700" id="office-approval-disp">52.0%</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Gestión de Presupuesto</span>
+              <div class="text-2xl font-mono-num font-black text-blue-900" id="office-budget-disp">$0 CLP</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Proyectos ejecutados este mandato</span>
+              <div class="text-2xl font-mono-num font-black text-purple-900" id="office-bills-disp">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div id="office-panel-lobby" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Audiencias de Lobby & Grupos de Interés</h3>
+          <p id="lobby-audiences-container" class="text-sm"></p>
+          <button onclick="window.holdHearing(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Reunirse con grupo de interés (8 h)</button>
+        </div>
+
+        <div id="office-panel-bills" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Registro de gestión pública</h3>
+          <div id="office-passed-bills-container" class="space-y-2 whitespace-pre-line"></div>
+        </div>
+      </div>

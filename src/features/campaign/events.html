@@ -1,0 +1,36 @@
+        <!-- Subpanel: Eventos -->
+        <div id="campaign-panel-events" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Agenda Territorial & Puerta a Puerta</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">🚪 Puerta a Puerta Masivo</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Recorre ferias libres y villas conversando con vecinos.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 12 Horas</span>
+              </div>
+              <button onclick="window.executeCampaignAction('puerta_a_puerta')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Realizar Recorrido
+              </button>
+            </div>
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">☕ Cabildo y Once Vecinal</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Reunión con juntas de vecinos y clubes de adultos mayores.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 10 Horas + $200.000</span>
+              </div>
+              <button onclick="window.executeCampaignAction('cabildo')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Convocar Cabildo
+              </button>
+            </div>
+            <div class="border border-stone-300 p-3 rounded bg-stone-50 flex flex-col justify-between">
+              <div>
+                <strong class="text-slate-900 block text-xs">🎙️ Punto de Prensa Comunal</strong>
+                <p class="text-[11px] text-stone-600 mt-1">Rueda de prensa y radios comunitarias locales.</p>
+                <span class="text-[10px] font-mono block mt-2 text-stone-500">Costo: 8 Horas</span>
+              </div>
+              <button onclick="window.executeCampaignAction('prensa')" class="mt-3 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Atender Medios
+              </button>
+            </div>
+          </div>
+        </div>

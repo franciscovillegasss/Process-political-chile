@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { initialCampaign, issueDemand, weeklyCampaign } from './campaign.js';
-import { countElection, electionField } from './election.js';
+import { initialCampaign, issueDemand, weeklyCampaign } from './rules.js';
+import { countElection, electionField } from '../elections/rules.js';
 
 test('campaign activities reset each week without clearing contacts, polls or training', () => {
   const campaign = initialCampaign();

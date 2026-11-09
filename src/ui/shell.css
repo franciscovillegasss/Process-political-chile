@@ -1,0 +1,74 @@
+      #screen-page-1-identity.hidden, #screen-page-2-territory.hidden { display: none !important; }
+
+      body {
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, sans-serif;
+        background-color: #242A35;
+        color: #1E293B;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        user-select: none;
+      }
+
+      .font-mono-num {
+        font-family: 'JetBrains Mono', Consolas, monospace;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Clásica Pestaña de Carpeta de The Political Process */
+      .folder-tab {
+        background-color: #DCD4C0;
+        border: 1px solid #7D735F;
+        border-bottom: none;
+        color: #4A4436;
+        transition: all 0.1s ease;
+      }
+      .folder-tab:hover {
+        background-color: #E8E0CE;
+        color: #1E293B;
+      }
+      .folder-tab.active {
+        background-color: #FAF8F5 !important;
+        border-color: #665C47 !important;
+        border-bottom: 2px solid #FAF8F5 !important;
+        color: #0F172A !important;
+        font-weight: 800;
+        box-shadow: 0 -2px 5px rgba(0,0,0,0.06);
+        z-index: 20;
+      }
+
+      /* Subpestañas contextuales */
+      .subfolder-tab {
+        background-color: #EFE8DA;
+        border: 1px solid #9C917A;
+        color: #554D3D;
+      }
+      .subfolder-tab:hover {
+        background-color: #F8F3EA;
+      }
+      .subfolder-tab.active {
+        background-color: #FFFFFF !important;
+        border-color: #0047AB !important;
+        color: #003399 !important;
+        font-weight: 800;
+      }
+
+      /* Scrollbars retro compactos */
+      ::-webkit-scrollbar {
+        width: 7px;
+        height: 7px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #EBE5D8;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #A89E88;
+        border-radius: 2px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #7D735F;
+      }
+      #game-notice[hidden] { display: none; }
+      #game-notice[data-type="success"] { background: #065f46; }
+      #game-notice[data-type="warning"] { background: #92400e; }
+      #game-notice[data-type="error"] { background: #9f1239; }

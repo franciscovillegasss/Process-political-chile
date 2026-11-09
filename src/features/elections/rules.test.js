@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { allocateSeats, countElection, cycleOffices, electionWeek, OFFICES, officeTerritory } from './election.js';
-import { CHILE_GEO } from './catalogs.js';
-import { POLICIES_CATALOG, PROGRAM_PRESETS, programPosition } from './programs.js';
+import { allocateSeats, countElection, cycleOffices, electionWeek, OFFICES, officeTerritory } from './rules.js';
+import { CHILE_GEO } from '../../shared/geography.js';
+import { POLICIES_CATALOG, PROGRAM_PRESETS, programPosition } from '../character/programs.js';
 
 const ids = (year, region) => cycleOffices(year, region).map(([id]) => id);
 

@@ -1,7 +1,7 @@
-import { CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './campaign.js';
-import { electionField } from './election.js';
-import { POLICIES_CATALOG } from './programs.js';
-import { campaignClimate, messageImpact, publicAgenda } from './electorate.js';
+import { CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './rules.js';
+import { electionField } from '../elections/rules.js';
+import { POLICIES_CATALOG } from '../character/programs.js';
+import { campaignClimate, messageImpact, publicAgenda } from '../electorate/rules.js';
 
 const element = id => document.getElementById(id);
 

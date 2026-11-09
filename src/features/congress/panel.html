@@ -1,0 +1,79 @@
+      <!-- ==================== VISTA 3: CONGRESO (HEMICICLO & HISTORIAL) ==================== -->
+      <div id="view-congress" class="main-view hidden h-full space-y-3">
+        <!-- SUBPANEL 1: HEMICICLO DE SALA -->
+        <div id="congress-panel-hemiciclo" class="space-y-3">
+          <div class="bg-white border border-[#A89E88] p-2.5 rounded shadow-2xs flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold text-slate-900 uppercase">Cámara Activa:</span>
+              <div class="inline-flex rounded border border-stone-400 bg-stone-100 p-0.5">
+                <button id="btn-cong-camara-dip" onclick="window.setCongressChamber('diputados')" class="px-2.5 py-1 text-xs font-bold rounded bg-[#0047AB] text-white">Diputadas y Diputados (155)</button>
+                <button id="btn-cong-camara-sen" onclick="window.setCongressChamber('senado')" class="px-2.5 py-1 text-xs font-bold rounded text-stone-700 hover:bg-stone-200">Senado (50)</button>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-4 text-xs font-mono">
+              <span>Mayoría con asistencia completa: <strong class="text-blue-800" id="cong-quorum-simple-disp">78 Votos</strong></span>
+              <span>Quórum 4/7: <strong class="text-purple-800" id="cong-quorum-47-disp">89 Votos</strong></span>
+              <span>Tu Escaño: <strong class="text-emerald-800" id="cong-player-seat-disp">Sin Escaño</strong></span>
+            </div>
+
+            <div class="flex items-center gap-1.5">
+              <button onclick="window.voteProject(true)" class="px-2.5 py-1 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                ⚡ Votación en Sala
+              </button>
+              <button onclick="window.holdHearing(true)" class="px-2.5 py-1 bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs rounded cursor-pointer">
+                🤝 Negociar respaldo (8 h)
+              </button>
+            </div>
+          </div>
+
+          <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs flex flex-col items-center">
+            <div class="w-full flex justify-between items-center text-[10px] font-mono text-stone-500 pb-1 border-b mb-2">
+              <span class="text-rose-700 font-bold">🔴 Izquierda (FA/PC/PS)</span>
+              <span class="text-stone-700 font-bold">◀ Distribución parlamentaria simulada ▶</span>
+              <span class="text-blue-900 font-bold">🔵 Derecha (Chile Vamos/Republicanos)</span>
+            </div>
+            <div class="w-full flex justify-center overflow-hidden">
+              <svg id="svg-congress-hemiciclo" viewBox="0 0 640 320" class="w-full max-h-[300px] select-none"></svg>
+            </div>
+            <div class="w-full mt-2 pt-2 border-t flex justify-between text-xs font-mono">
+              <span class="text-emerald-700 font-bold">A Favor: <span id="hemiciclo-count-yes">0</span></span>
+              <span class="text-rose-700 font-bold">En Contra: <span id="hemiciclo-count-no">0</span></span>
+              <span class="text-stone-500 font-bold">Abstención: <span id="hemiciclo-count-abs">0</span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBPANEL 2: HISTORIAL LEGISLATIVO & LEGADO -->
+        <div id="congress-panel-history" class="hidden space-y-3">
+          <div class="bg-white border border-[#A89E88] p-3 rounded shadow-2xs space-y-2">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h3 class="font-extrabold text-xs text-slate-900 uppercase">Registro Cronológico de Leyes Promulgadas</h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="text-stone-500">Área:</span>
+                <select id="hist-filter-area" onchange="window.renderLegislativeHistory()" class="border px-2 py-0.5 rounded text-xs font-bold">
+                  <option value="all">Todas las Áreas</option>
+                  <option value="crime">Seguridad & Orden</option>
+                  <option value="taxes">Impuestos & Hacienda</option>
+                </select>
+              </div>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs text-left border-collapse">
+                <thead class="bg-stone-100 text-stone-700 font-mono text-[10px] uppercase border-b">
+                  <tr>
+                    <th class="py-2 px-3">Ley & Título Oficial</th>
+                    <th class="py-2 px-2 text-center">Fecha</th>
+                    <th class="py-2 px-2 text-center">Rango</th>
+                    <th class="py-2 px-2 text-center">Quórum</th>
+                    <th class="py-2 px-2 text-center">Votación (Sí/No/Abs)</th>
+                    <th class="py-2 px-3">Impacto Estructural País</th>
+                    <th class="py-2 px-2 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="legislative-history-table-body" class="divide-y divide-stone-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>

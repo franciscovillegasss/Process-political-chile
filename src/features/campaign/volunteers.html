@@ -1,0 +1,26 @@
+        <!-- Subpanel: Voluntarios -->
+        <div id="campaign-panel-volunteers" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Brigadas de Voluntarios & Apoderados de Mesa</h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Brigadistas Activos</span>
+              <div id="volunteers-count-disp" class="text-2xl font-mono-num font-extrabold text-blue-900">120</div>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Reclutar Brigada</span>
+              <button type="button" id="recruit-volunteers" onclick="window.manageVolunteers('recruit')" class="disabled:opacity-50 mt-2 w-full py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Reclutar (+30 · 8 h · $100.000)
+              </button>
+            </div>
+            <div class="border p-3 rounded bg-stone-50">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Capacitar Apoderados</span>
+              <button type="button" id="train-volunteers" onclick="window.manageVolunteers('train')" class="disabled:opacity-50 mt-2 w-full py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded cursor-pointer">
+                Capacitar (+25 · 8 h)
+              </button>
+            </div>
+          </div>
+          <p id="volunteer-status" class="text-sm font-semibold"></p>
+          <button type="button" id="deploy-volunteers" onclick="window.manageVolunteers('deploy')" class="px-3 py-2 bg-[#0047AB] text-white text-xs font-bold rounded disabled:opacity-50">
+            Movilizar brigada (hasta 40 · 6 h)
+          </button>
+        </div>

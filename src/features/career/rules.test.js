@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { initialCampaign, weeklyCampaign } from './campaign.js';
-import { completeProject, fundraisingYield, giveUpOffice, newRoster, openMandate, renewRoster } from './career.js';
-import { countElection, electionField } from './election.js';
+import { initialCampaign, weeklyCampaign } from '../campaign/rules.js';
+import { completeProject, fundraisingYield, giveUpOffice, newRoster, openMandate, renewRoster } from './rules.js';
+import { countElection, electionField } from '../elections/rules.js';
 
 test('a project resolves once on its due week and remains in the career record', () => {
   const state = {

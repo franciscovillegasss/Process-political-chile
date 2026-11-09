@@ -1,0 +1,49 @@
+        <!-- Subpanel: Staff (Gestión Profunda de Comando de Campaña) -->
+        <div id="campaign-panel-staff" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-4">
+          <div class="flex flex-wrap justify-between items-center border-b pb-2 gap-2">
+            <div>
+              <h3 class="font-extrabold text-sm text-slate-900 uppercase">Comando de Campaña & Asesores Estratégicos</h3>
+              <p class="text-xs text-stone-600">Contrata profesionales con experiencia electoral. Cada miembro exige un sueldo semanal que se descuenta en cada turno y aporta bonos pasivos a tu candidatura.</p>
+            </div>
+            <span id="staff-summary-badge" class="px-3 py-1 rounded text-xs font-mono font-bold bg-blue-50 text-blue-900 border border-blue-200">
+              0 / 4 Cargos Cubiertos
+            </span>
+          </div>
+
+          <!-- Métricas de Planilla y Bonos Activos del Comando -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 bg-stone-50 p-3 rounded border border-stone-200 text-xs">
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Gasto Semanal en Sueldos</span>
+              <div id="staff-metric-payroll" class="text-base font-mono font-extrabold text-rose-800">$0 CLP / sem</div>
+              <span class="text-[10px] text-stone-400">Deducido en cada turno</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Horas Extra Disponibles</span>
+              <div id="staff-metric-hours" class="text-base font-mono font-extrabold text-blue-900">+0 hrs / sem</div>
+              <span class="text-[10px] text-stone-400">Capacidad ejecutiva total</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Reconocimiento Semanal</span>
+              <div id="staff-metric-recog" class="text-base font-mono font-extrabold text-emerald-800">+0.0% / sem</div>
+              <span class="text-[10px] text-stone-400">Exposición en medios y redes</span>
+            </div>
+            <div class="space-y-0.5">
+              <span class="text-[10px] uppercase font-bold text-stone-500">Voluntarios Nuevos</span>
+              <div id="staff-metric-volunteers" class="text-base font-mono font-extrabold text-amber-800">+0 brigadistas / sem</div>
+              <span class="text-[10px] text-stone-400">Movilización territorial</span>
+            </div>
+          </div>
+
+          <!-- Filtro de Categorías de Staff -->
+          <div class="flex items-center gap-1.5 border-b pb-2 overflow-x-auto text-xs">
+            <span class="text-stone-500 font-bold uppercase text-[10px] shrink-0">Filtrar por Área:</span>
+            <button onclick="window.filterStaffRole('all')" id="staff-tab-all" class="staff-role-filter px-2.5 py-1 rounded bg-[#0047AB] text-white font-bold text-xs cursor-pointer">Todos</button>
+            <button onclick="window.filterStaffRole('manager')" id="staff-tab-manager" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">👔 Jefatura de Campaña</button>
+            <button onclick="window.filterStaffRole('communications')" id="staff-tab-communications" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">📢 Comunicaciones & Prensa</button>
+            <button onclick="window.filterStaffRole('field')" id="staff-tab-field" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">🚩 Despliegue Territorial</button>
+            <button onclick="window.filterStaffRole('legal')" id="staff-tab-legal" class="staff-role-filter px-2.5 py-1 rounded bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs cursor-pointer">⚖️ SERVEL & Probidad</button>
+          </div>
+
+          <!-- Grilla de Tarjetas de Asesores -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="staff-hire-container"></div>
+        </div>

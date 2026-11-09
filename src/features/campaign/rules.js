@@ -1,4 +1,4 @@
-import { policyUrgency, publicAgenda } from './electorate.js';
+import { policyUrgency, publicAgenda } from '../electorate/rules.js';
 
 export const VOLUNTEER_LIMIT = 500;
 

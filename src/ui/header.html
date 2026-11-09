@@ -1,0 +1,150 @@
+    <!-- FILA 1: BARRA DE ESTADO SUPERIOR INDEPENDIENTE (BLANCA / LIMPIA)           -->
+    <header id="app-row-1-statusbar" class="h-11 bg-white border-b border-[#7D735F] px-3 flex items-center justify-between shrink-0 shadow-xs z-30">
+      <!-- Izquierda: Métricas compactas del personaje y país -->
+      <div class="flex items-center gap-3 text-xs overflow-hidden">
+        <div class="flex items-center gap-1.5 font-bold text-slate-800 shrink-0">
+          <span class="text-stone-500">👤 Político:</span>
+          <span id="stat-player-name" class="text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Gabriel Silva (25 años)</span>
+          <span id="stat-player-party" class="text-[11px] font-mono px-1.5 py-0.5 rounded bg-stone-100 text-stone-700 border border-stone-300 font-bold">IND</span>
+          <span id="stat-player-office" class="text-[11px] text-stone-600 font-medium">Ciudadano sin Cargo</span>
+        </div>
+
+        <div class="h-4 w-px bg-stone-300 shrink-0"></div>
+
+        <div class="hidden lg:flex items-center gap-3 text-[11px] shrink-0 font-mono-num">
+          <span title="Padrón nacional de referencia">👥 <strong id="stat-padron">15.4M</strong></span>
+          <span title="Capital Político para negociaciones y campaña">⭐ <strong id="stat-pp" class="text-blue-800">25 PP</strong></span>
+          <span title="Aprobación Ciudadana Nivel Base">👍 <strong id="stat-approval" class="text-emerald-700">52.0%</strong></span>
+          <span title="Tensión y Polarización Social">🔥 <strong id="stat-tension" class="text-amber-700">35%</strong></span>
+        </div>
+      </div>
+
+      <!-- Derecha: ÚNICA ubicación autorizada para reloj, badge y control de turnos -->
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Reloj de Calendario -->
+        <div class="flex items-center gap-1.5 px-2.5 py-0.5 bg-[#FAF7F0] border border-[#B3A992] rounded text-xs font-mono">
+          <span class="text-stone-400">📅</span>
+          <span id="clock-date-disp" class="font-extrabold text-slate-900">Semana 1 / 52, Enero 2024</span>
+        </div>
+
+        <!-- Badge de Próxima Elección -->
+        <div id="clock-election-badge" class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-100 text-blue-900 border border-blue-300">
+          Elecciones Municipales (Sem 44, 2024)
+        </div>
+
+        <!-- Botón +4 Semanas (Mes) -->
+        <button id="btn-hdr-advance-4" onclick="window.advanceTurn(4)" title="Avanzar 4 semanas completas" class="px-2.5 py-1 text-xs font-bold bg-[#E6D595] hover:bg-[#DDD095] active:bg-[#C9BA7E] text-slate-900 border border-[#7D735F] rounded shadow-2xs cursor-pointer select-none">
+          ⏩ +4 Sem
+        </button>
+
+        <!-- Botón Siguiente Turno (1 Semana) -->
+        <button id="btn-hdr-advance-1" onclick="window.advanceTurn(1)" title="Avanzar 1 semana de simulación" class="px-3 py-1 text-xs font-black bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white border border-[#002266] rounded shadow-2xs cursor-pointer select-none">
+          Siguiente Turno ▶
+        </button>
+
+        <!-- Menú Hamburguesa / Gestión de Sesión -->
+        <div class="relative inline-block text-left">
+          <button id="btn-hdr-menu" onclick="window.toggleSessionMenu(event)" class="px-2.5 py-1 text-xs font-bold bg-stone-100 hover:bg-stone-200 active:bg-stone-300 border border-stone-400 rounded cursor-pointer select-none">
+            ☰ Menú
+          </button>
+          <div id="dropdown-session-menu" class="hidden absolute right-0 mt-1 w-52 bg-white border-2 border-stone-600 shadow-2xl rounded z-50 py-1 text-xs font-bold text-stone-800">
+            <button onclick="window.openNewGameWizard()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>🆕 Nueva Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Crear</span>
+            </button>
+            <button onclick="window.saveGameQuick()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>💾 Guardar Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Navegador</span>
+            </button>
+            <button onclick="window.loadGameQuick()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50 hover:text-blue-900 flex items-center justify-between">
+              <span>📂 Cargar Partida</span>
+              <span class="text-[10px] text-stone-400 font-normal">Restaurar</span>
+            </button>
+            <div class="border-t border-stone-200 my-1"></div>
+            <button onclick="window.exportGameJson()" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between">
+              <span>📤 Exportar a Archivo JSON</span>
+            </button>
+            <button onclick="document.getElementById('import-json-input').click()" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between">
+              <span>📥 Importar desde JSON</span>
+            </button>
+            <input type="file" id="import-json-input" class="hidden" accept=".json" onchange="window.importGameJson(event)" />
+            <div class="border-t border-stone-200 my-1"></div>
+            <button onclick="window.resetGameConfirm()" class="w-full text-left px-3 py-1.5 hover:bg-rose-50 text-rose-700 flex items-center justify-between">
+              <span>⚠️ Reiniciar Fábrica</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <aside id="game-notice" hidden class="shrink-0 flex items-center justify-between gap-4 px-4 py-2 bg-[#0047AB] text-white shadow">
+      <div role="status" aria-live="polite" aria-atomic="true" class="text-sm">
+        <strong id="notice-title"></strong>
+        <span id="notice-message"></span>
+      </div>
+      <button type="button" onclick="window.dismissNotice()" class="border border-white rounded px-2 py-1 text-xs font-bold">Cerrar aviso</button>
+    </aside>
+
+    <!-- FILA 2: LAS 8 PESTAÑAS PRINCIPALES ESTILO CARPETA CLÁSICA (#E6D595)        -->
+    <nav id="app-row-2-maintabs" class="h-9 bg-[#C9BEA7] border-b-2 border-[#665C47] px-3 flex items-end gap-1 shrink-0 overflow-x-auto shadow-inner select-none z-20">
+      <button class="folder-tab active px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-campaign" onclick="window.switchMainView('view-campaign')">
+        📢 Campaña (Campaign)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-office" onclick="window.switchMainView('view-office')">
+        🏛️ Cargo (Office)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-congress" onclick="window.switchMainView('view-congress')">
+        ⚖️ Congreso (Hemiciclo)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-politicians" onclick="window.switchMainView('view-politicians')">
+        👥 Políticos (Politicians)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-elections" onclick="window.switchMainView('view-elections')">
+        🗳️ Elecciones (SERVEL)
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-metrics" onclick="window.switchMainView('view-metrics')">
+        📈 Métricas País
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-profile" onclick="window.switchMainView('view-profile')">
+        👤 Perfil e Historial
+      </button>
+      <button class="folder-tab px-3.5 py-1.5 text-xs font-bold rounded-t flex items-center gap-1.5 whitespace-nowrap cursor-pointer" data-view="view-news" onclick="window.switchMainView('view-news')">
+        📰 Noticias (News)
+      </button>
+    </nav>
+
+    <!-- FILA 3: SUB-PESTAÑAS CONTEXTUALES DE CAMPAÑA Y OTRAS SECCIONES             -->
+    <div id="app-row-3-subtabs" class="h-8 bg-[#EFE8DA] border-b border-[#A89E88] px-3 flex items-center gap-1.5 shrink-0 overflow-x-auto text-xs z-10">
+      <!-- Subpestañas para Campaña -->
+      <div id="subtabs-campaign" class="flex items-center gap-1">
+        <button class="subfolder-tab active px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'summary', this)">Resumen</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'events', this)">Eventos</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'marketing', this)">Marketing</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'opponents', this)">Oponentes</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'contacts', this)">Contactos</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" id="campaign-polls-tab" onclick="window.switchSubpanel('campaign', 'polls', this)">Encuestas</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'finance', this)">Finanzas</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'staff', this)">Staff</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'policies', this)">★ Políticas (Tus 3 Ejes)</button>
+        <button class="subfolder-tab px-2.5 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('campaign', 'volunteers', this)">Voluntarios</button>
+      </div>
+
+      <!-- Subpestañas para Congreso -->
+      <div id="subtabs-congress" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('congress', 'hemiciclo', this)">🏛️ Hemiciclo de Sala</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('congress', 'history', this)">📜 Historial Legislativo y Legado</button>
+      </div>
+
+      <!-- Subpestañas para Políticos -->
+      <div id="subtabs-politicians" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('politicians', 'directory', this)">👥 Directorio de Figuras & Protegidos</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('politicians', 'alliances', this)">🤝 Pactos Electorales & Simulador D'Hondt</button>
+      </div>
+
+      <!-- Subpestañas para Cargo -->
+      <div id="subtabs-office" class="hidden flex items-center gap-1">
+        <button class="subfolder-tab active px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('office', 'overview', this)">🏛️ Situación del Cargo & Gestión</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('office', 'lobby', this)">🤝 Lobby y Relaciones Institucionales</button>
+        <button class="subfolder-tab px-3 py-0.5 rounded text-[11px] font-bold cursor-pointer" onclick="window.switchSubpanel('office', 'bills', this)">📜 Proyectos Promulgados</button>
+      </div>
+    </div>

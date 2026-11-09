@@ -1,0 +1,19 @@
+        <!-- Subpanel: Políticas (Tus 3 Ejes Prioritarios) -->
+        <div id="campaign-panel-policies" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-extrabold text-sm text-slate-900 uppercase">Tus 3 Políticas Prioritarias de Campaña</h3>
+            <span class="text-xs text-stone-500 font-mono">Definen tu plataforma territorial ante los electores</span>
+          </div>
+          <p id="policy-campaign-help" class="text-xs text-stone-700"></p>
+          <p id="campaign-climate" class="text-sm whitespace-pre-line p-2 border border-blue-200 rounded bg-blue-50"></p>
+          <div id="player-core-policies-container" class="space-y-2"></div>
+          <details id="policy-revision" class="hidden border border-stone-300 rounded p-3 space-y-2">
+            <summary class="font-bold cursor-pointer text-sm">Revisar un compromiso programático</summary>
+            <p id="revision-status" class="text-xs text-stone-700"></p>
+            <div class="grid gap-2 md:grid-cols-2">
+              <label class="text-xs font-bold">Eje actual<select id="revision-current" class="w-full p-2 border rounded font-normal"></select></label>
+              <label class="text-xs font-bold">Nuevo eje<select id="revision-new" class="w-full p-2 border rounded font-normal"></select></label>
+            </div>
+            <button id="revision-apply" type="button" onclick="window.revisePolicy()" class="px-2 py-1 rounded bg-blue-800 text-white text-xs disabled:opacity-50">Aplicar revisión</button>
+          </details>
+        </div>

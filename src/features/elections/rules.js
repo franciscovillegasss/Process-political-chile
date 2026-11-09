@@ -1,3 +1,5 @@
+export const registrationWeek = 8;
+
 export const PACTS = [
   { id: 'ofic', name: 'Contigo Chile Mejor', color: '#DC2626', parties: 'FA, PC, PS, PPD' },
   { id: 'cv', name: 'Chile Vamos', color: '#1D4ED8', parties: 'RN, UDI, Evópoli' },

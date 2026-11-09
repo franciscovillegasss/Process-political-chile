@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { campaignClimate, decayMessages, messageImpact, newMessages, policyUrgency, publicAgenda } from './electorate.js';
-import { electionField } from './election.js';
+import { campaignClimate, decayMessages, messageImpact, newMessages, policyUrgency, publicAgenda } from './rules.js';
+import { electionField } from '../elections/rules.js';
 
 const country = {
   year: 2024, week: 17, socialTension: 42,

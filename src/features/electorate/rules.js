@@ -1,5 +1,5 @@
-import { CHILE_PARTIES } from './catalogs.js';
-import { POLICIES_CATALOG } from './programs.js';
+import { CHILE_PARTIES } from '../../shared/parties.js';
+import { POLICIES_CATALOG } from '../character/programs.js';
 
 const AGENDAS = [
   { title: 'Costo de vida y empleo', topics: ['Economía', 'Trabajo y transporte', 'Vivienda y ciudad'], economy: -0.45, authority: 0, weights: [36, 46, 18] },

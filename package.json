@@ -8,7 +8,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "node --test",
-    "test:e2e": "node e2e/career.mjs"
+    "test:e2e": "node e2e/career.mjs",
+    "check": "npm test && npm run build"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.4",

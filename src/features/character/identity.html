@@ -1,0 +1,170 @@
+    <!-- PÁGINA COMPLETA 1: CREACIÓN DE PERSONAJE (IDENTIDAD, ATRIBUTOS Y FACCIÓN) -->
+    <div id="screen-page-1-identity" class="fixed inset-0 bg-[#242A35] z-50 flex flex-col overflow-hidden text-slate-800">
+      <!-- Barra superior estilizada de la página 1 -->
+      <header class="h-12 bg-[#FAF8F5] border-b-2 border-[#7D735F] px-4 flex items-center justify-between shrink-0 shadow-md">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">🇨🇱</span>
+          <div>
+            <h1 class="font-extrabold text-sm text-slate-900 uppercase tracking-tight">The Political Process - Chile</h1>
+            <span class="text-[11px] font-mono text-stone-500">Paso 1 de 2: Identidad, Atributos de Liderazgo & Militancia Partidaria</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.loadGameQuick()" class="px-3 py-1 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-xs rounded border border-stone-300">
+            📂 Cargar Guardado
+          </button>
+        </div>
+      </header>
+
+      <!-- Contenedor central a 2 columnas con scroll independiente -->
+      <div class="flex-1 overflow-y-auto p-4 md:p-6 bg-[#EBE5D8] flex justify-center">
+        <div class="w-full max-w-5xl space-y-4">
+
+          <!-- Alerta de validación en caso de faltar campos -->
+          <div id="p1-validation-alert" class="hidden p-3 bg-rose-50 border-2 border-rose-600 text-rose-950 text-xs font-bold rounded shadow"></div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+            <!-- Columna Izquierda: Datos Básicos y Atributos de Rol (5 Cols) -->
+            <div class="lg:col-span-5 space-y-4">
+              <!-- Tarjeta Identidad Básica -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <h2 class="font-extrabold text-xs text-slate-900 uppercase border-b pb-1.5 flex items-center justify-between">
+                  <span>1. Datos Personales</span>
+                  <span class="text-[10px] font-mono text-stone-500">Cédula Cívica</span>
+                </h2>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Nombre Completo *</label>
+                  <div class="flex gap-1.5">
+                    <input type="text" id="p1-name" placeholder="Ej. Gabriel Silva / Macarena Soto" value="" class="flex-1 p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-900" />
+                    <button onclick="window.p1RandomName()" title="Generar Nombre Típico Chileno" class="px-2.5 py-1 bg-stone-200 hover:bg-stone-300 text-xs font-bold rounded border border-stone-400">🎲</button>
+                  </div>
+                </div>
+
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="text-xs font-bold text-slate-900 uppercase">Edad de Inicio *</label>
+                    <span id="p1-age-disp" class="text-xs font-mono font-black text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">25 años</span>
+                  </div>
+                  <input type="range" id="p1-age" min="18" max="85" value="25" oninput="window.p1HandleAgeChange(this.value)" class="w-full cursor-pointer accent-[#0047AB]" />
+                  <div id="p1-age-status-box" class="mt-1.5 text-[11px] font-mono text-blue-900 bg-blue-50 p-2 rounded border border-blue-200 leading-tight">
+                    Los cargos disponibles dependen de tu edad, territorio y ciclo electoral.
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold text-slate-900 uppercase mb-1">Oficio o Profesión *</label>
+                  <select id="p1-profession" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800"></select>
+                  <p class="text-[10px] text-stone-500">Tu profesión aporta una red territorial, ahorros o puntos políticos al comenzar.</p>
+                </div>
+              </div>
+
+              <!-- Tarjeta Atributos de Liderazgo Político (Distribución de Puntos) -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">2. Atributos de Liderazgo Político</h2>
+                  <span id="p1-points-pool-disp" class="text-xs font-mono font-bold px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded border border-emerald-300">Puntos Disponibles: 5</span>
+                </div>
+                <p class="text-[11px] text-stone-600">Distribuye tus puntos para especializar tu estilo de conducción política en debates, campaña y gestión pública.</p>
+
+                <!-- Oratoria / Retórica -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">🎙️ Oratoria & Debate: <span id="attr-oratory-val" class="text-blue-900 font-mono font-bold">60</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('oratory', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('oratory', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-oratory-bar" class="h-full bg-blue-600" style="width: 60%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Efectividad en franjas televisivas, debates y puntos de prensa.</span>
+                </div>
+
+                <!-- Carisma / Conexión Popular -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">✨ Carisma & Tracción Popular: <span id="attr-charisma-val" class="text-amber-800 font-mono font-bold">55</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('charisma', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('charisma', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-charisma-bar" class="h-full bg-amber-500" style="width: 55%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Facilidad para ganar reconocimiento en puerta a puerta y actos masivos.</span>
+                </div>
+
+                <!-- Capacidad de Negociación -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">🤝 Negociación & Cocina Política: <span id="attr-negotiation-val" class="text-purple-800 font-mono font-bold">50</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('negotiation', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('negotiation', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-negotiation-bar" class="h-full bg-purple-600" style="width: 50%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Menor costo en Puntos Políticos para alianzas, pactos y votos en el Congreso.</span>
+                </div>
+
+                <!-- Gestión y Eficiencia Pública -->
+                <div class="space-y-1">
+                  <div class="flex justify-between text-xs">
+                    <span class="font-bold text-slate-800">📊 Capacidad de Gestión & Probidad: <span id="attr-management-val" class="text-emerald-800 font-mono font-bold">55</span>/100</span>
+                    <div class="flex gap-1">
+                      <button onclick="window.adjustAttribute('management', -5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">-</button>
+                      <button onclick="window.adjustAttribute('management', 5)" class="px-1.5 py-0.5 bg-stone-200 hover:bg-stone-300 rounded font-bold text-xs">+</button>
+                    </div>
+                  </div>
+                  <div class="w-full bg-stone-200 h-2 rounded overflow-hidden">
+                    <div id="attr-management-bar" class="h-full bg-emerald-600" style="width: 55%;"></div>
+                  </div>
+                  <span class="text-[10px] text-stone-500 block">Menor desgaste en cargos ejecutivos y resistencia a escándalos de probidad.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Columna Derecha: Militancia Partidaria y Facción Interna (7 Cols) -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- Partidos Chilenos Reales -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">3. Partido Político o Militancia *</h2>
+                  <span id="p1-selected-party-badge" class="text-xs font-mono font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">IND - Independiente</span>
+                </div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="p1-parties-grid">
+                  <!-- Rellenado dinámicamente -->
+                </div>
+              </div>
+
+              <!-- Facción Interna Dinámica según el Partido Elegido -->
+              <div class="bg-[#FAF8F5] border border-[#A89E88] p-4 rounded shadow-xs space-y-3">
+                <div class="flex justify-between items-center border-b pb-1.5">
+                  <h2 class="font-extrabold text-xs text-slate-900 uppercase">4. Facción Interna / Sensibilidad Política</h2>
+                  <span id="p1-faction-badge" class="text-[10px] font-mono font-bold text-stone-600">Sensibilidad Base</span>
+                </div>
+                <p class="text-[11px] text-stone-600">Cada partido cuenta con corrientes y facciones internas que determinan con qué líderes tienes mayor afinidad inicial y qué votantes te respaldan con mayor fuerza.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="p1-factions-grid">
+                  <!-- Rellenado dinámicamente al cambiar el partido -->
+                </div>
+              </div>
+
+              <!-- Botón Siguiente a Página 2 -->
+              <div class="flex justify-end pt-2">
+                <button onclick="window.goToPage2Territory()" class="w-full sm:w-auto px-6 py-2.5 bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white font-black text-xs rounded shadow-md cursor-pointer transition flex items-center justify-center gap-2">
+                  <span>Continuar a Territorio y Punto de Partida ▶</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </div>

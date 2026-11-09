@@ -1,0 +1,23 @@
+        <!-- Subpanel: Marketing -->
+        <div id="campaign-panel-marketing" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Estrategia Publicitaria & Franja</h3>
+          <p id="marketing-status" class="text-sm font-semibold" aria-live="polite"></p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="border p-3 rounded bg-stone-50 space-y-2">
+              <strong class="text-xs text-slate-900 block">Lanzar Campaña Digital (Meta / TikTok / YouTube)</strong>
+              <p class="text-[11px] text-stone-600">Da visibilidad a tu candidatura en redes sociales.</p>
+              <div class="text-xs font-mono">Precio base: $1.500.000 CLP | Hasta +3,5 pp de reconocimiento · +85 puntos de campaña</div>
+              <button type="button" id="marketing-digital" onclick="window.launchAdCampaign('digital')" class="disabled:opacity-50 px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Contratar Pauta Digital
+              </button>
+            </div>
+            <div class="border p-3 rounded bg-stone-50 space-y-2">
+              <strong class="text-xs text-slate-900 block">Palomas y Gigantografías en Vía Pública</strong>
+              <p class="text-[11px] text-stone-600">Presencia en grandes avenidas, paraderos y esquinas clave.</p>
+              <div class="text-xs font-mono">Precio base: $2.500.000 CLP | Hasta +5 pp de reconocimiento · +145 puntos de campaña</div>
+              <button type="button" id="marketing-palomas" onclick="window.launchAdCampaign('palomas')" class="disabled:opacity-50 px-4 py-1.5 bg-[#0047AB] hover:bg-[#003399] text-white font-bold text-xs rounded cursor-pointer">
+                Instalar Propaganda
+              </button>
+            </div>
+          </div>
+        </div>

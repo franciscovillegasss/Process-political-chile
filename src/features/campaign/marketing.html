@@ -2,6 +2,7 @@
         <div id="campaign-panel-marketing" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Estrategia Publicitaria & Franja</h3>
           <p id="marketing-status" class="text-sm font-semibold" aria-live="polite"></p>
+          <p id="campaign-grant-balance" class="p-2 rounded bg-blue-50 text-sm"></p>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div class="border p-3 rounded bg-stone-50 space-y-2">
               <strong class="text-xs text-slate-900 block">Lanzar Campaña Digital (Meta / TikTok / YouTube)</strong>
@@ -19,5 +20,18 @@
                 Instalar Propaganda
               </button>
             </div>
+            <article class="border p-3 rounded bg-stone-50 space-y-2">
+              <h4 class="text-sm font-bold">Cuña radial</h4><p class="text-xs">$480.000 · 4 h · hasta +1,8 pp de reconocimiento</p>
+              <button id="marketing-radio" onclick="window.launchAdCampaign('radio')" class="px-2 py-1 rounded bg-blue-800 text-white text-xs disabled:opacity-50">Contratar radio</button>
+            </article>
+            <article class="border p-3 rounded bg-stone-50 space-y-2">
+              <h4 class="text-sm font-bold">Microdocumental</h4><p class="text-xs">$850.000 · 8 h · hasta +2,8 pp de reconocimiento</p>
+              <button id="marketing-video" onclick="window.launchAdCampaign('video')" class="px-2 py-1 rounded bg-blue-800 text-white text-xs disabled:opacity-50">Producir video</button>
+            </article>
+            <article class="border p-3 rounded bg-stone-50 space-y-2 md:col-span-2">
+              <h4 class="text-sm font-bold">Difundir una política pública</h4><p class="text-xs">$550.000 · 6 h · reconocimiento y énfasis según la urgencia del tema</p>
+              <label class="text-xs">Eje <select id="marketing-policy-choice" class="border rounded p-1"></select></label>
+              <button id="marketing-policy" onclick="window.launchAdCampaign('policy')" class="px-2 py-1 rounded bg-blue-800 text-white text-xs disabled:opacity-50">Financiar difusión</button>
+            </article>
           </div>
         </div>

@@ -12,6 +12,9 @@ export function focusBonus(state) {
 
 export const ADS = {
   digital: { name: 'Pauta digital', hours: 0, funds: 1_500_000, recognition: 3.5, support: 85 },
+  radio: { name: 'Cuña radial', hours: 4, funds: 480_000, recognition: 1.8, support: 38 },
+  video: { name: 'Microdocumental', hours: 8, funds: 850_000, recognition: 2.8, support: 62 },
+  policy: { name: 'Difusión de un eje', hours: 6, funds: 550_000, recognition: 2, support: 0 },
   palomas: { name: 'Propaganda territorial', hours: 0, funds: 2_500_000, recognition: 5, support: 145 },
 };
 
@@ -30,7 +33,7 @@ export const METRICS = [
 
 export function initialCampaign() {
   return {
-    digital: 0, palomas: 0, fundraising: 0, donorFatigue: 0, lastCommunity: -100, rested: false, focus: -1, trained: 0, mobilized: 0, policyWeek: 0,
+    radio: 0, video: 0, policy: 0, digital: 0, palomas: 0, fundraising: 0, donorFatigue: 0, lastCommunity: -100, lastProgramChange: -100, rested: false, focus: -1, trained: 0, mobilized: 0, policyWeek: 0,
     contactYear: 0, contacts: { vecinos: 0, productivo: 0, civico: 0 },
     polls: [], activity: [],
     actionUses: { puerta_a_puerta: 0, cabildo: 0, prensa: 0 },
@@ -40,7 +43,7 @@ export function initialCampaign() {
 
 export function weeklyCampaign(state) {
   if (!state.campaign.fundraising) state.campaign.donorFatigue = Math.max(0, state.campaign.donorFatigue - 1);
-  Object.assign(state.campaign, { digital: 0, palomas: 0, fundraising: 0, rested: false, mobilized: 0, policyWeek: 0 });
+  Object.assign(state.campaign, { radio: 0, video: 0, policy: 0, digital: 0, palomas: 0, fundraising: 0, rested: false, mobilized: 0, policyWeek: 0 });
   for (const action of Object.keys(state.campaign.actionUses)) state.campaign.actionUses[action] = 0;
   if (state.week % 4 !== 0) return;
   const wave = [0.6, 0.25, -0.2, -0.55, -0.3, 0.1][(state.year * 13 + state.week / 4) % 6] ?? 0;

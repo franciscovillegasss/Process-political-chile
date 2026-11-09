@@ -14,6 +14,14 @@ En **Cargo → Situación del cargo**, escoge una obra municipal. En **Lobby**, 
 
 [Documentación electoral 2024 de Servel](https://www.servel.cl/biblioteca-de-documentos/procesos-electorales/elecciones-2024/documentos-elecciones-2024/documentacion-elecciones-2024/) · [Territorios electorales](https://www.servel.cl/sistema-electoral/territorios-electorales/) · [Ley Orgánica de Municipalidades](https://www.bcn.cl/leychile/navegar?idNorma=251693)
 
+## Campaña, escrutinio y despacho
+
+La guía de creación explica PP, apoyo, reconocimiento y costos de campaña. Una candidatura recibe un aporte simulado por semana según el cargo. Marketing, cabildos, encuestas y reclutamiento recurren primero al saldo electoral. El excedente se cubre con la tesorería general. El aporte termina al cerrar la elección.
+
+En Marketing puedes financiar radio, video y la difusión de uno de tus ejes. En Políticas puedes adaptar un eje de baja urgencia a una prioridad alta por 4 horas, sin costo de credibilidad. Las revisiones ordinarias conservan sus restricciones durante la campaña.
+
+Los turnos electorales abren un conteo televisivo de 60 segundos con pausas y opción de adelantar. En Políticos puedes consultar el Ejecutivo de la partida y cambiar la comuna. El directorio combina resultados conocidos y autoridades ficticias del escenario. Cargo ofrece decisiones de despacho según el puesto, con efectos en PP, aprobación, contactos o plazos. La tramitación formal del perfil RM sigue centrada en el circuito municipal.
+
 ## Dónde buscar un fallo
 
 | Síntoma | Empieza aquí | Prueba puntual |

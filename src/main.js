@@ -1,3 +1,4 @@
+import { replayBroadcast } from './features/elections/broadcast.js';
 import { setAgendaPlan } from './app/agenda.js';
 import { renderAll } from './app/render.js';
 import { advanceTurn } from './app/turn.js';
@@ -26,6 +27,7 @@ import './ui/shell.css';
 
 Object.assign(window, {
   registerCandidate,
+  replayBroadcast,
   executeCampaignAction,
   fundraiseAction,
   launchAdCampaign,

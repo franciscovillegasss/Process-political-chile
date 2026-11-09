@@ -1,3 +1,4 @@
+import { campaignAllowance, grantCampaignWeek } from '../campaign/funding.js';
 import { profileAllows, profileSeats, RM_COMMUNES, RM_PROFILE } from './rm-profile.js';
 import { canEndorse } from './runoff.js';
 import { GAME_STATE, pay } from '../../app/state.js';
@@ -46,8 +47,9 @@ const registerCandidate = function() {
     const { contacts, endorsements } = initialCampaign();
     Object.assign(GAME_STATE.campaign, { contacts, endorsements });
   }
+  grantCampaignWeek(GAME_STATE.localElection, GAME_STATE.week);
   recordCareer(GAME_STATE, 'Candidatura', `Inscripción para ${OFFICES[id].name}.`);
-  reportCampaign('Candidatura inscrita', `Ya puedes hacer campaña para ${OFFICES[id].name} y consultar a tus oponentes.`);
+  reportCampaign('Candidatura inscrita', `Ya puedes hacer campaña para ${OFFICES[id].name}. Aporte semanal: $${campaignAllowance(id).toLocaleString('es-CL')}.`);
 };
 
 function resolveElection() {
@@ -59,17 +61,27 @@ function resolveElection() {
   const climate = campaignClimate(GAME_STATE);
   const result = candidate ? countElection({ ...candidate, profile: GAME_STATE.profile }, player, districtSeats, GAME_STATE.week, climate, GAME_STATE.roster, true)
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
+  const broadcast = candidate ? (() => {
+    const field = electionField(candidate, player, GAME_STATE.week, climate, GAME_STATE.roster);
+    return {
+      title: `${candidate.runoffWeek ? 'Segunda vuelta' : 'Noche electoral'} · ${OFFICES[id].name} · ${year}`,
+      summary: result.summary,
+      won: result.won,
+      candidates: [{ name: player.name, votes: field.votes, player: true },
+        ...field.rivals.map(rival => ({ name: rival.name, votes: rival.votes }))],
+    };
+  })() : null;
   if (year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
   if (result.runoff !== undefined) {
     Object.assign(candidate, { runoffWeek: GAME_STATE.week + 4, runoffRival: result.runoff, runoffSnapshot: result.snapshot, runoffEndorsements: [], firstRound: result.summary });
     recordCareer(GAME_STATE, 'Primera vuelta', result.summary);
-    return;
+    return broadcast;
   }
   const { won, summary } = result;
-  GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), result: summary };
+  GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), campaignFunds: 0, result: summary };
   if (result.pending) {
     recordCareer(GAME_STATE, 'Elección pendiente', summary);
-    return;
+    return broadcast;
   }
   if (candidate) {
     recordCareer(GAME_STATE, 'Elección', summary);
@@ -78,12 +90,20 @@ function resolveElection() {
       const person = GAME_STATE.roster[rival.slot];
       person.victories++;
       person.office = id;
+      if (id === 'alcalde' || id === 'presidente') {
+        const territory = id === 'presidente' ? 'Chile' : player.commune;
+        const previous = GAME_STATE.governmentResults.findIndex(entry => entry.office === id && entry.territory === territory);
+        if (previous >= 0) GAME_STATE.governmentResults.splice(previous, 1);
+        GAME_STATE.governmentResults.unshift({ office: id, territory, year, name: person.name, party: person.party });
+      }
       recordCareer(GAME_STATE, 'Contienda', `${person.name} encabezó el voto rival en ${OFFICES[id].name}.`);
     }
   }
   const outgoing = player.officeEndYear > 0 ? player.officeEndYear === year
     : player.officeId && cycleOffices(year, player.region).some(([officeId]) => officeId === player.officeId);
   if (won) {
+    const territory = id === 'presidente' ? 'Chile' : player.commune;
+    GAME_STATE.governmentResults = GAME_STATE.governmentResults.filter(entry => entry.office !== id || entry.territory !== territory);
     if (GAME_STATE.mandate?.project) recordCareer(GAME_STATE, 'Mandato', 'Un proyecto del mandato anterior quedó pendiente al cambiar de período.');
     player.officeId = id;
     player.currentOffice = officeTitle(id, player);
@@ -94,6 +114,7 @@ function resolveElection() {
     recordCareer(GAME_STATE, 'Mandato', `Finalizó el mandato en ${player.currentOffice}.`);
     giveUpOffice(GAME_STATE);
   }
+  return broadcast;
 }
 
 function seekRunoffEndorsement(slot) {

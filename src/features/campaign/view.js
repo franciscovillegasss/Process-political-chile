@@ -1,8 +1,9 @@
+import { campaignAllowance } from './funding.js';
 import { localContactDiscount } from '../territory/rules.js';
-import { CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './rules.js';
+import { ADS, CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './rules.js';
 import { electionField } from '../elections/rules.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
-import { campaignClimate, messageImpact, publicAgenda } from '../electorate/rules.js';
+import { campaignClimate, messageImpact, policyUrgency, publicAgenda } from '../electorate/rules.js';
 
 const element = id => document.getElementById(id);
 
@@ -70,7 +71,16 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
   element('marketing-status').textContent = election
     ? `Pautas de esta semana · Digital: ${campaign.digital ? 'contratada' : 'disponible'} · Territorial: ${campaign.palomas ? 'instalada' : 'disponible'}`
     : 'Inscribe una candidatura para contratar publicidad.';
-  for (const key of ['digital', 'palomas']) element(`marketing-${key}`).disabled = !election || Boolean(campaign[key]);
+  element('campaign-grant-balance').textContent = election
+    ? `Aporte electoral disponible: $${format(election.campaignFunds ?? 0)} · abono semanal $${format(campaignAllowance(election.office))}. Se usa primero en gastos de campaña. El saldo vence al cerrar la elección.`
+    : 'El aporte semanal se activa al inscribir una candidatura.';
+  element('finance-campaign-grant').textContent = element('campaign-grant-balance').textContent;
+  for (const key of Object.keys(ADS)) element(`marketing-${key}`).disabled = !election || Boolean(campaign[key]);
+  const policyChoice = element('marketing-policy-choice');
+  const previousChoice = policyChoice.value;
+  policyChoice.replaceChildren(...chosen.map(policy => new Option(policy.name, policy.id)));
+  if (chosen.some(policy => policy.id === previousChoice)) policyChoice.value = previousChoice;
+  policyChoice.disabled = !election;
 
   element('campaign-climate').textContent = `Agenda: ${climate.agenda.title} · ${climate.agenda.topics.join(', ')}
 Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · memoria comunal: ×${format(Number(climate.localBoost.toFixed(3)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
@@ -90,16 +100,21 @@ Afinidad con el electorado: ${pct(fit * 100)}${player.partyId === 'IND' ? '' : `
     ? 'Promueve un eje por semana. La demanda y la afinidad pesan por separado. Repetir un mensaje saturado rinde menos.'
     : 'Estos son tus ejes. Inscribe una candidatura para promoverlos y adaptar el programa.';
   const revision = element('policy-revision');
-  revision.classList.toggle('hidden', !election);
-  if (election) {
-    element('revision-current').replaceChildren(...chosen.map(policy => new Option(policy.name, policy.id)));
-    element('revision-new').replaceChildren(...POLICIES_CATALOG.filter(policy => !player.corePolicies.includes(policy.id)).map(policy => new Option(`${policy.issue} · ${policy.name}`, policy.id)));
-    const remaining = election.lastRevision ? Math.max(0, 4 - (state.week - election.lastRevision)) : 0;
-    element('revision-apply').disabled = Boolean(remaining);
-    element('revision-status').textContent = remaining
-      ? `Podrás hacer otro cambio en ${remaining} semanas. Cambios en esta contienda: ${election.revisions}.`
-      : `Un cambio cuesta 12 h y 3 PP. Cada revisión reduce la confianza en esta contienda. Cambios: ${election.revisions}.`;
-  }
+  revision.classList.remove('hidden');
+  const current = element('revision-current');
+  const next = element('revision-new');
+  const currentId = current.value;
+  const nextId = next.value;
+  current.replaceChildren(...chosen.map(policy => new Option(policy.name, policy.id)));
+  if (chosen.some(policy => policy.id === currentId)) current.value = currentId;
+  const alternatives = POLICIES_CATALOG.filter(policy => !player.corePolicies.includes(policy.id))
+    .sort((a, b) => policyUrgency(state, b.issue) - policyUrgency(state, a.issue));
+  next.replaceChildren(...alternatives.map(policy => new Option(`${policyUrgency(state, policy.issue) >= 0.75 ? 'Prioridad alta · ' : ''}${policy.issue} · ${policy.name}`, policy.id)));
+  if (alternatives.some(policy => policy.id === nextId)) next.value = nextId;
+  const revised = campaign.lastProgramChange === state.year * 52 + state.week;
+  element('revision-apply').disabled = revised;
+  element('revision-status').textContent = revised ? 'Ya revisaste un eje esta semana.'
+    : 'Cambiar un eje de baja urgencia por una prioridad alta cuesta 4 h y conserva credibilidad. Los demás cambios cuestan 12 h; en campaña consumen 3 PP, requieren cuatro semanas entre cambios ordinarios y afectan la confianza.';
 
   const trained = Math.min(campaign.trained, volunteers);
   element('volunteers-count-disp').textContent = `${format(volunteers)} / ${VOLUNTEER_LIMIT}`;

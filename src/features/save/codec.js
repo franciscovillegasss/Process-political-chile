@@ -59,10 +59,13 @@ export function decodeSave(raw) {
   }
   if (next.localElection !== null) {
     next.localElection = restore({
-      year: 0, office: 'concejal', pact: '', support: 0, runoffWeek: 0, runoffRival: 0, runoffSnapshot: null, runoffEndorsements: [], firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
+      year: 0, office: 'concejal', pact: '', support: 0, campaignFunds: 0, campaignGrantWeek: 0, runoffWeek: 0, runoffRival: 0, runoffSnapshot: null, runoffEndorsements: [], firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
     }, next.localElection);
     if (next.localElection.office && (!profileAllows(next.profile, player.region, next.localElection.office) || !Object.hasOwn(OFFICES, next.localElection.office))) throw new Error('Cargo inválido');
     const election = next.localElection;
+    if (!Number.isSafeInteger(election.campaignFunds) || election.campaignFunds < 0 ||
+        !Number.isInteger(election.campaignGrantWeek) || !bounded(election.campaignGrantWeek, 0, 52) ||
+        (election.result && election.campaignFunds)) throw new Error('Aporte electoral inválido');
     if (election.office && !election.result && (election.year !== next.year ||
         next.week < registrationWeek || next.week >= (election.runoffWeek || electionWeek(election.year)))) {
       throw new Error('Fecha de candidatura inválida');
@@ -104,6 +107,10 @@ export function decodeSave(raw) {
   next.volunteers = Math.max(0, Math.min(VOLUNTEER_LIMIT, next.volunteers));
   next.campaign.trained = Math.max(0, Math.min(next.volunteers, next.campaign.trained));
   if (!value.mandate && next.player.officeId) openMandate(next);
+  if (!next.governmentResults.every(entry => entry && ['presidente', 'alcalde'].includes(entry.office) &&
+      (entry.office === 'presidente' ? entry.territory === 'Chile' : typeof entry.territory === 'string') &&
+      Number.isInteger(entry.year) && bounded(entry.year, 1900, next.year) &&
+      typeof entry.name === 'string' && typeof entry.party === 'string')) throw new Error('Directorio de autoridades inválido');
   const knownIssue = issue => POLICIES_CATALOG.some(policy => policy.issue === issue);
   if (next.mandate) {
     const mandate = next.mandate;
@@ -112,6 +119,8 @@ export function decodeSave(raw) {
         (typeof mandate.project.name !== 'string' || !knownIssue(mandate.project.issue) ||
           typeof mandate.project.relevant !== 'boolean' || !Number.isInteger(mandate.project.due) || mandate.project.due < 0))) throw new Error('Mandato inválido');
   }
+  if (next.mandate?.deskWeek !== undefined && (!Number.isSafeInteger(next.mandate.deskWeek) ||
+      next.mandate.deskWeek < 0 || next.mandate.deskWeek > next.year * 52 + next.week)) throw new Error('Despacho inválido');
   const project = next.mandate?.project;
   if (project?.municipalId) {
     const config = MUNICIPAL_PROJECTS.find(item => item.id === project.municipalId);

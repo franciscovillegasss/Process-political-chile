@@ -1,3 +1,4 @@
+import { renderOfficeDesk } from './office-desk.js';
 import { COUNCIL_BLOCS, MUNICIPAL_PROJECTS, councilDecision, municipalTerms } from './municipal.js';
 import { RM_PROFILE, profileSeats } from '../elections/rm-profile.js';
 import { renderPlayerStats } from '../../app/render.js';
@@ -149,6 +150,7 @@ const voteProject = function(chamber) {
 };
 
 function renderMandate() {
+  renderOfficeDesk();
   const { mandate, career, player } = GAME_STATE;
   const reference = GAME_STATE.profile === RM_PROFILE;
   const municipal = reference && municipalRole();

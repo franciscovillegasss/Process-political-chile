@@ -15,6 +15,15 @@
               </select>
             </div>
           </div>
+          <section class="grid gap-3 md:grid-cols-2 text-sm">
+            <article class="rounded border bg-blue-50 p-3"><h3 class="font-bold">Presidencia y gabinete de la partida</h3>
+              <p class="text-xs">Autoridades ficticias del ciclo simulado.</p><ul id="directory-government" class="mt-2 space-y-1"></ul>
+            </article>
+            <article class="rounded border bg-stone-50 p-3">
+              <label class="text-xs">Comuna <select id="directory-commune" onchange="window.renderPoliticiansDirectory()" class="border rounded p-1"></select></label>
+              <h3 id="directory-local-title" class="font-bold mt-1"></h3><ul id="directory-local" class="space-y-1 max-h-40 overflow-auto"></ul>
+            </article>
+          </section>
           <div class="overflow-x-auto">
             <table class="w-full text-xs text-left border-collapse">
               <thead class="bg-stone-100 text-stone-700 font-mono text-[10px] uppercase border-b">

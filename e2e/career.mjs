@@ -28,6 +28,7 @@ try {
   }, state);
 
   assert.equal(await page.locator('#screen-page-2-territory').isVisible(), false);
+  assert.match(await page.locator('#screen-page-1-identity details').textContent(), /puntos políticos/);
   await page.locator('#p1-name').fill('Camila Soto');
   await click('[onclick="window.goToPage2Territory()"]');
   await page.locator('#p2-region').selectOption('rm');
@@ -40,6 +41,11 @@ try {
   assert.equal((await save()).campaign.focus, 0);
   assert.match(await text('map-sector-inspected'), /puerta a puerta/);
   await click('[data-view="view-politicians"]');
+  assert.match(await text('directory-government'), /Presidencia/);
+  const localDirectory = await text('directory-local');
+  await page.locator('#directory-commune').selectOption('Pudahuel');
+  assert.match(await text('directory-local-title'), /Pudahuel/);
+  assert.notEqual(await text('directory-local'), localDirectory);
   const politicians = await page.locator('#politicians-table-body tr').count();
   await page.locator('#pol-filter-bloc').selectOption('Centro');
   assert.ok(await page.locator('#politicians-table-body tr').count() < politicians);
@@ -62,6 +68,27 @@ try {
 
   await go(2024, 8);
   await click('#local-register');
+  const startingCampaign = await save();
+  assert.equal(startingCampaign.localElection.campaignFunds, 350_000);
+  await click('[data-view="view-campaign"]');
+  await click(`[onclick="window.switchSubpanel('campaign', 'marketing', this)"]`);
+  await click('#marketing-policy');
+  const advertised = await save();
+  assert.equal(advertised.localElection.campaignFunds, 0);
+  assert.equal(advertised.player.funds, startingCampaign.player.funds - 200_000);
+  assert.ok(advertised.player.nameRecognition > startingCampaign.player.nameRecognition);
+  await click(`[onclick="window.switchSubpanel('campaign', 'policies', this)"]`);
+  await page.locator('#policy-revision summary').click();
+  await page.locator('#revision-current').selectOption('p9');
+  await page.locator('#revision-new').selectOption('p20');
+  await click('#revision-apply');
+  const revised = await save();
+  assert.ok(revised.player.corePolicies.includes('p20'));
+  assert.equal(revised.localElection.revisions, 0);
+  assert.equal(revised.player.politicalPoints, advertised.player.politicalPoints);
+  await go(2024, 9);
+  assert.equal((await save()).localElection.campaignFunds, 350_000);
+
   await go(2024, 44);
   assert.match(await text('elections-calendar-cards'), /no electa/);
   await go(2025, 8);
@@ -118,7 +145,17 @@ try {
     localElection: { year: 2024, office: 'gobernador', pact: 'ind', support: 2400, result: '' },
   };
   await load(runoff);
+  await page.clock.install();
   await click('#btn-hdr-advance-1');
+  assert.equal(await page.locator('#election-tv').isVisible(), true);
+  assert.equal(await text('tv-result'), '');
+  await page.clock.fastForward(30_000);
+  assert.match(await text('tv-status'), /escrutado/);
+  assert.equal(await text('tv-result'), '');
+  if (process.env.BETA_TV_SCREENSHOT) await page.screenshot({ path: process.env.BETA_TV_SCREENSHOT });
+  await page.clock.fastForward(31_000);
+  assert.match(await text('tv-result'), /Clasificaste a segunda vuelta/);
+  await click('#tv-finish');
   assert.match(await text('elections-calendar-cards'), /Clasificaste a segunda vuelta/);
   const first = await save();
   assert.equal(first.localElection.runoffWeek, 48);
@@ -132,6 +169,11 @@ try {
   await invoke('executeCampaignAction', 'puerta_a_puerta');
   assert.ok((await save()).localElection.support > first.localElection.support);
   await click('#btn-hdr-advance-4');
+  assert.equal(await page.locator('#election-tv').isVisible(), true);
+  await click('#tv-finish');
+  assert.match(await text('tv-result'), /se abstuvieron/);
+  await click('#tv-finish');
+  assert.equal((await save()).localElection.campaignFunds, 0);
   assert.match(await text('elections-calendar-cards'), /se abstuvieron/);
   if (process.env.BETA_RUNOFF_SCREENSHOT) await page.screenshot({ path: process.env.BETA_RUNOFF_SCREENSHOT });
   assert.match(await text('elections-calendar-cards'), /Resultado 2024[\s\S]*Segunda vuelta/);
@@ -208,6 +250,7 @@ try {
   assert.match(await text('elections-calendar-cards'), /Concejal \(18\+\) · 10 cupos/);
   await click('[data-view="view-office"]');
   assert.match(await text('mandate-propose'), /Solicitar expediente a Alcaldía/);
+  assert.match(await text('office-desk-title'), /Concejal de Maipú/);
   await click('#management-audit');
   assert.equal(await text('notice-title'), 'Informe solicitado');
   await page.locator('#mandate-policy').selectOption('lighting');
@@ -227,6 +270,10 @@ try {
   assert.equal((await save()).mandate.budget, 6_500_000);
   await go(2024, 11);
   assert.equal((await save()).mandate.completed, 1);
+  await click('[data-view="view-office"]');
+  await page.locator('#office-desk-actions button').first().click();
+  assert.ok((await save()).career.some(event => event.type === 'Despacho'));
+  assert.equal(await page.locator('#office-desk-actions button:enabled').count(), 0);
   assert.equal((await save()).territories[0].projects[0].name, 'Plan de luminarias');
   assert.ok((await save()).career.some(event => event.title.includes('Alcaldía responde')));
   await page.locator('details').filter({ has: page.locator('#agenda-plan') }).locator('summary').click();

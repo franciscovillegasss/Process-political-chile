@@ -7,6 +7,7 @@ const initialState = () => ({
   profile: 'classic',
   agendaPlan: 'none',
   career: [],
+  governmentResults: [],
   roster: newRoster(2024),
   mandate: null,
   campaign: initialCampaign(),

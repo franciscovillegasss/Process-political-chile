@@ -1,3 +1,4 @@
+import { campaignPayment } from './funding.js';
 import { localContactDiscount, recordLocalContact, recordMobilization } from '../territory/rules.js';
 import { refreshCampaign } from '../../app/render.js';
 import { GAME_STATE, pay } from '../../app/state.js';
@@ -6,9 +7,9 @@ import { staffTotals } from './staff.js';
 import { calendarWeek, fundraisingYield } from '../career/rules.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
 import { updateCompass } from '../character/compass.js';
-import { requireElection } from '../elections/actions.js';
+import { activeElection, requireElection } from '../elections/actions.js';
 import { LOCAL_ACTIONS, electionField } from '../elections/rules.js';
-import { campaignClimate, messageImpact } from '../electorate/rules.js';
+import { campaignClimate, messageImpact, policyUrgency } from '../electorate/rules.js';
 import { clp, element, showToast, warn } from '../../shared/dom.js';
 
 function reportCampaign(title, detail) {
@@ -23,7 +24,7 @@ const executeCampaignAction = function(key) {
   if (!Object.hasOwn(LOCAL_ACTIONS, key)) return;
   const election = requireElection();
   const action = LOCAL_ACTIONS[key];
-  if (!election || !pay(action)) return;
+  if (!election || !campaignPayment(election, action, pay)) return;
   const { player, campaign } = GAME_STATE;
   const policies = POLICIES_CATALOG.filter(policy => player.corePolicies.includes(policy.id));
   const issueMatch = policies.some(policy => action.issues.includes(policy.issue));
@@ -53,13 +54,17 @@ const launchAdCampaign = function(key) {
   const ad = ADS[key];
   const bonuses = staffTotals();
   const funds = Math.round(ad.funds * (key === 'palomas' ? 1 - bonuses.territorialDiscount : 1));
-  if (!pay({ hours: ad.hours, funds })) return;
+  const policy = key === 'policy' ? campaignClimate(GAME_STATE).policyResults.find(
+    item => item.policy.id === element('marketing-policy-choice').value) : null;
+  if (key === 'policy' && !policy) return warn('Elige uno de tus tres ejes para financiar su difusión.');
+  if (!campaignPayment(election, { hours: ad.hours, funds }, pay)) return;
   campaign[key] = 1;
-  const recognition = Math.min(100 - player.nameRecognition, ad.recognition);
+  const recognition = Math.min(100 - player.nameRecognition, ad.recognition + (policy?.urgency ?? 0));
   player.nameRecognition += recognition;
-  const support = Math.round(ad.support * (1 + bonuses.advertisingBonus));
+  const support = Math.round((policy ? messageImpact(policy, player.attributes.oratory) : ad.support) * (1 + bonuses.advertisingBonus));
+  if (policy) election.messages[policy.policy.id] = Math.min(4, policy.emphasis + 1.2);
   election.support += support;
-  reportCampaign(ad.name, `${clp(funds)} invertidos · +${recognition.toFixed(1)} pp de reconocimiento y +${support} puntos de campaña.`);
+  reportCampaign(policy ? `Difusión: ${policy.policy.name}` : ad.name, `${clp(funds)} invertidos · +${recognition.toFixed(1)} pp de reconocimiento y +${support} puntos de campaña.`);
 };
 
 const meetContact = function(id) {
@@ -83,7 +88,7 @@ const commissionPoll = function() {
   const election = requireElection();
   const { campaign, player, year, week } = GAME_STATE;
   if (!election || campaign.polls.some(poll => poll?.year === year && poll.week === week) ||
-      !pay({ hours: 0, funds: 1_000_000 })) return;
+      !campaignPayment(election, { hours: 0, funds: 1_000_000 }, pay)) return;
   const field = electionField(election, player, week, campaignClimate(GAME_STATE), GAME_STATE.roster);
   const rival = field.rivals[0];
   const precision = 1 - staffTotals().pollAccuracy;
@@ -112,30 +117,44 @@ const promotePolicy = function(id) {
 };
 
 const revisePolicy = function() {
-  const election = requireElection();
-  if (!election) return;
-  const { player, week } = GAME_STATE;
+  const election = activeElection();
+  const { player, week, year, campaign } = GAME_STATE;
   const previous = element('revision-current').value;
   const replacement = element('revision-new').value;
-  if (election.lastRevision && week - election.lastRevision < 4) return warn('Debes esperar cuatro semanas entre cambios de programa.');
+  const oldPolicy = POLICIES_CATALOG.find(policy => policy.id === previous);
+  const newPolicy = POLICIES_CATALOG.find(policy => policy.id === replacement);
   const slot = player.corePolicies.indexOf(previous);
-  if (slot < 0 || player.corePolicies.includes(replacement) || !POLICIES_CATALOG.some(policy => policy.id === replacement)) {
+  if (slot < 0 || player.corePolicies.includes(replacement) || !oldPolicy || !newPolicy) {
     return warn('Elige un eje nuevo y uno de tus tres compromisos para reemplazar.');
   }
-  if (!pay({ hours: 12, points: 3 })) return;
+  const tick = calendarWeek({ year, week });
+  if (campaign.lastProgramChange === tick) return warn('Puedes revisar un eje por semana.');
+  const timely = policyUrgency(GAME_STATE, oldPolicy.issue) < 0.55 &&
+    policyUrgency(GAME_STATE, newPolicy.issue) >= 0.75;
+  if (!timely && election?.lastRevision && week - election.lastRevision < 4) {
+    return warn('Los cambios ordinarios se pueden hacer cada cuatro semanas. Puedes adaptar ahora un eje poco urgente a una prioridad alta.');
+  }
+  if (!pay({ hours: timely ? 4 : 12, points: election && !timely ? 3 : 0 })) return;
+  campaign.lastProgramChange = tick;
   player.corePolicies[slot] = replacement;
-  election.messages[previous] = 0;
-  election.lastRevision = week;
-  election.revisions++;
+  if (election) {
+    election.messages[previous] = 0;
+    if (!timely) {
+      election.lastRevision = week;
+      election.revisions++;
+    }
+  }
   updateCompass('profile', player.corePolicies);
-  reportCampaign('Programa actualizado', 'El nuevo eje entra en vigor. Cada cambio resta confianza durante esta elección.');
+  reportCampaign('Programa actualizado', timely
+    ? 'Adaptación a la agenda pública · 4 h, sin costo de credibilidad.'
+    : election ? 'El nuevo eje entra en vigor. El cambio resta confianza durante esta elección.' : 'El nuevo eje queda disponible para tu próxima campaña.');
 };
 
 const manageVolunteers = function(action) {
   const { campaign, volunteers } = GAME_STATE;
   if (action === 'recruit') {
     const recruits = Math.max(0, Math.min(30, VOLUNTEER_LIMIT - volunteers));
-    if (!recruits || !pay({ hours: 8, funds: 100_000 })) return;
+    if (!recruits || !campaignPayment(activeElection(), { hours: 8, funds: 100_000 }, pay)) return;
     GAME_STATE.volunteers += recruits;
     reportCampaign('Reclutamiento', `+${recruits} voluntarios se sumaron a la brigada.`);
   } else if (action === 'train') {

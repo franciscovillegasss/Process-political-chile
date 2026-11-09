@@ -1,3 +1,5 @@
+import { showElectionBroadcast } from '../features/elections/broadcast.js';
+import { grantCampaignWeek } from '../features/campaign/funding.js';
 import { runAgendaPlan } from './agenda.js';
 import { RM_PROFILE } from '../features/elections/rm-profile.js';
 import { CHECKPOINT_KEY } from '../features/save/journal.js';
@@ -10,7 +12,7 @@ import { renderCountry } from '../features/campaign/view.js';
 import { retire } from '../features/career/profile.js';
 import { renderPoliticiansDirectory } from '../features/career/roster.js';
 import { RETIREMENT_AGE, calendarWeek, completeProject, recordCareer, renewRoster } from '../features/career/rules.js';
-import { resolveElection } from '../features/elections/actions.js';
+import { activeElection, resolveElection } from '../features/elections/actions.js';
 import { electionWeek, registrationWeek } from '../features/elections/rules.js';
 import { renderPublicOpinionTable } from '../features/electorate/opinion.js';
 import { decayMessages, publicAgenda } from '../features/electorate/rules.js';
@@ -21,6 +23,7 @@ function runWeeks(weeksToAdvance) {
   const count = [1, 4].includes(weeksToAdvance) ? weeksToAdvance : 1;
   const previousAgenda = publicAgenda(GAME_STATE);
   let announced = false;
+  let broadcast;
   let payrollWarning = false;
   for (let w = 0; w < count; w++) {
     GAME_STATE.week += 1;
@@ -52,6 +55,7 @@ function runWeeks(weeksToAdvance) {
     player.nameRecognition = Math.max(8, Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly - 0.15));
     GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
     weeklyCampaign(GAME_STATE);
+    grantCampaignWeek(activeElection(), GAME_STATE.week);
     const committedProject = executeCouncilAgreement(GAME_STATE, calendarWeek(GAME_STATE), recordCareer);
     if (deliverMunicipalReport(GAME_STATE, calendarWeek(GAME_STATE), recordCareer)) showToast('Informe municipal', 'Alcaldía respondió a la solicitud de fiscalización.', 'info');
     if (completeProject(GAME_STATE)) showToast('Proyecto ejecutado', 'Consulta el efecto en Cargo e Historial.', 'success');
@@ -68,7 +72,8 @@ function runWeeks(weeksToAdvance) {
     const runoffWeek = GAME_STATE.localElection?.year === GAME_STATE.year ? GAME_STATE.localElection.runoffWeek : 0;
     if (votingWeek && [registrationWeek, votingWeek, runoffWeek].includes(GAME_STATE.week)) {
       if (GAME_STATE.week === votingWeek || GAME_STATE.week === runoffWeek) {
-        resolveElection();
+        broadcast = resolveElection();
+        grantCampaignWeek(activeElection(), GAME_STATE.week);
         if (GAME_STATE.localElection.result) showToast('Escrutinio electoral', 'El resultado está disponible en Elecciones.', 'info');
         else showToast('Segunda vuelta', GAME_STATE.localElection.firstRound, 'info');
         renderPoliticiansDirectory();
@@ -92,6 +97,7 @@ function runWeeks(weeksToAdvance) {
   renderCountry(GAME_STATE);
   renderPublicOpinionTable();
   renderStaffPanel();
+  return broadcast;
 }
 
 let advancing = false;
@@ -101,8 +107,9 @@ function advanceTurn(weeksToAdvance = 1, event) {
   advancing = true;
   const previous = structuredClone(GAME_STATE);
   try {
-    runWeeks(weeksToAdvance);
+    const broadcast = runWeeks(weeksToAdvance);
     if (GAME_STATE.profile === RM_PROFILE) localStorage.setItem(CHECKPOINT_KEY, JSON.stringify(GAME_STATE));
+    if (event?.isTrusted && broadcast) showElectionBroadcast(broadcast);
   } catch {
     replaceState(previous);
     renderAll();

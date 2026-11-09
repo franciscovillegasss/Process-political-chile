@@ -21,5 +21,19 @@
           </div>
           <div class="text-sm whitespace-pre-line" id="elections-calendar-cards" aria-live="polite"></div>
           <div id="runoff-endorsements" class="text-sm"></div>
+          <button id="replay-broadcast" onclick="window.replayBroadcast()" class="hidden px-3 py-2 rounded bg-slate-900 text-white">Repetir transmisión</button>
+          <dialog id="election-tv" aria-labelledby="tv-title" class="fixed inset-0 m-auto max-h-[90vh] w-[min(94vw,54rem)] overflow-auto rounded-2xl bg-slate-950 text-white shadow-2xl backdrop:bg-slate-950/85 p-5">
+            <p class="text-xs tracking-widest uppercase font-bold text-cyan-300">● Señal electoral · simulación</p>
+            <h3 id="tv-title" class="text-2xl font-black mt-1"></h3>
+            <p id="tv-status" class="text-sm mt-2"></p>
+            <progress id="tv-progress" max="100" value="0" aria-label="Progreso del escrutinio" class="w-full accent-cyan-400"></progress>
+            <div id="tv-rows" class="grid gap-2 mt-3 sm:grid-cols-2"></div>
+            <p id="tv-result" role="status" class="mt-3 whitespace-pre-line font-semibold"></p>
+            <div class="mt-4 flex gap-3">
+              <button id="tv-pause" class="rounded border border-slate-500 px-3 py-2">Pausar</button>
+              <button id="tv-office" class="hidden rounded bg-blue-700 text-white px-3 py-2">Abrir despacho</button>
+              <button id="tv-finish" class="rounded bg-cyan-300 text-slate-950 font-bold px-3 py-2">Ver resultado ahora</button>
+            </div>
+          </dialog>
         </div>
       </div>

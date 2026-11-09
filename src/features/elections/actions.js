@@ -1,3 +1,4 @@
+import { profileAllows, profileSeats, RM_COMMUNES, RM_PROFILE } from './rm-profile.js';
 import { canEndorse } from './runoff.js';
 import { GAME_STATE, pay } from '../../app/state.js';
 import { reportCampaign } from '../campaign/actions.js';
@@ -27,7 +28,7 @@ const canRegister = ({ year, week, localElection }) =>
 
 function eligibleOffices(player, year) {
   return cycleOffices(year, player.region).filter(([id, office]) =>
-    player.age >= office.age && officeTerritory(office, player, CHILE_GEO) &&
+    profileAllows(GAME_STATE.profile, player.region, id) && player.age >= office.age && officeTerritory(office, player, CHILE_GEO) &&
     (id !== 'presidente' || player.officeId !== 'presidente'));
 }
 
@@ -54,9 +55,9 @@ function resolveElection() {
   if (localElection?.year === year && localElection.result) return;
   const candidate = localElection?.year === year && localElection.office ? localElection : null;
   const id = candidate?.office || 'concejal';
-  const districtSeats = id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined;
+  const districtSeats = profileSeats(GAME_STATE.profile, player, id) ?? (id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined);
   const climate = campaignClimate(GAME_STATE);
-  const result = candidate ? countElection(candidate, player, districtSeats, GAME_STATE.week, climate, GAME_STATE.roster, true)
+  const result = candidate ? countElection({ ...candidate, profile: GAME_STATE.profile }, player, districtSeats, GAME_STATE.week, climate, GAME_STATE.roster, true)
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
   if (year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
   if (result.runoff !== undefined) {
@@ -66,6 +67,10 @@ function resolveElection() {
   }
   const { won, summary } = result;
   GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), result: summary };
+  if (result.pending) {
+    recordCareer(GAME_STATE, 'Elección pendiente', summary);
+    return;
+  }
   if (candidate) {
     recordCareer(GAME_STATE, 'Elección', summary);
     if (!won) {
@@ -111,6 +116,7 @@ function seekRunoffEndorsement(slot) {
 function officeTitle(id, player) {
   const office = OFFICES[id];
   if (!office) return 'Ciudadano sin Cargo';
+  if (id === 'core' && GAME_STATE.profile === RM_PROFILE) return `Consejería regional · ${RM_COMMUNES[player.commune]?.constituency}`;
   const territory = officeTerritory(office, player, CHILE_GEO);
   return office.scope === 'country' ? office.name : `${office.name} de ${territory}`;
 }

@@ -52,7 +52,9 @@ const p1RenderParties = function() {
 
   CHILE_PARTIES.forEach(p => {
     const isSel = (draft.p1SelectedParty === p.id);
-    const c = document.createElement('div');
+    const c = document.createElement('button');
+    c.type = 'button';
+    c.setAttribute('aria-pressed', String(isSel));
     c.className = `p-2.5 border-2 rounded text-xs cursor-pointer transition select-none flex flex-col justify-between ${isSel ? 'border-blue-700 bg-blue-50/80 font-bold shadow-xs' : 'border-stone-300 bg-white hover:border-stone-400'}`;
     c.innerHTML = `
       <div>
@@ -64,12 +66,13 @@ const p1RenderParties = function() {
       </div>
       <div class="mt-2 text-[10px] font-mono text-stone-500">${p.bloc}</div>
     `;
-    c.onclick = () => {
+    c.onclick = event => {
       draft.p1SelectedParty = p.id;
       draft.p1SelectedFaction = null;
       document.getElementById('p1-selected-party-badge').textContent = `${p.id} - ${p.name}`;
       p1RenderParties();
       p1RenderFactions(p);
+      if (!event.detail) grid.querySelector('[aria-pressed=true]')?.focus();
     };
     grid.appendChild(c);
   });
@@ -86,7 +89,9 @@ const p1RenderFactions = function(party) {
 
   factions.forEach(f => {
     const isSel = (draft.p1SelectedFaction === f);
-    const c = document.createElement('div');
+    const c = document.createElement('button');
+    c.type = 'button';
+    c.setAttribute('aria-pressed', String(isSel));
     c.className = `p-2.5 border-2 rounded cursor-pointer text-xs transition select-none ${isSel ? 'bg-blue-100 border-blue-600 font-bold text-blue-950 shadow-xs ring-1 ring-blue-500' : 'bg-white border-stone-300 hover:border-stone-400 hover:bg-stone-50'}`;
     c.innerHTML = `
       <div class="flex items-center gap-2">
@@ -97,10 +102,11 @@ const p1RenderFactions = function(party) {
         </div>
       </div>
     `;
-    c.onclick = () => {
+    c.onclick = event => {
       draft.p1SelectedFaction = f;
       document.getElementById('p1-faction-badge').textContent = f;
       p1RenderFactions(party);
+      if (!event.detail) grid.querySelector('[aria-pressed=true]')?.focus();
     };
     grid.appendChild(c);
   });

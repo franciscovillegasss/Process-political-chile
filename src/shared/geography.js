@@ -4,9 +4,9 @@ export const CHILE_GEO = {
     provinces: {
       Chacabuco: ['Colina', 'Lampa', 'Tiltil'],
       Cordillera: ['Puente Alto', 'Pirque', 'San José de Maipo'],
-      Maipo: ['San Bernardo', 'Buin', 'Paine'],
-      Melipilla: ['Melipilla'],
-      Talagante: ['Talagante', 'Peñaflor', 'Padre Hurtado'],
+      Maipo: ['San Bernardo', 'Buin', 'Paine', 'Calera de Tango'],
+      Melipilla: ['Melipilla', 'Alhué', 'Curacaví', 'María Pinto', 'San Pedro'],
+      Talagante: ['Talagante', 'Peñaflor', 'Padre Hurtado', 'Alhué', 'Calera de Tango', 'Curacaví', 'El Monte', 'Isla de Maipo', 'María Pinto', 'San Pedro'],
     },
     districts: {
       'Distrito 8': { seats: 8, communes: ['Maipú', 'Pudahuel', 'Cerrillos', 'Estación Central', 'Quilicura', 'Colina', 'Lampa', 'Tiltil'] },
@@ -15,7 +15,7 @@ export const CHILE_GEO = {
       'Distrito 11': { seats: 6, communes: ['Las Condes', 'Vitacura', 'Lo Barnechea', 'La Reina', 'Peñalolén'] },
       'Distrito 12': { seats: 7, communes: ['Puente Alto', 'La Florida', 'La Pintana', 'Pirque', 'San José de Maipo'] },
       'Distrito 13': { seats: 5, communes: ['El Bosque', 'La Cisterna', 'San Ramón', 'San Miguel', 'Lo Espejo', 'Pedro Aguirre Cerda'] },
-      'Distrito 14': { seats: 6, communes: ['San Bernardo', 'Buin', 'Paine', 'Melipilla', 'Talagante', 'Peñaflor', 'Padre Hurtado'] }
+      'Distrito 14': { seats: 6, communes: ['San Bernardo', 'Buin', 'Paine', 'Melipilla', 'Talagante', 'Peñaflor', 'Padre Hurtado', 'Alhué', 'Calera de Tango', 'Curacaví', 'El Monte', 'Isla de Maipo', 'María Pinto', 'San Pedro'] }
     }
   },
   valpo: {

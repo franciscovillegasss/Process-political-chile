@@ -3,6 +3,9 @@ import { newRoster } from '../features/career/rules.js';
 import { warn } from '../shared/dom.js';
 
 const initialState = () => ({
+  schemaVersion: 1,
+  profile: 'classic',
+  agendaPlan: 'none',
   career: [],
   roster: newRoster(2024),
   mandate: null,

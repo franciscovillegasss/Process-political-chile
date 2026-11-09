@@ -187,6 +187,67 @@ try {
     console.log(`Carrera de 82 años (+${batch}): ${JSON.stringify(result)}`);
   }
 
+  await invoke('openNewGameWizard');
+  await page.locator('#p1-name').fill('Inés RM');
+  const parties = page.locator('#p1-parties-grid button');
+  await parties.first().focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await parties.first().getAttribute('aria-pressed'), 'true');
+  await click('[onclick="window.goToPage2Territory()"]');
+  await page.locator('#p2-game-profile').selectOption('rm-reference');
+  assert.equal(await page.locator('#p2-region option[value="valpo"]').count(), 0);
+  assert.equal(await page.locator('#p2-initial-office option[value="presidente"]').count(), 0);
+  await page.locator('#p2-region').selectOption('rm');
+  await page.locator('#p2-district').selectOption('Distrito 14');
+  assert.equal(await page.locator('#p2-commune option[value="Alhué"]').count(), 1);
+  await page.locator('#p2-district').selectOption('Distrito 8');
+  await page.locator('#p2-commune').selectOption('Maipú');
+  await page.locator('#p2-initial-office').selectOption('concejal');
+  await click('[onclick="window.finishFullCharacterCreation()"]');
+  await click('[data-view="view-elections"]');
+  assert.match(await text('elections-calendar-cards'), /Concejal \(18\+\) · 10 cupos/);
+  await click('[data-view="view-office"]');
+  assert.match(await text('mandate-propose'), /Solicitar expediente a Alcaldía/);
+  await click('#management-audit');
+  assert.equal(await text('notice-title'), 'Informe solicitado');
+  await page.locator('#mandate-policy').selectOption('lighting');
+  await click('#mandate-propose');
+  await click('[onclick="window.voteProject(false)"]');
+  assert.equal(await text('notice-title'), 'Proyecto rechazado');
+  assert.equal((await save()).mandate.budget, 12_000_000);
+  await click(`[onclick="window.switchSubpanel('office', 'lobby', this)"]`);
+  await page.locator('#mandate-bloc').selectOption('vecinal');
+  await click('[onclick="window.holdHearing(false)"]');
+  await click(`[onclick="window.switchSubpanel('office', 'overview', this)"]`);
+  await click('[onclick="window.voteProject(false)"]');
+  assert.equal((await save()).mandate.project.status, 'authorized');
+  assert.equal((await save()).mandate.budget, 12_000_000);
+  await click('#btn-hdr-advance-4');
+  assert.match(await text('clock-date-disp'), /Semana 2 /);
+  assert.equal((await save()).mandate.budget, 6_500_000);
+  await go(2024, 11);
+  assert.equal((await save()).mandate.completed, 1);
+  assert.equal((await save()).territories[0].projects[0].name, 'Plan de luminarias');
+  assert.ok((await save()).career.some(event => event.title.includes('Alcaldía responde')));
+  await page.locator('details').filter({ has: page.locator('#agenda-plan') }).locator('summary').click();
+  await page.locator('#agenda-plan').selectOption('territory');
+  const oldWeek = (await save()).week;
+  await page.locator('#btn-hdr-advance-1').dblclick();
+  const checkpoint = await save();
+  assert.equal(checkpoint.week, oldWeek + 1);
+  assert.equal(checkpoint.agendaPlan, 'territory');
+  assert.equal(checkpoint.player.hours, 48);
+  await page.evaluate(() => localStorage.setItem('tpp_chile_clean_save', '{interrumpido'));
+  await invoke('recoverGame');
+  assert.equal(await text('notice-title'), 'Copia recuperada');
+  assert.match(await text('clock-date-disp'), new RegExp(`Semana ${checkpoint.week} /`));
+  await click('[data-view="view-elections"]');
+  await page.locator('#election-office').selectOption('concejal');
+  await click('#local-register');
+  await go(2024, 44, true);
+  assert.match(await text('elections-calendar-cards'), /Concejal · 10 cupos/);
+  console.log('Perfil RM: teclado, cupos locales, rechazo, concesión, ejecución por Alcaldía y protección de doble clic: OK');
+
   const missing = await page.evaluate(() => [...document.querySelectorAll('[onclick],[onchange],[oninput]')]
     .flatMap(element => [...element.attributes].filter(attribute => /^on(click|change|input)$/.test(attribute.name)))
     .flatMap(attribute => [...attribute.value.matchAll(/window\.(\w+)\(/g)])

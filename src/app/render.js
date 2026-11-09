@@ -1,3 +1,4 @@
+import { renderAgenda } from './agenda.js';
 import { GAME_STATE } from './state.js';
 import { renderStaffPanel, staffTotals } from '../features/campaign/staff.js';
 import { renderContiguousMap, renderMapFocus } from '../features/campaign/territory.js';
@@ -22,6 +23,7 @@ function refreshCampaign() {
 }
 
 function renderPlayerStats() {
+  renderAgenda();
   document.getElementById('stat-player-name').textContent = `${GAME_STATE.player.name || 'Sin Nombre'} (${GAME_STATE.player.age} años)`;
   document.getElementById('stat-player-party').textContent = GAME_STATE.player.partyId;
   document.getElementById('stat-player-office').textContent = GAME_STATE.player.currentOffice;

@@ -1,3 +1,4 @@
+import { profileAllows } from '../elections/rm-profile.js';
 import { CHILE_GEO } from '../../shared/geography.js';
 import { electionWeek, registrationWeek } from '../elections/rules.js';
 import { element } from '../../shared/dom.js';
@@ -15,6 +16,7 @@ const p2InitTerritoryCascades = function() {
   regSelect.innerHTML = '<option value="" disabled selected>-- Selecciona una Región --</option>';
 
   for (const regKey in CHILE_GEO) {
+    if (!profileAllows(element('p2-game-profile').value, regKey)) continue;
     const opt = document.createElement('option');
     opt.value = regKey;
     opt.textContent = CHILE_GEO[regKey].name;

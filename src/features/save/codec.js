@@ -1,3 +1,5 @@
+import { CLASSIC_PROFILE, RM_PROFILE, profileAllows, profileSeats } from '../elections/rm-profile.js';
+import { COUNCIL_BLOCS, MUNICIPAL_PROJECTS, councilDecision, municipalTerms } from '../career/municipal.js';
 import { firstRoundSnapshot } from '../elections/runoff.js';
 import { campaignClimate } from '../electorate/rules.js';
 import { initialState } from '../../app/state.js';
@@ -12,6 +14,7 @@ import { STAFF_CATALOG } from '../campaign/staff-catalog.js';
 
 export function decodeSave(raw) {
   const value = JSON.parse(raw);
+  if (value?.schemaVersion !== undefined && ![0, 1].includes(value.schemaVersion)) throw new Error('Versión de partida incompatible');
   const defaults = initialState();
   function restore(fallback, saved) {
     if (saved === undefined) return fallback;
@@ -31,7 +34,10 @@ export function decodeSave(raw) {
   if (!value?.player || typeof value.player.name !== 'string' || !Number.isInteger(value.year) || !Number.isInteger(value.week) ||
       value.week < 1 || value.week > 52) throw new Error('Partida inválida');
   const next = restore(defaults, value);
+  next.schemaVersion = 1;
   const { player } = next;
+  if (![CLASSIC_PROFILE, RM_PROFILE].includes(next.profile) || !profileAllows(next.profile, player.region, player.officeId) ||
+      !['none','territory','campaign'].includes(next.agendaPlan)) throw new Error('Perfil de escenario inválido');
   const bounded = (number, min, max) => Number.isFinite(number) && number >= min && number <= max;
   if (!bounded(next.year, 1900, 9999) || !bounded(player.age, 18, 110) ||
       !bounded(player.funds, 0, Number.MAX_SAFE_INTEGER) || !bounded(player.personalFunds, 0, Number.MAX_SAFE_INTEGER) ||
@@ -55,7 +61,7 @@ export function decodeSave(raw) {
     next.localElection = restore({
       year: 0, office: 'concejal', pact: '', support: 0, runoffWeek: 0, runoffRival: 0, runoffSnapshot: null, runoffEndorsements: [], firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
     }, next.localElection);
-    if (next.localElection.office && !Object.hasOwn(OFFICES, next.localElection.office)) throw new Error('Cargo inválido');
+    if (next.localElection.office && (!profileAllows(next.profile, player.region, next.localElection.office) || !Object.hasOwn(OFFICES, next.localElection.office))) throw new Error('Cargo inválido');
     const election = next.localElection;
     if (election.office && !election.result && (election.year !== next.year ||
         next.week < registrationWeek || next.week >= (election.runoffWeek || electionWeek(election.year)))) {
@@ -88,7 +94,7 @@ export function decodeSave(raw) {
     const legacyTitle = /^(Concejal|Alcalde|Diputado|Gobernador|Senador|Presidente)\b/.exec(next.player.currentOffice);
     next.player.officeId = legacyTitle?.[1].toLowerCase() || '';
   }
-  if (next.player.officeId && !Object.hasOwn(OFFICES, next.player.officeId)) throw new Error('Cargo inválido');
+  if (next.player.officeId && (!profileAllows(next.profile, player.region, next.player.officeId) || !Object.hasOwn(OFFICES, next.player.officeId))) throw new Error('Cargo inválido');
   if (!value.campaign?.endorsements) {
     for (const contact of CONTACTS) {
       const aligned = POLICIES_CATALOG.some(policy => next.player.corePolicies.includes(policy.id) && contact.issues.includes(policy.issue));
@@ -106,6 +112,26 @@ export function decodeSave(raw) {
         (typeof mandate.project.name !== 'string' || !knownIssue(mandate.project.issue) ||
           typeof mandate.project.relevant !== 'boolean' || !Number.isInteger(mandate.project.due) || mandate.project.due < 0))) throw new Error('Mandato inválido');
   }
+  const project = next.mandate?.project;
+  if (project?.municipalId) {
+    const config = MUNICIPAL_PROJECTS.find(item => item.id === project.municipalId);
+    if (next.profile !== RM_PROFILE || !['alcalde', 'concejal'].includes(player.officeId) || !config ||
+        project.name !== config.name || project.issue !== config.issue ||
+        !['proposal', 'authorized', 'executing'].includes(project.status) ||
+        (project.status === 'executing') !== Boolean(project.due) || !Array.isArray(project.concessions) ||
+        new Set(project.concessions).size !== project.concessions.length ||
+        !project.concessions.every(id => COUNCIL_BLOCS.some(bloc => bloc.id === id))) throw new Error('Expediente municipal inválido');
+    if (project.status !== 'proposal') {
+      const seats = profileSeats(next.profile, player, 'concejal');
+      const budget = next.mandate.budget + (project.status === 'executing' ? municipalTerms(project).cost : 0);
+      if (project.lastVote !== project.concessions.length || !seats || !councilDecision(project, seats, budget).approved) {
+        throw new Error('Acuerdo del concejo inválido');
+      }
+    }
+  } else if (project && next.profile === RM_PROFILE) throw new Error('Instrumento incompatible con el perfil RM');
+  if (next.mandate?.auditDue !== undefined &&
+      (!Number.isSafeInteger(next.mandate.auditDue) || next.mandate.auditDue < 0 ||
+        next.profile !== RM_PROFILE || !['alcalde','concejal'].includes(player.officeId))) throw new Error('Fiscalización inválida');
   if (next.localManagement !== null && !['pending', 'agenda', 'audit'].includes(next.localManagement)) throw new Error('Gestión inválida');
   const communes = new Set(Object.values(CHILE_GEO).flatMap(region =>
     Object.values(region.districts).flatMap(district => district.communes)));

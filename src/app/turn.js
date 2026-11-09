@@ -1,11 +1,15 @@
-import { refreshCampaign } from './render.js';
-import { GAME_STATE } from './state.js';
+import { runAgendaPlan } from './agenda.js';
+import { RM_PROFILE } from '../features/elections/rm-profile.js';
+import { CHECKPOINT_KEY } from '../features/save/journal.js';
+import { deliverMunicipalReport, executeCouncilAgreement } from '../features/career/municipal.js';
+import { refreshCampaign, renderAll } from './render.js';
+import { GAME_STATE, replaceState } from './state.js';
 import { VOLUNTEER_LIMIT, weeklyCampaign } from '../features/campaign/rules.js';
 import { renderStaffPanel, staffTotals } from '../features/campaign/staff.js';
 import { renderCountry } from '../features/campaign/view.js';
 import { retire } from '../features/career/profile.js';
 import { renderPoliticiansDirectory } from '../features/career/roster.js';
-import { RETIREMENT_AGE, completeProject, renewRoster } from '../features/career/rules.js';
+import { RETIREMENT_AGE, calendarWeek, completeProject, recordCareer, renewRoster } from '../features/career/rules.js';
 import { resolveElection } from '../features/elections/actions.js';
 import { electionWeek, registrationWeek } from '../features/elections/rules.js';
 import { renderPublicOpinionTable } from '../features/electorate/opinion.js';
@@ -13,7 +17,7 @@ import { decayMessages, publicAgenda } from '../features/electorate/rules.js';
 import { showToast } from '../shared/dom.js';
 import { switchMainView } from '../ui/navigation.js';
 
-const advanceTurn = function(weeksToAdvance = 1) {
+function runWeeks(weeksToAdvance) {
   const count = [1, 4].includes(weeksToAdvance) ? weeksToAdvance : 1;
   const previousAgenda = publicAgenda(GAME_STATE);
   let announced = false;
@@ -48,6 +52,8 @@ const advanceTurn = function(weeksToAdvance = 1) {
     player.nameRecognition = Math.max(8, Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly - 0.15));
     GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
     weeklyCampaign(GAME_STATE);
+    const committedProject = executeCouncilAgreement(GAME_STATE, calendarWeek(GAME_STATE), recordCareer);
+    if (deliverMunicipalReport(GAME_STATE, calendarWeek(GAME_STATE), recordCareer)) showToast('Informe municipal', 'Alcaldía respondió a la solicitud de fiscalización.', 'info');
     if (completeProject(GAME_STATE)) showToast('Proyecto ejecutado', 'Consulta el efecto en Cargo e Historial.', 'success');
     if (GAME_STATE.week % 4 === 0 && GAME_STATE.mandate && !GAME_STATE.mandate.project && player.approval > 52) {
       player.approval = Math.max(52, player.approval - 0.35);
@@ -72,6 +78,12 @@ const advanceTurn = function(weeksToAdvance = 1) {
       break;
     }
     if (payrollWarning) break;
+    if (committedProject) {
+      showToast('Obra en ejecución', 'Alcaldía comprometió el presupuesto autorizado por el concejo.', 'info');
+      announced = true;
+      break;
+    }
+    runAgendaPlan();
   }
 
   const agenda = publicAgenda(GAME_STATE);
@@ -80,6 +92,24 @@ const advanceTurn = function(weeksToAdvance = 1) {
   renderCountry(GAME_STATE);
   renderPublicOpinionTable();
   renderStaffPanel();
-};
+}
+
+let advancing = false;
+
+function advanceTurn(weeksToAdvance = 1, event) {
+  if (advancing || event?.detail > 1) return;
+  advancing = true;
+  const previous = structuredClone(GAME_STATE);
+  try {
+    runWeeks(weeksToAdvance);
+    if (GAME_STATE.profile === RM_PROFILE) localStorage.setItem(CHECKPOINT_KEY, JSON.stringify(GAME_STATE));
+  } catch {
+    replaceState(previous);
+    renderAll();
+    showToast('Turno sin confirmar', 'Se conservó el estado anterior. Revisa el almacenamiento antes de reintentar.', 'error');
+  } finally {
+    advancing = false;
+  }
+}
 
 export { advanceTurn };

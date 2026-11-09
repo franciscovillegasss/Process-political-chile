@@ -1,12 +1,13 @@
+import { SAVE_KEY, BACKUP_KEY, CHECKPOINT_KEY, lastIntactCopy, writeManualSave } from './journal.js';
 import { decodeSave } from './codec.js';
 import { renderAll } from '../../app/render.js';
 import { GAME_STATE, replaceState } from '../../app/state.js';
 import { showToast } from '../../shared/dom.js';
 
-const saveKey = 'tpp_chile_clean_save';
+
 const saveGameQuick = function() {
   try {
-    localStorage.setItem(saveKey, JSON.stringify(GAME_STATE));
+    writeManualSave(localStorage, JSON.stringify(GAME_STATE), decodeSave);
     showToast('Partida guardada', 'Progreso almacenado en este navegador.', 'success');
   } catch {
     showToast('Error', 'No se pudo guardar. Puedes exportar la partida.', 'error');
@@ -31,15 +32,28 @@ function loadState(raw) {
 
 const loadGameQuick = function(silent = false) {
   try {
-    const raw = localStorage.getItem(saveKey);
+    const raw = localStorage.getItem(SAVE_KEY);
     if (raw) {
       loadState(raw);
       if (!silent) showToast('Partida cargada', 'Se recuperaron tu progreso y tu historial de campaña.', 'success');
+    } else if (silent && localStorage.getItem(CHECKPOINT_KEY)) {
+      loadState(localStorage.getItem(CHECKPOINT_KEY));
     } else if (!silent) showToast('Sin partida', 'No se encontró un guardado.', 'warning');
   } catch {
-    showToast('Error', 'No se pudo recuperar la partida.', 'error');
+    showToast('Error', 'No se pudo cargar el archivo principal. Puedes usar Recuperar copia en el menú.', 'error');
   }
 };
+
+function recoverGame() {
+  try {
+    const raw = lastIntactCopy(localStorage, decodeSave);
+    if (!raw) return showToast('Sin respaldo', 'No hay copias válidas para recuperar.', 'warning');
+    loadState(raw);
+    showToast('Copia recuperada', 'La copia se cargó sin sobrescribir tu guardado manual.', 'success');
+  } catch {
+    showToast('Error', 'No se pudo recuperar la copia.', 'error');
+  }
+}
 
 const exportGameJson = function() {
   const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(GAME_STATE, null, 2));
@@ -71,7 +85,7 @@ const importGameJson = function(e) {
 
 const resetGameConfirm = function() {
   if (confirm('¿Reiniciar partida a valores de fábrica?')) {
-    try { localStorage.removeItem(saveKey); } catch {
+    try { for (const key of [SAVE_KEY, BACKUP_KEY, CHECKPOINT_KEY]) localStorage.removeItem(key); } catch {
       showToast('Error', 'No se pudo borrar el guardado.', 'error');
       return;
     }
@@ -79,4 +93,4 @@ const resetGameConfirm = function() {
   }
 };
 
-export { saveGameQuick, loadGameQuick, exportGameJson, importGameJson, resetGameConfirm };
+export { saveGameQuick, loadGameQuick, exportGameJson, importGameJson, resetGameConfirm, recoverGame };

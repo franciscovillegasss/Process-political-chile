@@ -33,12 +33,12 @@
         </div>
 
         <!-- Botón +4 Semanas (Mes) -->
-        <button id="btn-hdr-advance-4" onclick="window.advanceTurn(4)" title="Avanzar 4 semanas completas" class="px-2.5 py-1 text-xs font-bold bg-[#E6D595] hover:bg-[#DDD095] active:bg-[#C9BA7E] text-slate-900 border border-[#7D735F] rounded shadow-2xs cursor-pointer select-none">
+        <button id="btn-hdr-advance-4" onclick="window.advanceTurn(4, event)" title="Avanzar 4 semanas completas" class="px-2.5 py-1 text-xs font-bold bg-[#E6D595] hover:bg-[#DDD095] active:bg-[#C9BA7E] text-slate-900 border border-[#7D735F] rounded shadow-2xs cursor-pointer select-none">
           ⏩ +4 Sem
         </button>
 
         <!-- Botón Siguiente Turno (1 Semana) -->
-        <button id="btn-hdr-advance-1" onclick="window.advanceTurn(1)" title="Avanzar 1 semana de simulación" class="px-3 py-1 text-xs font-black bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white border border-[#002266] rounded shadow-2xs cursor-pointer select-none">
+        <button id="btn-hdr-advance-1" onclick="window.advanceTurn(1, event)" title="Avanzar 1 semana de simulación" class="px-3 py-1 text-xs font-black bg-[#0047AB] hover:bg-[#003399] active:bg-[#002277] text-white border border-[#002266] rounded shadow-2xs cursor-pointer select-none">
           Siguiente Turno ▶
         </button>
 
@@ -60,6 +60,7 @@
               <span>📂 Cargar Partida</span>
               <span class="text-[10px] text-stone-400 font-normal">Restaurar</span>
             </button>
+            <button onclick="window.recoverGame()" class="w-full text-left px-3 py-1.5 hover:bg-blue-50">Recuperar copia</button>
             <div class="border-t border-stone-200 my-1"></div>
             <button onclick="window.exportGameJson()" class="w-full text-left px-3 py-1.5 hover:bg-emerald-50 hover:text-emerald-900 flex items-center justify-between">
               <span>📤 Exportar a Archivo JSON</span>
@@ -84,6 +85,18 @@
       </div>
       <button type="button" onclick="window.dismissNotice()" class="border border-white rounded px-2 py-1 text-xs font-bold">Cerrar aviso</button>
     </aside>
+
+    <details class="shrink-0 bg-stone-50 border-b px-3 py-1 text-xs">
+      <summary class="font-bold cursor-pointer">Agenda semanal <span id="agenda-next" class="font-normal"></span></summary>
+      <label>Plan recurrente
+        <select id="agenda-plan" onchange="window.setAgendaPlan(this.value)" class="border rounded p-1">
+          <option value="none">Manual</option>
+          <option value="territory">Trabajo territorial (12 h cada cuatro semanas)</option>
+          <option value="campaign">Puerta a puerta (12 h por semana de campaña)</option>
+        </select>
+      </label>
+      <p>La delegación usa horas. El avance se detiene en hitos electorales, falta de fondos o inicio de una obra aprobada.</p>
+    </details>
 
     <!-- FILA 2: LAS 8 PESTAÑAS PRINCIPALES ESTILO CARPETA CLÁSICA (#E6D595)        -->
     <nav id="app-row-2-maintabs" class="h-9 bg-[#C9BEA7] border-b-2 border-[#665C47] px-3 flex items-end gap-1 shrink-0 overflow-x-auto shadow-inner select-none z-20">

@@ -1,3 +1,4 @@
+import { profileAllows } from '../elections/rm-profile.js';
 import { CHILE_GEO } from '../../shared/geography.js';
 import { CHILE_PARTIES } from '../../shared/parties.js';
 import { GAME_STATE, initialState, replaceState } from '../../app/state.js';
@@ -22,20 +23,29 @@ const goToPage2Territory = function() {
   alertEl.classList.add('hidden');
 
   // Inicializar cascada de la página 2
+  const profile = element('p2-game-profile');
+  if (!profile.onchange) profile.onchange = () => {
+    p2InitTerritoryCascades();
+    renderStartingOffices();
+  };
   if (element('p2-region').options.length <= 1) p2InitTerritoryCascades();
+  renderStartingOffices();
+  p2HandleYearChange(element('p2-start-year').value);
+  p2RenderPoliciesCatalog();
+  element('screen-page-1-identity').classList.add('hidden');
+  element('screen-page-2-territory').classList.remove('hidden');
+  profile.focus();
+};
+
+function renderStartingOffices() {
   const startOffice = element('p2-initial-office');
   const previous = startOffice.value;
   const age = Number(element('p1-age').value);
   startOffice.replaceChildren(new Option('Ciudadano sin cargo', 'none'), ...Object.entries(OFFICES)
-    .filter(([, office]) => age >= office.age)
+    .filter(([id, office]) => age >= office.age && profileAllows(element('p2-game-profile').value, 'rm', id))
     .map(([id, office]) => new Option(`${office.name} (${office.age}+)`, id)));
   if ([...startOffice.options].some(option => option.value === previous)) startOffice.value = previous;
-  p2HandleYearChange(element('p2-start-year').value);
-  p2RenderPoliciesCatalog();
-
-  document.getElementById('screen-page-1-identity').classList.add('hidden');
-  document.getElementById('screen-page-2-territory').classList.remove('hidden');
-};
+}
 
 const backToPage1Identity = function() {
   document.getElementById('screen-page-2-territory').classList.add('hidden');
@@ -45,12 +55,13 @@ const backToPage1Identity = function() {
 const finishFullCharacterCreation = function() {
   const alertEl = document.getElementById('p2-validation-alert');
 
+  const profile = element('p2-game-profile').value;
   const reg = document.getElementById('p2-region').value;
   const distVal = document.getElementById('p2-district').value;
   const comm = document.getElementById('p2-commune').value;
 
   const district = distVal.split(' (')[0];
-  if (!CHILE_GEO[reg]?.districts[district]?.communes.includes(comm)) {
+  if (!profileAllows(profile, reg) || !CHILE_GEO[reg]?.districts[district]?.communes.includes(comm)) {
     alertEl.textContent = '⚠️ Debes seleccionar libremente tu Región, Distrito y Comuna de residencia antes de iniciar.';
     alertEl.classList.remove('hidden');
     return;
@@ -70,7 +81,7 @@ const finishFullCharacterCreation = function() {
   }
   const officeVal = document.getElementById('p2-initial-office').value;
 
-  if (officeVal !== 'none' && (!Object.hasOwn(OFFICES, officeVal) || age < OFFICES[officeVal].age)) {
+  if (officeVal !== 'none' && (!profileAllows(profile, reg, officeVal) || !Object.hasOwn(OFFICES, officeVal) || age < OFFICES[officeVal].age)) {
     alertEl.textContent = 'No cumples la edad mínima de ese cargo.';
     alertEl.classList.remove('hidden');
     return;
@@ -85,6 +96,7 @@ const finishFullCharacterCreation = function() {
 
   replaceState(initialState());
   GAME_STATE.year = startYear;
+  GAME_STATE.profile = profile;
   GAME_STATE.roster = newRoster(startYear);
   GAME_STATE.week = 1;
   GAME_STATE.month = 'Enero';

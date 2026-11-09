@@ -1,3 +1,5 @@
+import { resolveProportionalBallot, syntheticParty } from './ballot.js';
+import { RM_PROFILE } from './rm-profile.js';
 import { firstRoundSnapshot, transferRunoff } from './runoff.js';
 
 export const registrationWeek = 8;
@@ -45,6 +47,9 @@ export function electionField(election, player, week = 8, climate, roster) {
     const bases = office.seats ? [980 - index * 95, 720 - index * 70, 490 - index * 55] : [[980, 720, 490, 360][index]];
     const candidates = bases.map((base, rank) => ({
       slot: index * 3 + rank,
+      id: `rival-${index * 3 + rank}`,
+      party: syntheticParty(index, rank),
+      subpact: `subpacto-${index}-${rank < 2 ? 1 : 2}`,
       name: roster?.[index * 3 + rank]?.name || RIVAL_NAMES[index][rank],
       list: pact.name,
       votes: Math.round((base * office.scale + growth * (4 - index + rank) + Math.min(200, (roster?.[index * 3 + rank]?.victories || 0) * 18)) * (climate?.rivalFactors[index] ?? 1)),
@@ -71,9 +76,13 @@ export function electionField(election, player, week = 8, climate, roster) {
 export function countElection(election, player, seats, week, climate, roster, stageRunoff = false) {
   const field = electionField(election, player, week, climate, roster);
   const { office, votes: candidateVotes, lists, rivals } = field;
+  const officialProfile = election.profile === RM_PROFILE;
+  const pending = reason => ({ won: false, pending: true, summary: `Resultado pendiente · ${reason}.` });
+  if (officialProfile && field.total === 0) return pending('No hay votos válidos');
   if (!office.seats) {
     if (election.runoffWeek) {
       const rival = rivals[0];
+      if (officialProfile && candidateVotes === rival.votes) return pending('Empate entre finalistas, requiere resolución');
       const won = candidateVotes > rival.votes;
       const detail = field.transfers.map(row => {
         const name = field.eliminated.find(candidate => candidate.slot === row.slot).name;
@@ -85,6 +94,9 @@ export function countElection(election, player, seats, week, climate, roster, st
         ...detail,
       ].join('\n') };
     }
+    const leaders = [candidateVotes, ...rivals.map(rival => rival.votes)].sort((a, b) => b - a);
+    if (officialProfile && (leaders[0] === leaders[1] ||
+        (office.threshold && leaders[0] / field.total < office.threshold && leaders[1] === leaders[2]))) return pending('Empate que puede cambiar el resultado, requiere resolución');
     return countExecutive(office, candidateVotes, rivals, stageRunoff, climate?.position);
   }
 
@@ -92,6 +104,24 @@ export function countElection(election, player, seats, week, climate, roster, st
   if (!ownList) {
     ownList = { id: 'ind', name: 'Independiente fuera de pacto', candidates: [] };
     lists.push(ownList);
+  }
+  if (officialProfile) {
+    ownList.candidates.push({ id: 'player', votes: candidateVotes, party: player.partyId || 'IND',
+      subpact: player.partyId === 'IND' || !player.partyId ? 'ind' : ownList.candidates.find(candidate => candidate.party === player.partyId)?.subpact ?? player.partyId });
+    for (const list of lists) {
+      list.capacity = list.candidates.filter(candidate => candidate.votes > 0).length;
+      list.votes = list.candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
+    }
+    const levels = ['concejal', 'core'].includes(election.office) ? ['subpact'] : ['party'];
+    const result = resolveProportionalBallot(lists, seats || office.seats, levels, allocateSeats);
+    if (result.pending) return pending('Empate o falta de votos en la adjudicación');
+    const won = result.elected.includes('player');
+    return { won, summary: [
+      `${won ? 'Candidatura electa' : 'Candidatura no electa'} · ${office.name} · ${seats || office.seats} cupos.`,
+      `Votos personales: ${candidateVotes}. Lista: ${ownList.name}.`,
+      ...result.trace.filter(row => row.level === 'Papeleta' || row.level === `Papeleta/${ownList.id}`)
+        .map(row => `${row.level} · ${row.id}: ${row.votes} votos · ${row.seats} cupos`),
+    ].join('\n') };
   }
   for (const list of lists) {
     list.capacity = list.candidates.length + Number(list === ownList);
@@ -119,7 +149,7 @@ function countExecutive(office, votes, rivals, stageRunoff, position) {
   const [leader, runnerUp, ...others] = rivals.map(rival => rival.votes);
   const total = votes + leader + runnerUp + others.reduce((sum, value) => sum + value, 0);
   const share = votes / total;
-  const pct = value => `${(value * 100).toFixed(1)} %`;
+  const pct = value => `${(value * 100).toFixed(2)} %`;
   let won = votes > leader;
   let detail = 'Resultado por mayoría relativa.';
   if (office.threshold) {

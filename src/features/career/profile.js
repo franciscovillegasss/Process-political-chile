@@ -1,3 +1,4 @@
+import { profileAllows } from '../elections/rm-profile.js';
 import { renderAll } from '../../app/render.js';
 import { GAME_STATE } from '../../app/state.js';
 import { initialCampaign } from '../campaign/rules.js';
@@ -41,7 +42,7 @@ const changeDomicile = function() {
   const select = element('domicile-select');
   if (!select.value) return warn('Selecciona tu nuevo domicilio.');
   const [region, district, commune] = JSON.parse(select.value);
-  if (!CHILE_GEO[region]?.districts[district]?.communes.includes(commune) || GAME_STATE.player.commune === commune) {
+  if (!profileAllows(GAME_STATE.profile, region) || !CHILE_GEO[region]?.districts[district]?.communes.includes(commune) || GAME_STATE.player.commune === commune) {
     return warn('Elige una comuna distinta.');
   }
   Object.assign(GAME_STATE.player, { region, district, commune });

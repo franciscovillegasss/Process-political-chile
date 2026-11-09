@@ -1,11 +1,13 @@
       <!-- ==================== VISTA 2: CARGO (OFFICE) ==================== -->
       <div id="view-office" class="main-view hidden h-full">
         <div id="office-panel-overview" class="bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
+          <p id="mandate-unavailable" class="hidden p-2 bg-amber-50 text-sm">El circuito institucional de este cargo aún está en diseño para el perfil RM.</p>
           <section id="mandate-actions" class="hidden p-3 border rounded space-y-2">
             <p id="mandate-status" class="text-sm"></p>
-            <label class="text-xs">Eje para el proyecto <select id="mandate-policy" class="p-1 border rounded"></select></label>
-            <button onclick="window.proposeProject()" class="px-2 py-1 bg-blue-800 text-white rounded">Presentar proyecto (10 h · 3 PP)</button>
+            <label class="text-xs"><span id="mandate-project-label">Eje para el proyecto</span> <select id="mandate-policy" class="p-1 border rounded"></select></label>
+            <button id="mandate-propose" onclick="window.proposeProject()" class="px-2 py-1 bg-blue-800 text-white rounded">Presentar proyecto (10 h · 3 PP)</button>
             <button onclick="window.voteProject(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Votar proyecto (8 h)</button>
+            <button id="mandate-withdraw" type="button" onclick="window.withdrawMunicipal()" class="hidden rounded border px-2 py-1">Retirar expediente</button>
           </section>
           <div id="local-management" class="hidden p-3 border rounded space-y-2">
             <p id="local-management-status" class="text-sm"></p>
@@ -38,6 +40,7 @@
         <div id="office-panel-lobby" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Audiencias de Lobby & Grupos de Interés</h3>
           <p id="lobby-audiences-container" class="text-sm"></p>
+          <div id="mandate-negotiation" class="hidden"><label>Bancada y concesión <select id="mandate-bloc" class="border rounded"></select></label><p id="mandate-deals" class="text-sm"></p></div>
           <button onclick="window.holdHearing(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Reunirse con grupo de interés (8 h)</button>
         </div>
 

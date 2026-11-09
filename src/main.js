@@ -1,9 +1,10 @@
+import { setAgendaPlan } from './app/agenda.js';
 import { renderAll } from './app/render.js';
 import { advanceTurn } from './app/turn.js';
 import { buildPoliticalCapital, commissionPoll, executeCampaignAction, fundraiseAction, launchAdCampaign, manageVolunteers, meetContact, personalContribution, promotePolicy, restPolitician, revisePolicy } from './features/campaign/actions.js';
 import { filterStaffRole, fireStaff, hireStaff, renderStaffPanel } from './features/campaign/staff.js';
 import { renderContiguousMap } from './features/campaign/territory.js';
-import { holdHearing, manageLocalOffice, proposeProject, voteProject } from './features/career/mandate.js';
+import { holdHearing, manageLocalOffice, proposeProject, voteProject, withdrawMunicipal } from './features/career/mandate.js';
 import { renderNewsFeed } from './features/career/news.js';
 import { changeDomicile, initDomicile, renderProfileAttributes, retirePolitician } from './features/career/profile.js';
 import { renderPoliticiansDirectory } from './features/career/roster.js';
@@ -15,7 +16,7 @@ import { renderCongressHemiciclo, renderLegislativeHistory, setCongressChamber }
 import { registerCandidate } from './features/elections/actions.js';
 import { renderDHondtD3Visualization, renderElectoralPactsCatalog, resetDHondtSliders, togglePactMembership, updateDHondtSimulation } from './features/elections/pacts.js';
 import { renderPublicOpinionTable } from './features/electorate/opinion.js';
-import { exportGameJson, importGameJson, loadGameQuick, resetGameConfirm, saveGameQuick } from './features/save/storage.js';
+import { exportGameJson, importGameJson, loadGameQuick, recoverGame, resetGameConfirm, saveGameQuick } from './features/save/storage.js';
 import { CHILE_PARTIES } from './shared/parties.js';
 import { dismissNotice, showToast } from './shared/dom.js';
 import { openCampaignPolls, switchMainView, switchSubpanel, toggleSessionMenu } from './ui/navigation.js';
@@ -40,6 +41,7 @@ Object.assign(window, {
   proposeProject,
   holdHearing,
   voteProject,
+  withdrawMunicipal,
   retirePolitician,
   changeDomicile,
   adjustAttribute,
@@ -87,6 +89,8 @@ Object.assign(window, {
   exportGameJson,
   importGameJson,
   resetGameConfirm,
+  recoverGame,
+  setAgendaPlan,
   dismissNotice,
   showToast
 });

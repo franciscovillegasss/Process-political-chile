@@ -33,7 +33,14 @@
                 </h2>
                 <div>
                   <label class="block text-[11px] uppercase font-bold text-stone-700 mb-1">Elige en qué año arranca tu carrera *</label>
-                  <select id="p2-start-year" onchange="window.p2HandleYearChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
+                  <label class="block text-xs">Perfil de juego
+                    <select id="p2-game-profile" class="block w-full p-2 border rounded">
+                      <option value="classic">Clásico · RM, Valparaíso y Presidencia</option>
+                      <option value="rm-reference">RM · 52 comunas y seis cargos</option>
+                    </select>
+                  </label>
+                  <select id="p2-start-year" aria-label="Año de inicio" onchange="window.p2HandleYearChange(this.value)" class="w-full p-2 border border-stone-400 bg-white rounded text-xs font-bold text-slate-800 cursor-pointer">
+                    <option value="2021">2021 · Renovación senatorial RM</option>
                     <option value="2024" selected>2024 · Municipal y regional</option>
                     <option value="2025">2025 · Presidencial y parlamentario</option>
                     <option value="2026">2026 - Gobernanza Plena (Mitad de Período Constitucional, Leyes y Alianzas)</option>

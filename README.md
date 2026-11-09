@@ -4,6 +4,16 @@ Simulador de carrera política, campañas, elecciones y gestión pública.
 
 `npm ci` instala el proyecto. `npm run dev` abre la versión local en el puerto 3000.
 
+## Perfil de referencia RM
+
+Selecciona **RM · 52 comunas y seis cargos** al crear una partida. El perfil clásico conserva Valparaíso, Presidencia y los guardados existentes. La referencia territorial usa las magnitudes de 2024 para concejos y CORE, 2025 para diputaciones y 2021 para la renovación senatorial de la RM. El reloj semanal y los candidatos son simulados.
+
+En **Cargo → Situación del cargo**, escoge una obra municipal. En **Lobby**, negocia con bancadas cuyos apoyos tienen costos y plazos distintos. Un rechazo conserva el saldo. Después de un acuerdo, Alcaldía compromete los recursos en el turno siguiente. El concejal puede solicitar un informe desde la pantalla de gestión. El circuito es municipal. Los cargos regionales y parlamentarios del perfil RM pueden disputar elecciones, pero sus circuitos institucionales siguen pendientes.
+
+**Agenda semanal** permite delegar trabajo territorial o puerta a puerta con costo de horas. Se detiene en hitos sensibles. El menú **Recuperar copia** permite abrir el último punto de control RM o un respaldo manual válido sin sobreescribir la ranura principal.
+
+[Documentación electoral 2024 de Servel](https://www.servel.cl/biblioteca-de-documentos/procesos-electorales/elecciones-2024/documentos-elecciones-2024/documentacion-elecciones-2024/) · [Territorios electorales](https://www.servel.cl/sistema-electoral/territorios-electorales/) · [Ley Orgánica de Municipalidades](https://www.bcn.cl/leychile/navegar?idNorma=251693)
+
 ## Dónde buscar un fallo
 
 | Síntoma | Empieza aquí | Prueba puntual |

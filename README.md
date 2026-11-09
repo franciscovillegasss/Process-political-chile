@@ -11,7 +11,8 @@ Simulador de carrera política, campañas, elecciones y gestión pública.
 | Creación, territorio o programa | `src/features/character/` · `identity.js`, `territory.js`, `platform.js` y sus vistas | Los casos de creación están en `e2e/career.mjs`. |
 | Campaña, finanzas, sondeos o voluntarios | `src/features/campaign/` · `actions.js`, `rules.js` y el HTML de la pestaña afectada | `node --test src/features/campaign/rules.test.js` |
 | Personal y planilla | `src/features/campaign/staff.js` y `staff-catalog.js` | El avance y el pago de personal se coordinan en `src/app/turn.js`. |
-| Inscripción, escaños o segunda vuelta | `src/features/elections/` · `actions.js`, `rules.js`, `view.js` | `node --test src/features/elections/rules.test.js` |
+| Inscripción, escaños o segunda vuelta | `src/features/elections/` · `actions.js`, `rules.js`, `runoff.js`, `view.js` | `node --test src/features/elections/*.test.js` |
+| Necesidades de la comuna, contactos o huella de un proyecto | `src/features/territory/rules.js` y `src/features/campaign/territory.js` | `node --test src/features/territory/rules.test.js` |
 | Agenda, afinidad o macroeconomía | `src/features/electorate/rules.js` y `src/features/campaign/rules.js` para el corte económico | `node --test src/features/electorate/rules.test.js` |
 | Mandato, proyectos, retiro o sucesión | `src/features/career/` · `mandate.js`, `profile.js`, `rules.js` | `node --test src/features/career/rules.test.js` |
 | Congreso, quórum o filtros | `src/features/congress/chambers.js` y `panel.html` | Los controles se ejercitan en `e2e/career.mjs`. |

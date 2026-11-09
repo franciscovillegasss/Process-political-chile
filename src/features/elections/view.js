@@ -1,11 +1,36 @@
+import { canEndorse } from './runoff.js';
+import { campaignClimate } from '../electorate/rules.js';
 import { GAME_STATE } from '../../app/state.js';
 import { registrationCost } from '../campaign/staff.js';
 import { renderMandate } from '../career/mandate.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
-import { canRegister, eligibleOffices, officeTitle } from './actions.js';
-import { LOCAL_REGISTRATION, OFFICES, cycleOffices, electionWeek, officeTerritory, registrationWeek } from './rules.js';
+import { activeElection, canRegister, eligibleOffices, officeTitle, seekRunoffEndorsement } from './actions.js';
+import { LOCAL_REGISTRATION, OFFICES, cycleOffices, electionField, electionWeek, officeTerritory, registrationWeek } from './rules.js';
 import { CHILE_GEO } from '../../shared/geography.js';
 import { clp, element } from '../../shared/dom.js';
+
+function renderRunoff() {
+  const panel = element('runoff-endorsements');
+  const election = activeElection();
+  panel.replaceChildren();
+  if (!election?.runoffWeek) return;
+  const climate = campaignClimate(GAME_STATE);
+  const field = electionField(election, GAME_STATE.player, GAME_STATE.week, climate, GAME_STATE.roster);
+  const heading = document.createElement('h4');
+  heading.className = 'font-bold';
+  heading.textContent = 'Respaldos de candidaturas eliminadas';
+  panel.append(heading);
+  for (const candidate of field.eliminated) {
+    const endorsed = election.runoffEndorsements?.includes(candidate.slot);
+    const possible = canEndorse(candidate.slot, election.runoffRival, climate.position);
+    const button = document.createElement('button');
+    button.className = 'mr-2 mb-2 rounded border bg-stone-100 px-2 py-1 text-xs disabled:opacity-50';
+    button.disabled = endorsed || !possible;
+    button.textContent = `${candidate.name} · ${endorsed ? 'Respaldo confirmado' : possible ? 'Solicitar respaldo (8 h)' : 'Afinidad insuficiente'}`;
+    button.onclick = () => seekRunoffEndorsement(candidate.slot);
+    panel.append(button);
+  }
+}
 
 function renderLocalElection() {
   const { localElection, localManagement, year, week, player } = GAME_STATE;
@@ -43,6 +68,7 @@ ${localElection.result}` : '';
   element('local-management').querySelectorAll('button').forEach(button => {
     button.disabled = localManagement !== 'pending';
   });
+  renderRunoff();
   renderMandate();
 }
 

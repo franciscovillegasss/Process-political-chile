@@ -1,3 +1,4 @@
+import { localProfile, territoryWeight } from '../territory/rules.js';
 import { CHILE_PARTIES } from '../../shared/parties.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
 
@@ -80,8 +81,17 @@ export function campaignClimate(state) {
   const policies = state.player.corePolicies.map(id => POLICIES_CATALOG.find(policy => policy.id === id)).filter(Boolean);
   const election = state.localElection?.year === state.year && !state.localElection.result ? state.localElection : null;
   const messages = election?.messages ?? {};
+  const territory = localProfile(state);
+  const localWeight = territoryWeight(election?.office);
+  const stance = axis => policies.length ? policies.reduce((sum, policy) => sum + policy[axis], 0) / policies.length : party[axis];
+  const position = [stance('economy') * 0.75 + party.economy * 0.25, stance('authority') * 0.75 + party.authority * 0.25];
+  const localBoost = 1 + localWeight * Math.min(0.14,
+    territory.recent.reduce((sum, project) => sum + project.weight * 0.025, 0) + territory.participation * 0.0015);
   const policyResults = policies.map(policy => {
-    const urgency = policyUrgency(state, policy.issue);
+    const nationalUrgency = policyUrgency(state, policy.issue);
+    const localNeed = territory.needs.find(entry => entry.issue === policy.issue)?.need;
+    const blend = localNeed === undefined ? 0 : 0.45 * localWeight;
+    const urgency = nationalUrgency * (1 - blend) + (localNeed ?? 0) * blend;
     const fit = voterFit(groups, policy);
     const coherence = independent ? 1 : 1 - distance(party, policy);
     const emphasis = clamp(messages[policy.id] ?? 0, 0, 4);
@@ -95,9 +105,9 @@ export function campaignClimate(state) {
   const partyFit = independent ? fit : voterFit(groups, party);
   const trust = clamp(1 - (election?.revisions ?? 0) * 0.045, 0.82, 1);
   const trackRecord = 1 + Math.min(0.15, (state.mandate?.completed || 0) * 0.025);
-  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24) * trackRecord;
+  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24) * trackRecord * localBoost;
   return {
-    agenda, groups, policyResults, fit, coherence, trust, trackRecord, multiplier,
+    agenda, groups, policyResults, fit, coherence, trust, trackRecord, multiplier, position, territory, localBoost,
     rivalFactors: RIVAL_PARTIES.map(id => 0.8 + 0.29 * voterFit(groups, partyPosition(id))),
   };
 }

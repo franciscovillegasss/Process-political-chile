@@ -1,3 +1,4 @@
+import { localContactDiscount } from '../territory/rules.js';
 import { CONTACTS, METRICS, VOLUNTEER_LIMIT, issueDemand } from './rules.js';
 import { electionField } from '../elections/rules.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
@@ -47,7 +48,7 @@ export function renderCampaign(state, election) {
   element('contacts-list-container').replaceChildren(...CONTACTS.map(contact => {
     const visits = campaign.contacts[contact.id];
     const aligned = contact.issues.some(issue => chosenTopics.has(issue));
-    const needed = aligned ? 1 : 2;
+    const needed = Math.max(1, (aligned ? 1 : 2) - localContactDiscount(state, contact.id));
     const endorsed = campaign.endorsements[contact.id];
     return card(contact.name, `${contact.issues.join(' · ')}
 ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${needed}`}`, {
@@ -57,7 +58,7 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
     });
   }));
   element('contacts-help').textContent = election
-    ? 'Los contactos afines a tus ejes necesitan una reunión para respaldarte. Los demás, dos.'
+    ? 'Los contactos afines o conocidos de campañas anteriores requieren una reunión. Los demás requieren dos.'
     : 'Inscribe una candidatura para pedir reuniones y conseguir respaldos.';
 
   const polls = campaign.polls.filter(poll => poll && typeof poll === 'object');
@@ -72,7 +73,7 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
   for (const key of ['digital', 'palomas']) element(`marketing-${key}`).disabled = !election || Boolean(campaign[key]);
 
   element('campaign-climate').textContent = `Agenda: ${climate.agenda.title} · ${climate.agenda.topics.join(', ')}
-Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
+Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · memoria comunal: ×${format(Number(climate.localBoost.toFixed(3)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
   element('player-core-policies-container').replaceChildren(...climate.policyResults.map(item => {
     const { policy, urgency, fit, coherence, emphasis } = item;
     const demand = urgency >= 0.75 ? 'Alta demanda' : urgency >= 0.45 ? 'Demanda media' : 'Demanda baja';

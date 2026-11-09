@@ -88,6 +88,9 @@ try {
   await go(2028, 51);
   const completed = await save();
   assert.equal(completed.mandate.completed, 1);
+  assert.equal(completed.territories[0].commune, completed.player.commune);
+  assert.equal(completed.territories[0].projects.length, 1);
+  assert.match(await text('territory-memory'), /Obras registradas:.*Plan comunal/);
   assert.ok(completed.player.approval > approved.player.approval);
   assert.ok(completed.career.some(entry => entry.title.includes('ejecutado')));
   await click('[data-view="view-office"]');
@@ -119,10 +122,18 @@ try {
   assert.match(await text('elections-calendar-cards'), /Clasificaste a segunda vuelta/);
   const first = await save();
   assert.equal(first.localElection.runoffWeek, 48);
+  assert.equal(first.localElection.runoffSnapshot.rivals.length, 4);
+  await page.locator('#runoff-endorsements button:enabled').first().click();
+  const endorsed = await save();
+  assert.equal(endorsed.localElection.runoffEndorsements.length, 1);
   await page.reload({ waitUntil: 'domcontentloaded' });
+  assert.deepEqual((await save()).localElection.runoffSnapshot, first.localElection.runoffSnapshot);
+  assert.deepEqual((await save()).localElection.runoffEndorsements, endorsed.localElection.runoffEndorsements);
   await invoke('executeCampaignAction', 'puerta_a_puerta');
   assert.ok((await save()).localElection.support > first.localElection.support);
   await click('#btn-hdr-advance-4');
+  assert.match(await text('elections-calendar-cards'), /se abstuvieron/);
+  if (process.env.BETA_RUNOFF_SCREENSHOT) await page.screenshot({ path: process.env.BETA_RUNOFF_SCREENSHOT });
   assert.match(await text('elections-calendar-cards'), /Resultado 2024[\s\S]*Segunda vuelta/);
 
   for (const batch of [4, 1]) {
@@ -159,7 +170,7 @@ try {
           const before = snapshot();
           window.loadGameQuick(true);
           const after = snapshot();
-          for (const key of ['year', 'week', 'player', 'career', 'mandate', 'roster']) {
+          for (const key of ['year', 'week', 'player', 'career', 'mandate', 'roster', 'territories']) {
             if (JSON.stringify(before[key]) !== JSON.stringify(after[key])) throw Error(`Guardado alterado: ${key}`);
           }
           checks++;

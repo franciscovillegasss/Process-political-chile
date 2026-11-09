@@ -1,9 +1,18 @@
+import { localProfile } from '../territory/rules.js';
 import { GAME_STATE } from '../../app/state.js';
 import { focusBonus } from './rules.js';
 import { CHILE_GEO } from '../../shared/geography.js';
 import { element, showToast } from '../../shared/dom.js';
 
 function renderMapFocus() {
+  const profile = localProfile(GAME_STATE);
+  const number = value => Math.round(value * 100);
+  const recent = profile.projects.slice(0, 3).map(project => `${project.year} · ${project.name}`);
+  element('territory-memory').textContent = [
+    `Perfil comunal simulado · ${profile.needs.slice(0, 3).map(item => `${item.issue} ${number(item.need)}/100`).join(' · ')}`,
+    `Redes vigentes: ${profile.contacts.length} · movilización acumulada: ${profile.participation}/30`,
+    recent.length ? `Obras registradas: ${recent.join(' · ')}` : 'Todavía no hay obras registradas en esta comuna.',
+  ].join('\n');
   const selected = element('svg-contiguous-map').children[GAME_STATE.campaign.focus];
   element('map-sector-inspected').textContent = selected
     ? `${selected.getAttribute('aria-label')} · +${focusBonus(GAME_STATE)} % en puerta a puerta`

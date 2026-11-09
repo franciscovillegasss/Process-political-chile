@@ -1,3 +1,4 @@
+import { canEndorse } from './runoff.js';
 import { GAME_STATE, pay } from '../../app/state.js';
 import { reportCampaign } from '../campaign/actions.js';
 import { initialCampaign } from '../campaign/rules.js';
@@ -59,7 +60,7 @@ function resolveElection() {
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
   if (year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
   if (result.runoff !== undefined) {
-    Object.assign(candidate, { runoffWeek: GAME_STATE.week + 4, runoffRival: result.runoff, firstRound: result.summary });
+    Object.assign(candidate, { runoffWeek: GAME_STATE.week + 4, runoffRival: result.runoff, runoffSnapshot: result.snapshot, runoffEndorsements: [], firstRound: result.summary });
     recordCareer(GAME_STATE, 'Primera vuelta', result.summary);
     return;
   }
@@ -90,6 +91,23 @@ function resolveElection() {
   }
 }
 
+function seekRunoffEndorsement(slot) {
+  const election = activeElection();
+  if (!election?.runoffWeek) return warn('Los respaldos se negocian entre ambas vueltas.');
+  const climate = campaignClimate(GAME_STATE);
+  const field = electionField(election, GAME_STATE.player, GAME_STATE.week, climate, GAME_STATE.roster);
+  const candidate = field.eliminated.find(entry => entry.slot === slot);
+  const endorsements = election.runoffEndorsements ?? [];
+  if (!candidate || endorsements.includes(slot) || !canEndorse(slot, election.runoffRival, climate.position)) {
+    return warn('Esta candidatura no está disponible para un acuerdo.');
+  }
+  if (!pay({ hours: 8 })) return;
+  election.runoffSnapshot ??= field.snapshot;
+  election.runoffEndorsements = [...endorsements, slot];
+  recordCareer(GAME_STATE, 'Segunda vuelta', `${candidate.name} anunció su respaldo.`);
+  reportCampaign('Respaldo de segunda vuelta', `${candidate.name} pidió a sus votantes apoyar tu candidatura. Parte de ese electorado aún puede abstenerse o votar por tu rival.`);
+}
+
 function officeTitle(id, player) {
   const office = OFFICES[id];
   if (!office) return 'Ciudadano sin Cargo';
@@ -97,4 +115,4 @@ function officeTitle(id, player) {
   return office.scope === 'country' ? office.name : `${office.name} de ${territory}`;
 }
 
-export { activeElection, requireElection, canRegister, eligibleOffices, registerCandidate, resolveElection, officeTitle };
+export { activeElection, requireElection, canRegister, eligibleOffices, registerCandidate, resolveElection, officeTitle, seekRunoffEndorsement };

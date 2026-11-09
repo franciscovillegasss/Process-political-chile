@@ -1,3 +1,5 @@
+import { firstRoundSnapshot, transferRunoff } from './runoff.js';
+
 export const registrationWeek = 8;
 
 export const PACTS = [
@@ -49,22 +51,41 @@ export function electionField(election, player, week = 8, climate, roster) {
     }));
     return { ...pact, candidates };
   });
-  const eligibleLists = election.runoffWeek ? lists.map(list => ({
-    ...list, candidates: list.candidates.filter(rival => rival.slot === election.runoffRival),
-  })) : lists;
-  const rivals = eligibleLists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
-  return { office, votes, lists, rivals, total: votes + rivals.reduce((sum, rival) => sum + rival.votes, 0) };
+  const allRivals = lists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
+  if (election.runoffWeek) {
+    const finalist = allRivals.find(rival => rival.slot === election.runoffRival);
+    const snapshot = election.runoffSnapshot ?? firstRoundSnapshot(votes, allRivals);
+    const transfers = transferRunoff(snapshot, finalist.slot, climate?.position, election.runoffEndorsements);
+    const initialRival = snapshot.rivals.find(rival => rival.slot === finalist.slot).votes;
+    const newPlayerVotes = Math.max(0, votes - snapshot.votes);
+    const newRivalVotes = Math.max(0, finalist.votes - initialRival);
+    const playerTotal = snapshot.votes + newPlayerVotes + transfers.reduce((sum, row) => sum + row.player, 0);
+    const rivalTotal = initialRival + newRivalVotes + transfers.reduce((sum, row) => sum + row.rival, 0);
+    return { office, votes: playerTotal, lists, rivals: [{ ...finalist, votes: rivalTotal }],
+      total: playerTotal + rivalTotal, transfers, snapshot, newPlayerVotes, newRivalVotes,
+      eliminated: allRivals.filter(rival => rival.slot !== finalist.slot) };
+  }
+  return { office, votes, lists, rivals: allRivals, total: votes + allRivals.reduce((sum, rival) => sum + rival.votes, 0) };
 }
 
 export function countElection(election, player, seats, week, climate, roster, stageRunoff = false) {
-  const { office, votes: candidateVotes, lists, rivals } = electionField(election, player, week, climate, roster);
+  const field = electionField(election, player, week, climate, roster);
+  const { office, votes: candidateVotes, lists, rivals } = field;
   if (!office.seats) {
     if (election.runoffWeek) {
       const rival = rivals[0];
       const won = candidateVotes > rival.votes;
-      return { won, summary: `${won ? 'Candidatura electa' : 'Candidatura no electa'} · ${office.name}. Segunda vuelta: ${candidateVotes} votos frente a ${rival.votes} de ${rival.name}.` };
+      const detail = field.transfers.map(row => {
+        const name = field.eliminated.find(candidate => candidate.slot === row.slot).name;
+        return `${name}${row.endorsed ? ' (respaldo)' : ''}: ${row.player} para ti · ${row.rival} para tu rival · ${row.abstained} se abstuvieron.`;
+      });
+      return { won, summary: [
+        `${won ? 'Candidatura electa' : 'Candidatura no electa'} · ${office.name}. Segunda vuelta: ${candidateVotes} votos frente a ${rival.votes} de ${rival.name}.`,
+        `Votos de primera vuelta: ${field.snapshot.votes} tuyos. Apoyo nuevo: ${field.newPlayerVotes} para ti y ${field.newRivalVotes} para tu rival.`,
+        ...detail,
+      ].join('\n') };
     }
-    return countExecutive(office, candidateVotes, rivals, stageRunoff);
+    return countExecutive(office, candidateVotes, rivals, stageRunoff, climate?.position);
   }
 
   let ownList = lists.find(list => list.id === election.pact);
@@ -94,7 +115,7 @@ export function countElection(election, player, seats, week, climate, roster, st
   };
 }
 
-function countExecutive(office, votes, rivals, stageRunoff) {
+function countExecutive(office, votes, rivals, stageRunoff, position) {
   const [leader, runnerUp, ...others] = rivals.map(rival => rival.votes);
   const total = votes + leader + runnerUp + others.reduce((sum, value) => sum + value, 0);
   const share = votes / total;
@@ -111,12 +132,14 @@ function countExecutive(office, votes, rivals, stageRunoff) {
     else {
       if (stageRunoff) return {
         runoff: rivals[0].slot,
+        snapshot: firstRoundSnapshot(votes, rivals),
         summary: `Clasificaste a segunda vuelta contra ${rivals[0].name} con ${pct(share)} de los votos.`,
       };
-      const yourRunoff = votes + Math.round((total - votes - leader) * 0.48);
-      const rivalRunoff = total - yourRunoff;
+      const transfers = transferRunoff(firstRoundSnapshot(votes, rivals), rivals[0].slot, position);
+      const yourRunoff = votes + transfers.reduce((sum, row) => sum + row.player, 0);
+      const rivalRunoff = leader + transfers.reduce((sum, row) => sum + row.rival, 0);
       won = yourRunoff > rivalRunoff;
-      detail = `Segunda vuelta simulada: ${pct(yourRunoff / total)} para tu candidatura.`;
+      detail = `Segunda vuelta simulada: ${pct(yourRunoff / (yourRunoff + rivalRunoff))} para tu candidatura.`;
     }
   }
   return {

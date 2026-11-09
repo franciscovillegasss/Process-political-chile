@@ -9,6 +9,7 @@ const initialState = () => ({
   campaign: initialCampaign(),
   macroTrend: { inflation: 0, gdpGrowth: 0, unemployment: 0, victimizationRate: 0 },
   localElection: null,
+  territories: [],
   localManagement: null,
   week: 1,
   year: 2024,

@@ -1,3 +1,4 @@
+import { localContactDiscount, recordLocalContact, recordMobilization } from '../territory/rules.js';
 import { refreshCampaign } from '../../app/render.js';
 import { GAME_STATE, pay } from '../../app/state.js';
 import { ADS, CONTACTS, VOLUNTEER_LIMIT, focusBonus } from './rules.js';
@@ -67,11 +68,12 @@ const meetContact = function(id) {
   if (!election || !contact) return;
   const { campaign, player } = GAME_STATE;
   const aligned = POLICIES_CATALOG.some(policy => player.corePolicies.includes(policy.id) && contact.issues.includes(policy.issue));
-  const needed = aligned ? 1 : 2;
+  const needed = Math.max(1, (aligned ? 1 : 2) - localContactDiscount(GAME_STATE, id));
   if (campaign.endorsements[id] || !pay({ hours: 8 })) return;
   campaign.contacts[id]++;
   if (campaign.contacts[id] >= needed) {
     campaign.endorsements[id] = true;
+    recordLocalContact(GAME_STATE, id);
     election.support += contact.support;
     reportCampaign('Respaldo confirmado', `${contact.name} · +${contact.support} puntos de campaña.`);
   } else reportCampaign('Contacto realizado', `${contact.name} · falta una reunión para conseguir su respaldo.`);
@@ -145,6 +147,7 @@ const manageVolunteers = function(action) {
     const election = requireElection();
     if (!election || !volunteers || campaign.mobilized || !pay({ hours: 6 })) return;
     campaign.mobilized = Math.min(40, volunteers);
+    recordMobilization(GAME_STATE, campaign.mobilized);
     const support = campaign.mobilized + Math.min(campaign.mobilized, campaign.trained);
     election.support += support;
     reportCampaign('Brigada movilizada', `${campaign.mobilized} voluntarios · +${support} puntos de campaña. Disponibles nuevamente la próxima semana.`);

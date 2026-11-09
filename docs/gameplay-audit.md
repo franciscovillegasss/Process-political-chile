@@ -4,7 +4,12 @@
 
 La recuperación de PP permite volver a competir tras perder. Los costos de campaña obligan a decidir entre dinero, horas y apoyo. La agenda pública distingue urgencia, afinidad y credibilidad, y un proyecto ejecutado mejora el historial electoral. El guardado conserva la sucesión y los proyectos en curso.
 
-## Hallazgos y mejoras propuestas
+## Mejoras aplicadas
+
+- **Segunda vuelta.** El escrutinio conserva la base de la primera votación. La cercanía programática y los respaldos negociados redistribuyen el apoyo de cada candidatura eliminada entre ambos finalistas y la abstención. El resultado separa esa transferencia del apoyo nuevo.
+- **Memoria comunal.** Campaña → Resumen muestra las prioridades, los contactos, la movilización y las obras de la comuna. Las prioridades iniciales son sintéticas y reproducibles. Las obras alivian la necesidad correspondiente y cuentan como historial electoral durante seis años. Los contactos duran hasta ocho años y la movilización se desgasta.
+
+## Hallazgos de la auditoría original
 
 | Prioridad | Hallazgo | Cambio propuesto y criterio de aceptación |
 |---|---|---|

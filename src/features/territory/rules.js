@@ -1,3 +1,5 @@
+import { serviceCoverage } from '../career/public-services.js';
+
 const PRIORITIES = ['Seguridad', 'Salud', 'Educación', 'Vivienda y ciudad', 'Medioambiente', 'Trabajo y transporte',
   'Economía', 'Instituciones y derechos', 'Pensiones'];
 
@@ -27,7 +29,7 @@ export function localProfile(state) {
   })).filter(project => project.weight > 0) ?? [];
   const needs = base.map(item => ({
     ...item,
-    need: Math.max(0.18, item.need - recent.filter(project => project.issue === item.issue)
+    need: Math.max(0.18, item.need - serviceCoverage(state, item.issue) / 100 - recent.filter(project => project.issue === item.issue)
       .reduce((sum, project) => sum + 0.18 * project.weight, 0)),
   })).sort((a, b) => b.need - a.need);
   const participation = record ? Math.max(0, record.participation - Math.max(0, state.year - record.participationYear) * 4) : 0;

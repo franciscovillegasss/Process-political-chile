@@ -1,3 +1,5 @@
+import { updatePromises } from './promises.js';
+import { renderGovernance, usesMunicipalCircuit, startGovernmentProject, negotiateGovernment, voteGovernment, withdrawGovernment } from './governance.js';
 import { renderOfficeDesk } from './office-desk.js';
 import { COUNCIL_BLOCS, MUNICIPAL_PROJECTS, councilDecision, municipalTerms } from './municipal.js';
 import { RM_PROFILE, profileSeats } from '../elections/rm-profile.js';
@@ -13,7 +15,8 @@ import { policyUrgency } from '../electorate/rules.js';
 import { clp, element, warn } from '../../shared/dom.js';
 
 const municipalRole = () => ['alcalde', 'concejal'].includes(GAME_STATE.player.officeId);
-const roleRestricted = () => GAME_STATE.profile === RM_PROFILE && !municipalRole();
+const roleRestricted = () => !usesMunicipalCircuit(GAME_STATE) &&
+  (!GAME_STATE.mandate?.project || GAME_STATE.mandate.project.government);
 
 function startMunicipalProject() {
   const { mandate, player } = GAME_STATE;
@@ -22,6 +25,7 @@ function startMunicipalProject() {
   if (!pay({ hours: 10, points: 3 })) return;
   mandate.project = { name: config.name, issue: config.issue, due: 0, relevant: false,
     municipalId: config.id, status: 'proposal', concessions: [], lastVote: -1 };
+  updatePromises(GAME_STATE, mandate.project, 'progress');
   recordCareer(GAME_STATE, 'Proyecto municipal', `Alcaldía patrocina ${config.name}. ${player.officeId === 'concejal' ? 'El concejal solicitó el expediente para deliberación.' : 'Presentado al concejo.'}`);
   reportCampaign('Expediente municipal', 'Revisa las demandas de las bancadas en Lobby antes de someter el expediente a votación.');
 }
@@ -50,9 +54,11 @@ function voteMunicipal() {
   const detail = `${vote.yes}/${seats} votos, se requieren ${vote.required}. ${vote.votes.map(bloc => `${bloc.name}: ${bloc.seats} ${bloc.yes ? 'a favor' : 'en contra'}`).join(' · ')}.`;
   recordCareer(GAME_STATE, 'Acuerdo del concejo', `${vote.approved ? 'Aprobado' : 'Rechazado'} · ${project.name} · ${detail}`);
   if (!vote.approved) {
+    updatePromises(GAME_STATE, project, 'blocked');
     const cause = mandate.budget < vote.cost ? 'Presupuesto insuficiente.' : 'Negocia otro respaldo o retira el expediente.';
     return reportCampaign('Proyecto rechazado', `${detail} ${cause}`);
   }
+  updatePromises(GAME_STATE, project, 'progress');
   project.status = 'authorized';
   project.relevant = policyUrgency(GAME_STATE, project.issue) >= 0.75;
   reportCampaign('Acuerdo del concejo', `${detail} Alcaldía iniciará la ejecución en el siguiente turno.`);
@@ -60,7 +66,9 @@ function voteMunicipal() {
 
 function withdrawMunicipal() {
   const project = GAME_STATE.mandate?.project;
+  if (project?.government) return withdrawGovernment();
   if (project?.status !== 'proposal') return;
+  updatePromises(GAME_STATE, project, 'pending');
   GAME_STATE.mandate.project = null;
   recordCareer(GAME_STATE, 'Proyecto municipal', `Retirado antes de comprometer fondos: ${project.name}.`);
   reportCampaign('Expediente retirado', 'El saldo público permanece disponible para otro proyecto.');
@@ -93,23 +101,17 @@ const manageLocalOffice = function(choice) {
 };
 
 const proposeProject = function() {
-  if (roleRestricted()) return warn('Este cargo del perfil RM todavía no tiene un circuito de gestión propio.');
-  if (GAME_STATE.profile === RM_PROFILE) return startMunicipalProject();
-  const { mandate, player } = GAME_STATE;
-  const policy = POLICIES_CATALOG.find(item => item.id === element('mandate-policy').value && player.corePolicies.includes(item.id));
-  if (!mandate || mandate.project || mandate.budget < PROJECT_COST || !policy) return warn('Necesitas un cargo, presupuesto disponible y un eje programático.');
-  if (!pay({ hours: 10, points: 3 })) return;
-  const scope = OFFICES[player.officeId].scope;
-  const projectName = scope === 'commune' ? `Plan comunal de ${policy.issue.toLowerCase()}`
-    : player.officeId === 'gobernador' || player.officeId === 'core' ? `Programa regional de ${policy.issue.toLowerCase()}` : policy.name;
-  mandate.project = { name: projectName, issue: policy.issue, due: 0, relevant: false };
-  mandate.hearings = 0;
-  recordCareer(GAME_STATE, 'Proyecto', `Presentó: ${projectName} · eje ${policy.name}.`);
-  reportCampaign('Proyecto presentado', 'Reúnete con dos grupos de interés antes de votar.');
+  if (usesMunicipalCircuit(GAME_STATE)) return startMunicipalProject();
+  return startGovernmentProject();
+
 };
 
 const holdHearing = function(chamber = false) {
-  if (roleRestricted()) return warn('La negociación de este órgano todavía no está disponible en el perfil RM.');
+  if (chamber && GAME_STATE.player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
+    return warn('Solo puedes actuar en la cámara en la que ocupas un escaño.');
+  }
+  if (GAME_STATE.mandate?.project?.government) return negotiateGovernment();
+  if (roleRestricted()) return warn('Presenta un expediente desde Cargo.');
   if (GAME_STATE.profile === RM_PROFILE && !chamber) return negotiateMunicipal();
   if (chamber && GAME_STATE.player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
     return warn('Solo puedes negociar en la cámara en la que ocupas un escaño.');
@@ -122,7 +124,11 @@ const holdHearing = function(chamber = false) {
 };
 
 const voteProject = function(chamber) {
-  if (roleRestricted()) return warn('La votación de este órgano todavía no está disponible en el perfil RM.');
+  if (chamber && GAME_STATE.player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
+    return warn('Solo puedes actuar en la cámara en la que ocupas un escaño.');
+  }
+  if (GAME_STATE.mandate?.project?.government) return voteGovernment();
+  if (roleRestricted()) return warn('Presenta un expediente desde Cargo.');
   if (GAME_STATE.profile === RM_PROFILE && !chamber) return voteMunicipal();
   const { mandate, player } = GAME_STATE;
   if (chamber && player.officeId !== (GAME_STATE.congress.activeChamber === 'senado' ? 'senador' : 'diputado')) {
@@ -151,12 +157,15 @@ const voteProject = function(chamber) {
 
 function renderMandate() {
   renderOfficeDesk();
+  renderGovernance();
   const { mandate, career, player } = GAME_STATE;
   const reference = GAME_STATE.profile === RM_PROFILE;
   const municipal = reference && municipalRole();
   const project = mandate?.project;
-  element('mandate-actions').classList.toggle('hidden', !mandate || roleRestricted());
-  element('mandate-unavailable').classList.toggle('hidden', !mandate || !roleRestricted());
+  const modern = Boolean(mandate && roleRestricted());
+  element('legacy-hearing').classList.toggle('hidden', modern);
+  element('gov-lobby-open').classList.toggle('hidden', !modern);
+  element('mandate-actions').classList.toggle('hidden', !mandate || (!municipal && (!project || project.government)));
   element('mandate-negotiation').classList.toggle('hidden', !municipal);
   element('mandate-project-label').textContent = municipal ? 'Cartera municipal' : 'Eje para el proyecto';
   element('mandate-propose').textContent = municipal && player.officeId === 'concejal' ? 'Solicitar expediente a Alcaldía (10 h · 3 PP)' : 'Presentar proyecto (10 h · 3 PP)';
@@ -193,7 +202,8 @@ function renderMandate() {
   if (municipal) element('lobby-audiences-container').textContent = project?.status === 'proposal'
     ? 'Cada bancada ofrece apoyo a cambio de una concesión. Evalúa su costo, demora y escaños antes de votar.'
     : 'Se pueden negociar respaldos cuando hay un expediente pendiente.';
-  const records = career.filter(entry => entry.name === player.name && ['Proyecto','Votación','Gestión','Proyecto municipal','Acuerdo del concejo','Ejecución municipal','Negociación municipal','Fiscalización municipal'].includes(entry.type)).slice(0, 12);
+  if (modern) element('lobby-audiences-container').textContent = 'Negocia con las bancadas desde la situación del cargo. Allí puedes comparar los votos, las concesiones y los plazos del expediente.';
+  const records = career.filter(entry => entry.name === player.name && ['Proyecto','Votación','Gestión','Proyecto municipal','Acuerdo del concejo','Ejecución municipal','Negociación municipal','Fiscalización municipal','Despacho','Presupuesto','Negociación','Ejecución'].includes(entry.type)).slice(0, 12);
   element('office-passed-bills-container').textContent = records.length ? records.map(entry => `${entry.date} · ${entry.title}`).join('\n')
     : 'Todavía no hay decisiones de gestión registradas.';
 }

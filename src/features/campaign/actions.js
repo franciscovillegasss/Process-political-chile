@@ -1,8 +1,9 @@
+import { POLL_TYPES, samplePoll } from './polling.js';
 import { campaignPayment } from './funding.js';
 import { localContactDiscount, recordLocalContact, recordMobilization } from '../territory/rules.js';
 import { refreshCampaign } from '../../app/render.js';
 import { GAME_STATE, pay } from '../../app/state.js';
-import { ADS, CONTACTS, VOLUNTEER_LIMIT, focusBonus } from './rules.js';
+import { ADS, CONTACTS, VOLUNTEER_LIMIT, focusBonus, volunteerImpact } from './rules.js';
 import { staffTotals } from './staff.js';
 import { calendarWeek, fundraisingYield } from '../career/rules.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
@@ -87,20 +88,15 @@ const meetContact = function(id) {
 const commissionPoll = function() {
   const election = requireElection();
   const { campaign, player, year, week } = GAME_STATE;
+  const type = element('poll-type').value;
+  if (!Object.hasOwn(POLL_TYPES, type)) return;
   if (!election || campaign.polls.some(poll => poll?.year === year && poll.week === week) ||
-      !campaignPayment(election, { hours: 0, funds: 1_000_000 }, pay)) return;
+      !campaignPayment(election, { hours: 0, funds: POLL_TYPES[type].funds }, pay)) return;
   const field = electionField(election, player, week, campaignClimate(GAME_STATE), GAME_STATE.roster);
-  const rival = field.rivals[0];
-  const precision = 1 - staffTotals().pollAccuracy;
-  const margin = 3 * precision;
-  const sampleOffset = ((week * 17 + year) % 7 - 3) / 2 * precision;
-  const share = Math.max(0, Math.min(100, field.votes / field.total * 100 + sampleOffset));
-  campaign.polls.unshift({
-    year, week, office: field.office.name, share, rival: rival.name,
-    rivalShare: Math.max(0, Math.min(100, rival.votes / field.total * 100 - sampleOffset)), margin,
-  });
+  const poll = samplePoll(field, type, staffTotals().pollAccuracy);
+  campaign.polls.unshift({ year, week, office: field.office.name, ...poll });
   campaign.polls.length = Math.min(campaign.polls.length, 12);
-  reportCampaign('Sondeo disponible', `Tu intención de voto estimada es ${share.toFixed(1)} % (±${margin.toLocaleString('es-CL')} pp). Consulta Encuestas.`);
+  reportCampaign('Sondeo disponible', `Tu intención de voto estimada es ${poll.share.toFixed(1)} % (±${poll.margin.toLocaleString('es-CL')} pp). Consulta Encuestas.`);
 };
 
 const promotePolicy = function(id) {
@@ -165,9 +161,9 @@ const manageVolunteers = function(action) {
   } else if (action === 'deploy') {
     const election = requireElection();
     if (!election || !volunteers || campaign.mobilized || !pay({ hours: 6 })) return;
-    campaign.mobilized = Math.min(40, volunteers);
+    campaign.mobilized = volunteers;
     recordMobilization(GAME_STATE, campaign.mobilized);
-    const support = campaign.mobilized + Math.min(campaign.mobilized, campaign.trained);
+    const support = volunteerImpact(campaign.mobilized, campaign.trained);
     election.support += support;
     reportCampaign('Brigada movilizada', `${campaign.mobilized} voluntarios · +${support} puntos de campaña. Disponibles nuevamente la próxima semana.`);
   }

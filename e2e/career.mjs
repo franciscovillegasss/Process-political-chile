@@ -1,3 +1,4 @@
+import { openMandate } from '../src/features/career/rules.js';
 import assert from 'node:assert/strict';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
@@ -11,11 +12,16 @@ try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   page.setDefaultTimeout(15_000);
   const errors = [];
-  page.on('pageerror', error => errors.push(error.message));
+  page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
   const origin = new URL(url).origin;
   await page.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
   await page.goto(url, { waitUntil: 'domcontentloaded' });
-  const click = selector => page.locator(selector).click();
+  const click = async selector => {
+    try { await page.locator(selector).click(); } catch (error) {
+      if (process.env.BETA_FAILURE_SCREENSHOT) await page.screenshot({ path: process.env.BETA_FAILURE_SCREENSHOT });
+      throw error;
+    }
+  };
   const invoke = (name, ...args) => page.evaluate(([key, values]) => window[key](...values), [name, args]);
   const text = id => page.locator('#' + id).textContent();
   const save = () => page.evaluate(() => {
@@ -62,6 +68,7 @@ try {
         window.executeCampaignAction('puerta_a_puerta');
         window.manageVolunteers('deploy');
       }
+      if (document.getElementById('resolve-pending-election').classList.contains('hidden') === false) window.resolvePendingElection();
       window.advanceTurn(nowYear === year || campaign ? 1 : 4);
     }
   }, {year, week, campaign});
@@ -102,17 +109,19 @@ try {
   await go(2028, 44, true);
   assert.match(await text('elections-calendar-cards'), /Candidatura electa/);
   await click('[data-view="view-office"]');
-  await click('[onclick="window.proposeProject()"]');
-  await click('[onclick="window.switchSubpanel(\'office\', \'lobby\', this)"]');
-  await click('[onclick="window.holdHearing(false)"]');
-  await click('[onclick="window.holdHearing(false)"]');
-  await click('[onclick="window.switchSubpanel(\'office\', \'overview\', this)"]');
-  await click('[onclick="window.voteProject(false)"]');
+  await page.locator('#gov-policy').selectOption('p1');
+  await click('#gov-propose');
+  await page.locator('#gov-bloc').selectOption('ofic');
+  await click('#gov-negotiate');
+  await click('#gov-vote');
+  assert.equal((await save()).mandate.project.status, 'authorized');
+  await invoke('advanceTurn', 1);
   const approved = await save();
-  assert.equal(approved.mandate.budget, 10_000_000);
+  assert.equal(approved.mandate.budget, 9_600_000);
   assert.ok(approved.mandate.project.due > approved.year * 52 + approved.week);
   await page.reload({ waitUntil: 'domcontentloaded' });
-  await go(2028, 51);
+  await page.waitForFunction(() => typeof window.advanceTurn === 'function');
+  await go(2029, 4);
   const completed = await save();
   assert.equal(completed.mandate.completed, 1);
   assert.equal(completed.territories[0].commune, completed.player.commune);
@@ -164,6 +173,7 @@ try {
   const endorsed = await save();
   assert.equal(endorsed.localElection.runoffEndorsements.length, 1);
   await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof window.advanceTurn === 'function');
   assert.deepEqual((await save()).localElection.runoffSnapshot, first.localElection.runoffSnapshot);
   assert.deepEqual((await save()).localElection.runoffEndorsements, endorsed.localElection.runoffEndorsements);
   await invoke('executeCampaignAction', 'puerta_a_puerta');
@@ -205,6 +215,7 @@ try {
         }
         if (week % 4 === 1) window.buildPoliticalCapital();
         if (turns % 6 === 0) window.fundraiseAction();
+        if (!document.getElementById('resolve-pending-election').classList.contains('hidden')) window.resolvePendingElection();
         window.advanceTurn(step);
         const [nextWeek, nextYear] = time();
         if (nextWeek < 1 || nextWeek > 52 || nextYear * 52 + nextWeek <= year * 52 + week) throw Error('Fecha inválida');
@@ -294,6 +305,116 @@ try {
   await go(2024, 44, true);
   assert.match(await text('elections-calendar-cards'), /Concejal · 10 cupos/);
   console.log('Perfil RM: teclado, cupos locales, rechazo, concesión, ejecución por Alcaldía y protección de doble clic: OK');
+
+  for (const office of ['concejal', 'alcalde', 'core', 'gobernador', 'diputado', 'senador', 'presidente']) {
+    const fixture = structuredClone(baseline);
+    fixture.year = 2026;
+    fixture.week = 1;
+    fixture.profile = ['core', 'gobernador', 'diputado', 'senador'].includes(office) ? 'rm-reference' : 'classic';
+    Object.assign(fixture.player, { officeId: office, currentOffice: office, age: 45, officeEndYear: 2030 });
+    openMandate(fixture);
+    await load(fixture);
+    await click('[data-view="view-office"]');
+    assert.equal(await page.locator('#government-process').isVisible(), true);
+    await page.locator('#gov-policy').selectOption('p1');
+    await click('#gov-propose');
+    await click('#gov-vote');
+    assert.equal((await save()).mandate.project.status, 'proposal');
+    assert.equal((await save()).mandate.budget, 12_000_000);
+    assert.equal((await save()).promises[0].status, 'blocked');
+    await page.locator('#gov-bloc').selectOption('ofic');
+    await click('#gov-negotiate');
+    await click('#gov-vote');
+    if (['diputado', 'senador', 'presidente'].includes(office)) {
+      assert.equal((await save()).mandate.project.status, 'review');
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      await page.waitForFunction(() => typeof window.advanceTurn === 'function');
+      await click('[data-view="view-office"]');
+      await click('#gov-vote');
+    }
+    assert.equal((await save()).mandate.project.status, 'authorized');
+    const executive = ['alcalde', 'gobernador', 'presidente'].includes(office);
+    if (executive) await click('#gov-implement');
+    else await invoke('advanceTurn', 1);
+    const executing = await save();
+    assert.equal(executing.mandate.project.status, 'executing');
+    await invoke('implementGovernment');
+    assert.equal((await save()).mandate.budget, executing.mandate.budget);
+    if (executive) {
+      const campaignFunds = executing.player.funds;
+      await page.locator('#gov-service').selectOption('Salud');
+      await click('#gov-fund-service');
+      const financed = await save();
+      assert.equal(financed.mandate.budget, executing.mandate.budget - 1_000_000);
+      await invoke('financePublicService');
+      assert.equal((await save()).mandate.budget, financed.mandate.budget);
+      assert.equal(financed.player.funds, campaignFunds);
+    }
+    await go(2026, 35);
+    const delivered = await save();
+    assert.equal(delivered.mandate.completed, 1, office);
+    assert.equal(delivered.promises[0].status, 'fulfilled', office);
+    if (executive) assert.ok(delivered.publicServices.some(service => service.issue === 'Salud' && service.improvement === 6));
+    if (office === 'concejal') {
+      await page.evaluate(() => {
+        for (let week = 0; week < 52; week++) {
+          document.querySelectorAll('#office-desk-actions button')[1].click();
+          window.advanceTurn(1);
+        }
+      });
+      assert.ok((await save()).player.approval <= delivered.player.approval);
+    }
+  }
+  console.log('Siete cargos: rechazo, negociación, doble cámara, ejecución, promesas, servicios y despacho sin aprobación automática: OK');
+
+  const polling = structuredClone(baseline);
+  polling.week = 8;
+  polling.localElection = { year: 2024, office: 'concejal', pact: 'ind', support: 0, campaignFunds: 350_000, result: '' };
+  await load(polling);
+  await click('[data-view="view-campaign"]');
+  await click(`[onclick="window.switchSubpanel('campaign', 'polls', this)"]`);
+  await page.locator('#poll-type').selectOption('quick');
+  await click('#commission-poll');
+  const polled = await save();
+  assert.equal(polled.campaign.polls[0].sample, 300);
+  assert.equal(polled.player.funds, polling.player.funds - 50_000);
+  assert.equal(await page.locator('#commission-poll').isDisabled(), true);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof window.advanceTurn === 'function');
+  assert.deepEqual((await save()).campaign.polls, polled.campaign.polls);
+  for (const volunteers of [40, 500]) {
+    const brigade = structuredClone(polling);
+    brigade.volunteers = volunteers;
+    await load(brigade);
+    await invoke('manageVolunteers', 'deploy');
+    const deployed = await save();
+    assert.equal(deployed.campaign.mobilized, volunteers);
+    if (volunteers === 40) polling.smallBrigadeSupport = deployed.localElection.support;
+    else assert.ok(deployed.localElection.support > polling.smallBrigadeSupport);
+  }
+  const pending = structuredClone(baseline);
+  pending.profile = 'rm-reference';
+  pending.week = 44;
+  pending.localElection = { year: 2024, office: 'alcalde', pact: 'ind', support: 1730, result: '',
+    pendingSummary: 'Resultado pendiente · Empate entre candidaturas.', pendingWeek: 44,
+    countedVotes: { player: 1810, rivals: [{ slot: 0, votes: 1810 }, { slot: 3, votes: 1332 }, { slot: 6, votes: 905 }, { slot: 9, votes: 648 }] } };
+  await load(pending);
+  await invoke('advanceTurn', 1);
+  assert.equal((await save()).week, 44);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => typeof window.advanceTurn === 'function');
+  await click('[data-view="view-elections"]');
+  await click('#resolve-pending-election');
+  const recounted = await save();
+  assert.equal(recounted.localElection.pendingSummary, '');
+  assert.match(recounted.localElection.result, /desempate simulado/);
+  assert.ok(recounted.localElection.resolutionSeed > 0);
+  await invoke('resolvePendingElection');
+  assert.deepEqual((await save()).career, recounted.career);
+  await invoke('advanceTurn', 1);
+  assert.equal((await save()).week, 45);
+  console.log('Sondeo persistente, brigadas grandes y recuento que desbloquea la partida: OK');
+
 
   const missing = await page.evaluate(() => [...document.querySelectorAll('[onclick],[onchange],[oninput]')]
     .flatMap(element => [...element.attributes].filter(attribute => /^on(click|change|input)$/.test(attribute.name)))

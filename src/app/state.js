@@ -8,6 +8,8 @@ const initialState = () => ({
   agendaPlan: 'none',
   career: [],
   governmentResults: [],
+  publicServices: [],
+  promises: [],
   roster: newRoster(2024),
   mandate: null,
   campaign: initialCampaign(),

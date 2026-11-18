@@ -1,3 +1,4 @@
+import { tieOrder } from './ties.js';
 import { resolveProportionalBallot, syntheticParty } from './ballot.js';
 import { RM_PROFILE } from './rm-profile.js';
 import { firstRoundSnapshot, transferRunoff } from './runoff.js';
@@ -11,7 +12,7 @@ export const PACTS = [
   { id: 'cent', name: 'Centro Democrático', color: '#D97706', parties: 'DC, Demócratas, Amarillos' },
 ];
 
-export function allocateSeats(lists, totalSeats) {
+export function allocateSeats(lists, totalSeats, seed = 0) {
   const quotients = lists.flatMap(list => list.votes > 0
     ? Array.from({ length: Math.min(totalSeats, list.capacity ?? totalSeats) }, (_, index) => ({
         listId: list.id, color: list.color, votes: list.votes, divisor: index + 1,
@@ -19,7 +20,8 @@ export function allocateSeats(lists, totalSeats) {
       }))
     : []);
   // Break equal quotients by list votes, then by the fixed order of the lists.
-  quotients.sort((a, b) => b.votes * a.divisor - a.votes * b.divisor || b.votes - a.votes);
+  quotients.sort((a, b) => b.votes * a.divisor - a.votes * b.divisor || b.votes - a.votes ||
+    (seed ? tieOrder(a.listId, seed) - tieOrder(b.listId, seed) : 0));
   const winners = quotients.slice(0, totalSeats);
   for (const list of lists) list.seats = winners.filter(winner => winner.listId === list.id).length;
   return winners;
@@ -56,7 +58,8 @@ export function electionField(election, player, week = 8, climate, roster) {
     }));
     return { ...pact, candidates };
   });
-  const allRivals = lists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes);
+  const allRivals = lists.flatMap(list => list.candidates).sort((a, b) => b.votes - a.votes ||
+    (election.resolutionSeed ? tieOrder(a.slot, election.resolutionSeed) - tieOrder(b.slot, election.resolutionSeed) : 0));
   if (election.runoffWeek) {
     const finalist = allRivals.find(rival => rival.slot === election.runoffRival);
     const snapshot = election.runoffSnapshot ?? firstRoundSnapshot(votes, allRivals);
@@ -66,11 +69,25 @@ export function electionField(election, player, week = 8, climate, roster) {
     const newRivalVotes = Math.max(0, finalist.votes - initialRival);
     const playerTotal = snapshot.votes + newPlayerVotes + transfers.reduce((sum, row) => sum + row.player, 0);
     const rivalTotal = initialRival + newRivalVotes + transfers.reduce((sum, row) => sum + row.rival, 0);
-    return { office, votes: playerTotal, lists, rivals: [{ ...finalist, votes: rivalTotal }],
+    return countedField(election, { office, votes: playerTotal, lists, rivals: [{ ...finalist, votes: rivalTotal }],
       total: playerTotal + rivalTotal, transfers, snapshot, newPlayerVotes, newRivalVotes,
-      eliminated: allRivals.filter(rival => rival.slot !== finalist.slot) };
+      eliminated: allRivals.filter(rival => rival.slot !== finalist.slot) });
   }
-  return { office, votes, lists, rivals: allRivals, total: votes + allRivals.reduce((sum, rival) => sum + rival.votes, 0) };
+  return countedField(election, { office, votes, lists, rivals: allRivals, total: votes + allRivals.reduce((sum, rival) => sum + rival.votes, 0) });
+}
+
+function countedField(election, field) {
+  const frozen = election.countedVotes;
+  if (!frozen) return field;
+  field.votes = frozen.player;
+  for (const rival of [...field.rivals, ...field.lists.flatMap(list => list.candidates)]) {
+    const prior = frozen.rivals.find(row => row.slot === rival.slot);
+    if (prior) rival.votes = prior.votes;
+  }
+  field.rivals.sort((a, b) => b.votes - a.votes ||
+    (election.resolutionSeed ? tieOrder(a.slot, election.resolutionSeed) - tieOrder(b.slot, election.resolutionSeed) : 0));
+  field.total = field.votes + field.rivals.reduce((sum, rival) => sum + rival.votes, 0);
+  return field;
 }
 
 export function countElection(election, player, seats, week, climate, roster, stageRunoff = false) {
@@ -82,8 +99,9 @@ export function countElection(election, player, seats, week, climate, roster, st
   if (!office.seats) {
     if (election.runoffWeek) {
       const rival = rivals[0];
-      if (officialProfile && candidateVotes === rival.votes) return pending('Empate entre finalistas, requiere resolución');
-      const won = candidateVotes > rival.votes;
+      if (officialProfile && !election.resolutionSeed && candidateVotes === rival.votes) return pending('Empate entre finalistas, requiere resolución');
+      const won = candidateVotes > rival.votes || Boolean(candidateVotes === rival.votes && election.resolutionSeed &&
+        tieOrder('player', election.resolutionSeed) < tieOrder(rival.slot, election.resolutionSeed));
       const detail = field.transfers.map(row => {
         const name = field.eliminated.find(candidate => candidate.slot === row.slot).name;
         return `${name}${row.endorsed ? ' (respaldo)' : ''}: ${row.player} para ti · ${row.rival} para tu rival · ${row.abstained} se abstuvieron.`;
@@ -95,9 +113,9 @@ export function countElection(election, player, seats, week, climate, roster, st
       ].join('\n') };
     }
     const leaders = [candidateVotes, ...rivals.map(rival => rival.votes)].sort((a, b) => b - a);
-    if (officialProfile && (leaders[0] === leaders[1] ||
+    if (officialProfile && !election.resolutionSeed && (leaders[0] === leaders[1] ||
         (office.threshold && leaders[0] / field.total < office.threshold && leaders[1] === leaders[2]))) return pending('Empate que puede cambiar el resultado, requiere resolución');
-    return countExecutive(office, candidateVotes, rivals, stageRunoff, climate?.position);
+    return countExecutive(office, candidateVotes, rivals, stageRunoff, climate?.position, election.resolutionSeed);
   }
 
   let ownList = lists.find(list => list.id === election.pact);
@@ -113,7 +131,7 @@ export function countElection(election, player, seats, week, climate, roster, st
       list.votes = list.candidates.reduce((sum, candidate) => sum + candidate.votes, 0);
     }
     const levels = ['concejal', 'core'].includes(election.office) ? ['subpact'] : ['party'];
-    const result = resolveProportionalBallot(lists, seats || office.seats, levels, allocateSeats);
+    const result = resolveProportionalBallot(lists, seats || office.seats, levels, allocateSeats, election.resolutionSeed);
     if (result.pending) return pending('Empate o falta de votos en la adjudicación');
     const won = result.elected.includes('player');
     return { won, summary: [
@@ -145,12 +163,14 @@ export function countElection(election, player, seats, week, climate, roster, st
   };
 }
 
-function countExecutive(office, votes, rivals, stageRunoff, position) {
+function countExecutive(office, votes, rivals, stageRunoff, position, seed = 0) {
   const [leader, runnerUp, ...others] = rivals.map(rival => rival.votes);
   const total = votes + leader + runnerUp + others.reduce((sum, value) => sum + value, 0);
   const share = votes / total;
   const pct = value => `${(value * 100).toFixed(2)} %`;
-  let won = votes > leader;
+  const rank = [...rivals.map(rival => ({ id: rival.slot, votes: rival.votes })), { id: 'player', votes }]
+    .sort((a, b) => b.votes - a.votes || (seed ? tieOrder(a.id, seed) - tieOrder(b.id, seed) : 0));
+  let won = votes > leader || Boolean(votes === leader && seed && rank[0].id === 'player');
   let detail = 'Resultado por mayoría relativa.';
   if (office.threshold) {
     const playerMajority = share > office.threshold || (office.threshold === 0.4 && share === 0.4);
@@ -158,7 +178,7 @@ function countExecutive(office, votes, rivals, stageRunoff, position) {
     const rivalMajority = rivalShare > office.threshold || (office.threshold === 0.4 && rivalShare === 0.4);
     if (won && playerMajority) detail = 'Victoria en primera vuelta.';
     else if (rivalMajority) { won = false; detail = 'Un rival ganó en primera vuelta.'; }
-    else if (votes <= runnerUp) { won = false; detail = 'Quedaste fuera de la segunda vuelta.'; }
+    else if (votes < runnerUp || (votes === runnerUp && (!seed || !rank.slice(0, 2).some(row => row.id === 'player')))) { won = false; detail = 'Quedaste fuera de la segunda vuelta.'; }
     else {
       if (stageRunoff) return {
         runoff: rivals[0].slot,

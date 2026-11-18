@@ -20,6 +20,7 @@
             <button onclick="window.buildPoliticalCapital()" class="px-2 py-1 rounded bg-blue-800 text-white text-xs">Trabajo territorial (12 h)</button>
           </div>
           <div class="text-sm whitespace-pre-line" id="elections-calendar-cards" aria-live="polite"></div>
+          <button id="resolve-pending-election" onclick="window.resolvePendingElection()" class="hidden rounded bg-amber-700 text-white px-3 py-2">Confirmar recuento y desempate simulado</button>
           <div id="runoff-endorsements" class="text-sm"></div>
           <button id="replay-broadcast" onclick="window.replayBroadcast()" class="hidden px-3 py-2 rounded bg-slate-900 text-white">Repetir transmisión</button>
           <dialog id="election-tv" aria-labelledby="tv-title" class="fixed inset-0 m-auto max-h-[90vh] w-[min(94vw,54rem)] overflow-auto rounded-2xl bg-slate-950 text-white shadow-2xl backdrop:bg-slate-950/85 p-5">

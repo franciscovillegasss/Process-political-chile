@@ -1,3 +1,4 @@
+import { startGovernmentProject, negotiateGovernment, voteGovernment, implementGovernment, withdrawGovernment, financePublicService } from './features/career/governance.js';
 import { replayBroadcast } from './features/elections/broadcast.js';
 import { setAgendaPlan } from './app/agenda.js';
 import { renderAll } from './app/render.js';
@@ -14,7 +15,7 @@ import { backToPage1Identity, finishFullCharacterCreation, goToPage2Territory, o
 import { initPrograms, p2RenderPoliciesCatalog, p2TogglePolicy } from './features/character/platform.js';
 import { p2HandleCommuneChange, p2HandleDistrictChange, p2HandleRegionChange, p2HandleYearChange, p2InitTerritoryCascades } from './features/character/territory.js';
 import { renderCongressHemiciclo, renderLegislativeHistory, setCongressChamber } from './features/congress/chambers.js';
-import { registerCandidate } from './features/elections/actions.js';
+import { registerCandidate, resolvePendingElection } from './features/elections/actions.js';
 import { renderDHondtD3Visualization, renderElectoralPactsCatalog, resetDHondtSliders, togglePactMembership, updateDHondtSimulation } from './features/elections/pacts.js';
 import { renderPublicOpinionTable } from './features/electorate/opinion.js';
 import { exportGameJson, importGameJson, loadGameQuick, recoverGame, resetGameConfirm, saveGameQuick } from './features/save/storage.js';
@@ -26,7 +27,9 @@ import './ui/styles.css';
 import './ui/shell.css';
 
 Object.assign(window, {
+  startGovernmentProject, negotiateGovernment, voteGovernment, implementGovernment, withdrawGovernment, financePublicService,
   registerCandidate,
+  resolvePendingElection,
   replayBroadcast,
   executeCampaignAction,
   fundraiseAction,

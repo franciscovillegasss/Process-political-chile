@@ -2,6 +2,11 @@ import { policyUrgency, publicAgenda } from '../electorate/rules.js';
 
 export const VOLUNTEER_LIMIT = 500;
 
+export function volunteerImpact(volunteers, trained) {
+  if (volunteers <= 0) return 0;
+  return Math.round(24 * Math.sqrt(volunteers / 40) * (1 + Math.min(volunteers, trained) / volunteers));
+}
+
 const SECTOR_TOPICS = ['Instituciones y derechos', 'Trabajo y transporte', 'Economía', 'Educación',
   'Vivienda y ciudad', 'Medioambiente', 'Seguridad', 'Salud'];
 

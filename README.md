@@ -8,7 +8,7 @@ Simulador de carrera política, campañas, elecciones y gestión pública.
 
 Selecciona **RM · 52 comunas y seis cargos** al crear una partida. El perfil clásico conserva Valparaíso, Presidencia y los guardados existentes. La referencia territorial usa las magnitudes de 2024 para concejos y CORE, 2025 para diputaciones y 2021 para la renovación senatorial de la RM. El reloj semanal y los candidatos son simulados.
 
-En **Cargo → Situación del cargo**, escoge una obra municipal. En **Lobby**, negocia con bancadas cuyos apoyos tienen costos y plazos distintos. Un rechazo conserva el saldo. Después de un acuerdo, Alcaldía compromete los recursos en el turno siguiente. El concejal puede solicitar un informe desde la pantalla de gestión. El circuito es municipal. Los cargos regionales y parlamentarios del perfil RM pueden disputar elecciones, pero sus circuitos institucionales siguen pendientes.
+En **Cargo → Situación del cargo**, escoge una obra municipal. En **Lobby**, negocia con bancadas cuyos apoyos tienen costos y plazos distintos. Un rechazo conserva el saldo. Después de un acuerdo, Alcaldía compromete los recursos en el turno siguiente. El concejal puede solicitar un informe desde la pantalla de gestión. El circuito municipal conserva sus expedientes y concesiones. Los cargos regionales y parlamentarios también cuentan con tramitación simulada propia, con mayorías por bancada y cámara revisora en las leyes nacionales.
 
 **Agenda semanal** permite delegar trabajo territorial o puerta a puerta con costo de horas. Se detiene en hitos sensibles. El menú **Recuperar copia** permite abrir el último punto de control RM o un respaldo manual válido sin sobreescribir la ranura principal.
 
@@ -20,7 +20,15 @@ La guía de creación explica PP, apoyo, reconocimiento y costos de campaña. Un
 
 En Marketing puedes financiar radio, video y la difusión de uno de tus ejes. En Políticas puedes adaptar un eje de baja urgencia a una prioridad alta por 4 horas, sin costo de credibilidad. Las revisiones ordinarias conservan sus restricciones durante la campaña.
 
-Los turnos electorales abren un conteo televisivo de 60 segundos con pausas y opción de adelantar. En Políticos puedes consultar el Ejecutivo de la partida y cambiar la comuna. El directorio combina resultados conocidos y autoridades ficticias del escenario. Cargo ofrece decisiones de despacho según el puesto, con efectos en PP, aprobación, contactos o plazos. La tramitación formal del perfil RM sigue centrada en el circuito municipal.
+Los turnos electorales abren un conteo televisivo de 60 segundos con pausas y opción de adelantar. En Políticos puedes consultar el Ejecutivo de la partida y cambiar la comuna. El directorio combina resultados conocidos y autoridades ficticias del escenario. Cargo ofrece fiscalización, vínculos territoriales, preparación de expedientes y supervisión. Las gestiones tienen límites y las audiencias dejan de generar aprobación automática.
+
+## Gestión, presupuesto y compromisos
+
+Cargo permite presentar, negociar, votar, retirar y ejecutar proyectos. Las concesiones modifican costo, plazo y alcance. Diputaciones, senadurías y Presidencia requieren ambas cámaras. Los ejecutivos inician la ejecución y los órganos deliberantes autorizan recursos que el Ejecutivo ejecuta en el turno siguiente. Los expedientes antiguos conservan su recorrido.
+
+El escenario utiliza $12.000.000 de saldo público inicial y asignaciones anuales de hasta $6.000.000, con techo de $12.000.000. Cada servicio temporal cuesta $1.000.000 y entrega cobertura durante doce semanas. Los proyectos autorizados reservan sus fondos y los terminados generan mantenimiento trimestral. Los montos y los trámites son una abstracción de juego. La cobertura territorial y los efectos nacionales aparecen en las necesidades y métricas. Los compromisos se adaptan al ámbito del cargo, se registran al iniciar el mandato y su cumplimiento afecta campañas posteriores durante ocho años.
+
+Encuestas ofrece tres tamaños de muestra con precio y margen distintos. La muestra queda guardada. Toda la brigada puede movilizarse, con rendimiento gradual y beneficio de la capacitación. Los empates detienen el avance para confirmar un recuento con desempate simulado persistente. El escrutinio conserva los votos finales y sus parciales son independientes del orden de las candidaturas.
 
 ## Dónde buscar un fallo
 
@@ -32,6 +40,7 @@ Los turnos electorales abren un conteo televisivo de 60 segundos con pausas y op
 | Inscripción, escaños o segunda vuelta | `src/features/elections/` · `actions.js`, `rules.js`, `runoff.js`, `view.js` | `node --test src/features/elections/*.test.js` |
 | Necesidades de la comuna, contactos o huella de un proyecto | `src/features/territory/rules.js` y `src/features/campaign/territory.js` | `node --test src/features/territory/rules.test.js` |
 | Agenda, afinidad o macroeconomía | `src/features/electorate/rules.js` y `src/features/campaign/rules.js` para el corte económico | `node --test src/features/electorate/rules.test.js` |
+| Tramitación, presupuesto, servicios o compromisos | `src/features/career/governance-rules.js`, `governance.js`, `public-services.js` y `promises.js` | `node --test src/features/career/governance.test.js` |
 | Mandato, proyectos, retiro o sucesión | `src/features/career/` · `mandate.js`, `profile.js`, `rules.js` | `node --test src/features/career/rules.test.js` |
 | Congreso, quórum o filtros | `src/features/congress/chambers.js` y `panel.html` | Los controles se ejercitan en `e2e/career.mjs`. |
 | Cargar, importar o migrar una partida | `src/features/save/codec.js` y `storage.js` | `node --test src/features/save/codec.test.js` |
@@ -45,6 +54,6 @@ Para investigar un aviso, busca su texto con `rg -n "texto del aviso" src` y abr
 
 - `npm run check` ejecuta las pruebas de Node y la compilación.
 - `npx playwright install chromium` instala el navegador para `npm run test:e2e`.
-- La prueba de navegador cubre la recuperación tras derrotas, proyectos, reelección, segunda vuelta, guardado y dos carreras de 82 años.
+- La prueba de navegador cubre derrotas, proyectos, reelección, segunda vuelta, guardado, dos carreras de 82 años, los siete cargos, servicios, promesas, encuestas y recuentos.
 
 [Auditoría y prioridades de jugabilidad](docs/gameplay-audit.md)

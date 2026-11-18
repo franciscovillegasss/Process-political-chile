@@ -1,4 +1,7 @@
 import { recordLocalProject } from '../territory/rules.js';
+import { beginPromises, closePromises, updatePromises } from './promises.js';
+import { improveService } from './public-services.js';
+import { projectTerms } from './governance-rules.js';
 
 export const RETIREMENT_AGE = 95;
 export const TERM_BUDGET = 12_000_000;
@@ -41,7 +44,10 @@ export function fundraisingYield(state, bonus = 0) {
 }
 
 export function openMandate(state) {
-  state.mandate = { budget: TERM_BUDGET, project: null, completed: 0, hearings: 0 };
+  closePromises(state);
+  state.mandate = { budget: TERM_BUDGET, project: null, completed: 0, hearings: 0,
+    budgetYear: state.year, programs: [], maintenance: 0, deskUses: {} };
+  beginPromises(state);
 }
 
 export function completeProject(state) {
@@ -51,6 +57,12 @@ export function completeProject(state) {
   const benefit = project.relevant ? 5 : 3;
   player.approval = Math.min(100, player.approval + benefit);
   player.politicalPoints += 4;
+  if (project.government) {
+    const terms = projectTerms(project);
+    improveService(state, project.issue, terms.impact);
+    mandate.maintenance = (mandate.maintenance ?? 0) + terms.maintenance;
+  }
+  updatePromises(state, project, 'fulfilled');
   if (player.officeId === 'presidente') {
     if (project.issue === 'Seguridad') state.macroMetrics.victimizationRate = Math.max(0, state.macroMetrics.victimizationRate - 0.8);
     if (project.issue === 'Economía') state.macroMetrics.gdpGrowth += 0.2;
@@ -65,6 +77,7 @@ export function completeProject(state) {
 }
 
 export function giveUpOffice(state) {
+  closePromises(state);
   Object.assign(state.player, { officeId: '', officeEndYear: 0, currentOffice: 'Ciudadano sin Cargo' });
   state.localManagement = null;
   state.mandate = null;

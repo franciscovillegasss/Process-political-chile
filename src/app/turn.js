@@ -1,3 +1,4 @@
+import { advancePublicBudget, enactGovernmentProject, EXECUTIVES } from '../features/career/governance-rules.js';
 import { showElectionBroadcast } from '../features/elections/broadcast.js';
 import { grantCampaignWeek } from '../features/campaign/funding.js';
 import { runAgendaPlan } from './agenda.js';
@@ -54,11 +55,20 @@ function runWeeks(weeksToAdvance) {
     player.hours = player.maxHours = 60 + bonuses.bonusHours;
     player.nameRecognition = Math.max(8, Math.min(100, player.nameRecognition + bonuses.bonusRecogWeekly - 0.15));
     GAME_STATE.volunteers = Math.min(VOLUNTEER_LIMIT, GAME_STATE.volunteers + bonuses.bonusVolunteersWeekly);
+    const previousMacro = { ...GAME_STATE.macroMetrics };
     weeklyCampaign(GAME_STATE);
+    for (const detail of advancePublicBudget(GAME_STATE)) recordCareer(GAME_STATE, 'Presupuesto', detail);
+    if (!EXECUTIVES.includes(player.officeId) && enactGovernmentProject(GAME_STATE, calendarWeek(GAME_STATE))) {
+      recordCareer(GAME_STATE, 'Ejecución', `El Ejecutivo inició ${GAME_STATE.mandate.project.name}.`);
+    }
     grantCampaignWeek(activeElection(), GAME_STATE.week);
     const committedProject = executeCouncilAgreement(GAME_STATE, calendarWeek(GAME_STATE), recordCareer);
     if (deliverMunicipalReport(GAME_STATE, calendarWeek(GAME_STATE), recordCareer)) showToast('Informe municipal', 'Alcaldía respondió a la solicitud de fiscalización.', 'info');
     if (completeProject(GAME_STATE)) showToast('Proyecto ejecutado', 'Consulta el efecto en Cargo e Historial.', 'success');
+    if (Object.keys(previousMacro).some(key => previousMacro[key] !== GAME_STATE.macroMetrics[key])) {
+      GAME_STATE.macroTrend = Object.fromEntries(Object.entries(previousMacro).map(([key, value]) =>
+        [key, Math.round((GAME_STATE.macroMetrics[key] - value) * 10) / 10]));
+    }
     if (GAME_STATE.week % 4 === 0 && GAME_STATE.mandate && !GAME_STATE.mandate.project && player.approval > 52) {
       player.approval = Math.max(52, player.approval - 0.35);
     }
@@ -104,6 +114,11 @@ let advancing = false;
 
 function advanceTurn(weeksToAdvance = 1, event) {
   if (advancing || event?.detail > 1) return;
+  if (GAME_STATE.localElection?.pendingSummary) {
+    switchMainView('view-elections');
+    showToast('Recuento pendiente', 'Confirma el recuento en Elecciones antes de avanzar.', 'warning');
+    return;
+  }
   advancing = true;
   const previous = structuredClone(GAME_STATE);
   try {

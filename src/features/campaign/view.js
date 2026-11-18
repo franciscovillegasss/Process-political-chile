@@ -65,7 +65,7 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
   const polls = campaign.polls.filter(poll => poll && typeof poll === 'object');
   element('polls-history-container').replaceChildren(...(polls.length
     ? polls.map(poll => card(`Semana ${poll.week} · ${poll.year} · ${poll.office}`,
-      `Tu intención de voto: ${pct(Number(poll.share))} (±${poll.margin} pp)\nPrincipal rival: ${poll.rival} · ${pct(Number(poll.rivalShare))}`))
+      `Antigüedad: ${(state.year - poll.year) * 52 + state.week - poll.week} semanas · ${poll.method ?? 'Sondeo anterior'}${poll.sample ? ` · n=${poll.sample}` : ''}\nTu intención de voto: ${pct(Number(poll.share))} (±${poll.margin} pp)\nPrincipal rival: ${poll.rival} · ${pct(Number(poll.rivalShare))}`))
     : [card('Sin sondeos', 'Un sondeo estima el apoyo en la contienda actual. Las cifras pueden cambiar antes del escrutinio.')]));
   element('commission-poll').disabled = !election || polls.some(poll => poll.year === state.year && poll.week === state.week);
   element('marketing-status').textContent = election
@@ -83,7 +83,7 @@ ${endorsed ? 'Respaldo confirmado' : `Reuniones: ${Math.min(needed, visits)}/${n
   policyChoice.disabled = !election;
 
   element('campaign-climate').textContent = `Agenda: ${climate.agenda.title} · ${climate.agenda.topics.join(', ')}
-Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · memoria comunal: ×${format(Number(climate.localBoost.toFixed(3)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
+Afinidad de tus ejes: ${pct(climate.fit * 100)} · coherencia con tu partido: ${player.partyId === 'IND' ? 'independiente' : pct(climate.coherence * 100)} · confianza por estabilidad del programa: ${pct(climate.trust * 100)} · gestión del mandato: ×${format(Number(climate.trackRecord.toFixed(3)))} · memoria comunal: ×${format(Number(climate.localBoost.toFixed(3)))} · reputación de promesas: ×${format(Number(climate.reputation.toFixed(2)))} · conversión electoral: ×${format(Number(climate.multiplier.toFixed(2)))}`;
   element('player-core-policies-container').replaceChildren(...climate.policyResults.map(item => {
     const { policy, urgency, fit, coherence, emphasis } = item;
     const demand = urgency >= 0.75 ? 'Alta demanda' : urgency >= 0.45 ? 'Demanda media' : 'Demanda baja';
@@ -118,7 +118,7 @@ Afinidad con el electorado: ${pct(fit * 100)}${player.partyId === 'IND' ? '' : `
 
   const trained = Math.min(campaign.trained, volunteers);
   element('volunteers-count-disp').textContent = `${format(volunteers)} / ${VOLUNTEER_LIMIT}`;
-  element('volunteer-status').textContent = `${format(trained)} capacitados · ${campaign.mobilized ? `${campaign.mobilized} movilizados esta semana` : 'Brigada disponible esta semana'}`;
+  element('volunteer-status').textContent = `${format(trained)} capacitados · brigada completa con rendimiento gradual · ${campaign.mobilized ? `${campaign.mobilized} movilizados esta semana` : 'Brigada disponible esta semana'}`;
   element('recruit-volunteers').disabled = volunteers >= VOLUNTEER_LIMIT;
   element('train-volunteers').disabled = trained >= volunteers;
   element('deploy-volunteers').disabled = !election || !volunteers || Boolean(campaign.mobilized);

@@ -7,7 +7,7 @@ export const campaignAllowance = office => WEEKLY_FUNDS[office] || 0;
 
 export function grantCampaignWeek(election, week) {
   const amount = campaignAllowance(election?.office);
-  if (!amount || election.result || (election.campaignGrantWeek ?? 0) >= week) return 0;
+  if (!amount || election.result || election.pendingSummary || (election.campaignGrantWeek ?? 0) >= week) return 0;
   election.campaignGrantWeek = week;
   election.campaignFunds = (election.campaignFunds ?? 0) + amount;
   return amount;

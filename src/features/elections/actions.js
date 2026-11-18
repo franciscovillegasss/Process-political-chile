@@ -57,12 +57,14 @@ function resolveElection() {
   if (localElection?.year === year && localElection.result) return;
   const candidate = localElection?.year === year && localElection.office ? localElection : null;
   const id = candidate?.office || 'concejal';
+  const countWeek = candidate?.pendingWeek || GAME_STATE.week;
   const districtSeats = profileSeats(GAME_STATE.profile, player, id) ?? (id === 'diputado' ? CHILE_GEO[player.region]?.districts[player.district]?.seats : undefined);
   const climate = campaignClimate(GAME_STATE);
-  const result = candidate ? countElection({ ...candidate, profile: GAME_STATE.profile }, player, districtSeats, GAME_STATE.week, climate, GAME_STATE.roster, true)
+  const result = candidate ? countElection({ ...candidate, profile: GAME_STATE.profile }, player, districtSeats, countWeek, climate, GAME_STATE.roster, true)
     : { won: false, summary: 'Sin candidatura inscrita en este ciclo electoral.' };
+  if (candidate?.resolutionSeed && !result.pending) result.summary += '\nRecuento confirmado con desempate simulado registrado.';
   const broadcast = candidate ? (() => {
-    const field = electionField(candidate, player, GAME_STATE.week, climate, GAME_STATE.roster);
+    const field = electionField(candidate, player, countWeek, climate, GAME_STATE.roster);
     return {
       title: `${candidate.runoffWeek ? 'Segunda vuelta' : 'Noche electoral'} · ${OFFICES[id].name} · ${year}`,
       summary: result.summary,
@@ -71,22 +73,27 @@ function resolveElection() {
         ...field.rivals.map(rival => ({ name: rival.name, votes: rival.votes }))],
     };
   })() : null;
-  if (year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
+  if (!candidate?.pendingSummary && year % 4 === 1 && GAME_STATE.week === electionWeek(year)) updateCongress(climate);
   if (result.runoff !== undefined) {
-    Object.assign(candidate, { runoffWeek: GAME_STATE.week + 4, runoffRival: result.runoff, runoffSnapshot: result.snapshot, runoffEndorsements: [], firstRound: result.summary });
+    delete candidate.countedVotes;
+    Object.assign(candidate, { pendingSummary: '', pendingWeek: 0, resolutionSeed: 0, runoffWeek: countWeek + 4, runoffRival: result.runoff, runoffSnapshot: result.snapshot, runoffEndorsements: [], firstRound: result.summary });
     recordCareer(GAME_STATE, 'Primera vuelta', result.summary);
     return broadcast;
   }
   const { won, summary } = result;
-  GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }), campaignFunds: 0, result: summary };
   if (result.pending) {
+    const field = electionField(candidate, player, countWeek, climate, GAME_STATE.roster);
+    Object.assign(candidate, { pendingSummary: summary, pendingWeek: countWeek,
+      countedVotes: { player: field.votes, rivals: field.rivals.map(({slot, votes}) => ({slot, votes})) } });
     recordCareer(GAME_STATE, 'Elección pendiente', summary);
     return broadcast;
   }
+  GAME_STATE.localElection = { ...(candidate || { year, office: '', pact: 'ind', support: 0 }),
+    pendingSummary: '', pendingWeek: 0, campaignFunds: 0, result: summary };
   if (candidate) {
     recordCareer(GAME_STATE, 'Elección', summary);
     if (!won) {
-      const rival = electionField(candidate, player, GAME_STATE.week, climate, GAME_STATE.roster).rivals[0];
+      const rival = electionField(candidate, player, countWeek, climate, GAME_STATE.roster).rivals[0];
       const person = GAME_STATE.roster[rival.slot];
       person.victories++;
       person.office = id;
@@ -117,6 +124,14 @@ function resolveElection() {
   return broadcast;
 }
 
+function resolvePendingElection() {
+  const election = GAME_STATE.localElection;
+  if (!election?.pendingSummary || election.year !== GAME_STATE.year) return;
+  election.resolutionSeed ||= crypto.getRandomValues(new Uint32Array(1))[0] || 1;
+  resolveElection();
+  reportCampaign('Recuento electoral', GAME_STATE.localElection.pendingSummary || GAME_STATE.localElection.result || GAME_STATE.localElection.firstRound);
+}
+
 function seekRunoffEndorsement(slot) {
   const election = activeElection();
   if (!election?.runoffWeek) return warn('Los respaldos se negocian entre ambas vueltas.');
@@ -142,4 +157,4 @@ function officeTitle(id, player) {
   return office.scope === 'country' ? office.name : `${office.name} de ${territory}`;
 }
 
-export { activeElection, requireElection, canRegister, eligibleOffices, registerCandidate, resolveElection, officeTitle, seekRunoffEndorsement };
+export { activeElection, requireElection, canRegister, eligibleOffices, registerCandidate, resolveElection, resolvePendingElection, officeTitle, seekRunoffEndorsement };

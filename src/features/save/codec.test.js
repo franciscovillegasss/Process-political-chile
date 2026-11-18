@@ -30,3 +30,18 @@ test('invalid funds, policy IDs and second-round dates are rejected', () => {
     ...state, week: 44, localElection: { year: state.year, office: 'gobernador', runoffWeek: 49 },
   }), /Segunda vuelta inválida/);
 });
+
+
+test('an older active mandate receives scoped commitments without replacing its in-flight project', () => {
+  const state = initialState();
+  state.player.officeId = 'concejal';
+  state.mandate = { budget: 10_000_000, completed: 0, hearings: 2,
+    project: { name: 'Plan comunal', issue: 'Salud', due: state.year * 52 + 10, relevant: true } };
+  delete state.promises;
+  delete state.publicServices;
+  const loaded = load(state);
+  assert.equal(loaded.promises.length, 3);
+  assert.match(loaded.promises[0].objective, /Maipú/);
+  assert.deepEqual(loaded.mandate.project, state.mandate.project);
+  assert.equal(loaded.mandate.budget, state.mandate.budget);
+});

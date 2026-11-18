@@ -5,21 +5,37 @@ import { reportCampaign } from '../campaign/actions.js';
 import { recordLocalContact } from '../territory/rules.js';
 import { element, warn } from '../../shared/dom.js';
 
+function unavailable(action, mandate, now) {
+  if (mandate.deskWeek === now) return 'Ya tomaste una decisión de despacho esta semana.';
+  if (now - (mandate.deskUses?.[action.id] ?? -100) < 4) return 'Esta gestión vuelve a estar disponible en cuatro semanas.';
+  if (action.effect === 'prepare' && (mandate.prepared || mandate.project)) return 'Prepara el expediente cuando no tengas una propuesta activa.';
+  if (action.effect === 'expedite' && (!(mandate.project?.due > now + 1) || mandate.project.supervised)) return 'Necesitas una obra en ejecución sin supervisión previa.';
+  return '';
+}
+
 function performOfficeAction(id) {
   const { mandate, player } = GAME_STATE;
   const action = officeActions(player.officeId).find(entry => entry.id === id);
   if (!mandate || !action) return;
   const now = calendarWeek(GAME_STATE);
-  if (mandate.deskWeek === now) return warn('Ya tomaste una decisión de despacho esta semana.');
-  if (action.expedites && !(mandate.project?.due > now + 1)) return warn('Necesitas una obra en ejecución a más de una semana de su entrega.');
+  const reason = unavailable(action, mandate, now);
+  if (reason) return warn(reason);
   if (!pay(action)) return;
   mandate.deskWeek = now;
-  player.politicalPoints += action.gain;
-  player.approval = Math.min(100, player.approval + action.approval);
-  if (action.contact) recordLocalContact(GAME_STATE, action.contact);
-  if (action.expedites) mandate.project.due -= 1;
-  recordCareer(GAME_STATE, 'Despacho', action.detail);
-  reportCampaign(action.name, action.detail);
+  mandate.deskUses ??= {};
+  mandate.deskUses[action.id] = now;
+  if (action.effect === 'audit') player.politicalPoints += 1;
+  if (action.effect === 'contact') recordLocalContact(GAME_STATE, 'vecinos');
+  if (action.effect === 'prepare') mandate.prepared = true;
+  if (action.effect === 'expedite') {
+    mandate.project.due -= 1;
+    mandate.project.supervised = true;
+  }
+  const detail = action.effect === 'audit'
+    ? `Saldo público $${mandate.budget.toLocaleString('es-CL')} · ${mandate.completed} proyectos ejecutados · mantenimiento trimestral $${(mandate.maintenance ?? 0).toLocaleString('es-CL')}. +1 PP.`
+    : action.detail;
+  recordCareer(GAME_STATE, 'Despacho', detail);
+  reportCampaign(action.name, detail);
 }
 
 export function renderOfficeDesk() {
@@ -35,9 +51,10 @@ export function renderOfficeDesk() {
   element('office-desk-actions').replaceChildren(...actions.map(action => {
     const button = document.createElement('button');
     button.className = 'text-left rounded border border-slate-300 bg-white p-3 text-sm hover:bg-blue-50 disabled:opacity-50';
-    button.disabled = !mandate || mandate.deskWeek === now || player.hours < action.hours ||
-      player.politicalPoints < action.points || (action.expedites && !(mandate.project?.due > now + 1));
-    button.textContent = `${action.name} · ${action.hours} h${action.points ? ` · ${action.points} PP` : ''} · +${action.approval} pp de aprobación${action.gain ? ` · +${action.gain} PP` : ''}`;
+    const reason = mandate ? unavailable(action, mandate, now) : 'Necesitas un cargo activo.';
+    button.disabled = Boolean(reason) || player.hours < action.hours;
+    button.title = reason || action.detail;
+    button.textContent = `${action.name} · ${action.hours} h · ${action.detail}`;
     button.onclick = () => performOfficeAction(action.id);
     return button;
   }));

@@ -118,12 +118,12 @@ const finishFullCharacterCreation = function() {
   GAME_STATE.player.attributes = { ...draft.p1Attributes };
   GAME_STATE.player.officeId = officeVal === 'none' ? '' : officeVal;
   GAME_STATE.player.currentOffice = officeTitle(GAME_STATE.player.officeId, GAME_STATE.player);
+  GAME_STATE.player.corePolicies = [...draft.p2SelectedPolicies];
   if (GAME_STATE.player.officeId) {
     openMandate(GAME_STATE);
     GAME_STATE.localManagement = 'pending';
   }
   recordCareer(GAME_STATE, 'Inicio', `Comienza la trayectoria como ${GAME_STATE.player.currentOffice}.`);
-  GAME_STATE.player.corePolicies = [...draft.p2SelectedPolicies];
 
   // Ocultar pantallas de creación y abrir tablero
   document.getElementById('screen-page-1-identity').classList.add('hidden');

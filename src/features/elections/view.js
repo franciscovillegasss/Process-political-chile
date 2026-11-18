@@ -48,12 +48,13 @@ function renderLocalElection() {
     ? `Elección ${year} · inscripción semanas ${registrationWeek} a ${votingWeek - 1} (10 PP y ${clp(registrationCost())}) · escrutinio semana ${votingWeek}.
 ${cycle.map(([id, office]) =>
       `${office.name} (${office.age}+)${profileSeats(GAME_STATE.profile, player, id) ? ` · ${profileSeats(GAME_STATE.profile, player, id)} cupos` : ''}${eligible.some(([key]) => key === id) ? '' : ' · no habilitada'}`).join(' | ')}`
-    : `Año sin elecciones regulares. Próximo ciclo: ${year + (4 - year % 4)}.`;
-  const campaign = localElection?.year === year && !localElection.result
+    : `Año sin elecciones regulares. Próximo ciclo: ${year % 4 === 2 ? year + 2 : year + 1}.`;
+  const campaign = localElection?.year === year && localElection.office && !localElection.result
     ? `Candidatura inscrita: ${officeTitle(localElection.office, player)} · ${localElection.support.toLocaleString('es-CL')} puntos de campaña acumulados. Consulta Encuestas para estimar la intención de voto.` : '';
   const firstRound = localElection?.firstRound && !localElection.result ? `${localElection.firstRound} Votación en la semana ${localElection.runoffWeek}.` : '';
-  const result = localElection?.result ? `Resultado ${localElection.year}
-${localElection.result}` : '';
+  element('resolve-pending-election').classList.toggle('hidden', !localElection?.pendingSummary);
+  const result = localElection?.pendingSummary || (localElection?.result ? `Resultado ${localElection.year}
+${localElection.result}` : '');
   element('elections-calendar-cards').textContent = [GAME_STATE.profile === RM_PROFILE ? `Perfil RM · datos ${RM_DATA_VERSION} · fechas semanales simuladas` : '', calendar, campaign, firstRound, result].filter(Boolean).join('\n\n');
   const missing = Math.max(0, LOCAL_REGISTRATION.points - player.politicalPoints);
   element('registration-recovery').textContent = missing ? `Faltan ${missing} PP. Puedes recuperarlos con trabajo territorial cada cuatro semanas.` : 'El trabajo territorial da puntos políticos dentro y fuera de campaña.';

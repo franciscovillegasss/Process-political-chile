@@ -1,6 +1,7 @@
 import { localProfile, territoryWeight } from '../territory/rules.js';
 import { CHILE_PARTIES } from '../../shared/parties.js';
 import { POLICIES_CATALOG } from '../character/programs.js';
+import { promiseReputation } from '../career/promises.js';
 
 const AGENDAS = [
   { title: 'Costo de vida y empleo', topics: ['Economía', 'Trabajo y transporte', 'Vivienda y ciudad'], economy: -0.45, authority: 0, weights: [36, 46, 18] },
@@ -105,9 +106,10 @@ export function campaignClimate(state) {
   const partyFit = independent ? fit : voterFit(groups, party);
   const trust = clamp(1 - (election?.revisions ?? 0) * 0.045, 0.82, 1);
   const trackRecord = 1 + Math.min(0.15, (state.mandate?.completed || 0) * 0.025);
-  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24) * trackRecord * localBoost;
+  const reputation = promiseReputation(state);
+  const multiplier = clamp((0.50 + 0.66 * fit + 0.32 * partyFit - 0.29 * (1 - coherence)) * trust, 0.55, 1.24) * trackRecord * localBoost * reputation;
   return {
-    agenda, groups, policyResults, fit, coherence, trust, trackRecord, multiplier, position, territory, localBoost,
+    agenda, groups, policyResults, fit, coherence, trust, trackRecord, multiplier, position, territory, localBoost, reputation,
     rivalFactors: RIVAL_PARTIES.map(id => 0.8 + 0.29 * voterFit(groups, partyPosition(id))),
   };
 }

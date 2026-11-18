@@ -12,3 +12,11 @@ test('televised batches reveal a monotonic count and match the engine result at 
   assert.equal(final.progress, 1);
   assert.equal(final.rows[0].share, 0.501);
 });
+
+test('partial counts are independent of candidate array order', () => {
+  const candidates = [{ name: 'Camila', votes: 1000 }, { name: 'Luis', votes: 1000 }];
+  assert.deepEqual(tallyFrame(candidates, 30_000), tallyFrame([...candidates].reverse(), 30_000));
+  const before = tallyFrame(candidates, 15_000);
+  const after = tallyFrame(candidates, 45_000);
+  for (const row of before.rows) assert.ok(after.rows.find(other => other.name === row.name).counted >= row.counted);
+});

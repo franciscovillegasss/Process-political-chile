@@ -6,7 +6,36 @@
             <p id="office-desk-status" class="text-xs"></p>
             <div id="office-desk-actions" class="grid gap-2 md:grid-cols-3"></div>
           </section>
-          <p id="mandate-unavailable" class="hidden p-2 bg-amber-50 text-sm">Las decisiones de despacho están disponibles. La tramitación formal regional y parlamentaria del perfil RM sigue en diseño.</p>
+          <section id="government-process" class="hidden rounded-xl border border-blue-200 p-3 space-y-3">
+            <h3 id="government-title" class="font-bold"></h3>
+            <p id="government-status" class="text-sm whitespace-pre-line" aria-live="polite"></p>
+            <label class="text-sm">Compromiso <select id="gov-policy" class="border rounded p-1 max-w-full"></select></label>
+            <button id="gov-propose" onclick="window.startGovernmentProject()" class="px-3 py-2 rounded bg-blue-800 text-white disabled:opacity-50">Presentar expediente (10 h · 3 PP)</button>
+            <p id="government-votes" class="text-xs whitespace-pre-line"></p>
+            <label class="text-sm">Negociación <select id="gov-bloc" class="border rounded p-1 max-w-full"></select></label>
+            <div class="flex flex-wrap gap-2 text-sm">
+              <button id="gov-negotiate" onclick="window.negotiateGovernment()" class="border rounded p-2 disabled:opacity-50">Negociar concesión (8 h)</button>
+              <button id="gov-vote" onclick="window.voteGovernment()" class="rounded bg-blue-800 text-white p-2 disabled:opacity-50">Someter a votación (8 h)</button>
+              <button id="gov-implement" onclick="window.implementGovernment()" class="rounded bg-emerald-800 text-white p-2 disabled:opacity-50">Iniciar ejecución (8 h)</button>
+              <button id="gov-withdraw" onclick="window.withdrawGovernment()" class="border rounded p-2 disabled:opacity-50">Retirar expediente</button>
+            </div>
+          </section>
+          <section id="public-budget" class="hidden rounded-xl border p-3 space-y-2">
+            <h3 class="font-bold">Presupuesto y servicios</h3>
+            <p id="budget-summary" class="text-sm"></p>
+            <p id="budget-role" class="text-sm"></p>
+            <div id="gov-service-controls" class="flex flex-wrap gap-2">
+              <label class="text-sm">Área <select id="gov-service" class="border rounded p-1"></select></label>
+              <button id="gov-fund-service" onclick="window.financePublicService()" class="rounded bg-blue-800 text-white p-2 text-sm disabled:opacity-50">Financiar doce semanas ($1.000.000)</button>
+            </div>
+            <p id="budget-outcomes" class="text-xs"></p>
+            <p id="budget-active-services" class="text-sm" aria-live="polite"></p>
+          </section>
+          <section id="office-promises" class="hidden rounded-xl border p-3 space-y-2">
+            <h3 class="font-bold">Compromisos del mandato</h3>
+            <p class="text-xs">Los compromisos se adaptan al ámbito del cargo. Cumplir exige resultados de gestión. Las promesas cumplidas y las que terminan sin cumplir pesan en la próxima campaña. Los bloqueos quedan registrados.</p>
+            <ul id="promise-list" class="text-sm space-y-2"></ul>
+          </section>
           <section id="mandate-actions" class="hidden p-3 border rounded space-y-2">
             <p id="mandate-status" class="text-sm"></p>
             <label class="text-xs"><span id="mandate-project-label">Eje para el proyecto</span> <select id="mandate-policy" class="p-1 border rounded"></select></label>
@@ -46,7 +75,8 @@
           <h3 class="font-extrabold text-sm text-slate-900 uppercase border-b pb-2">Audiencias de Lobby & Grupos de Interés</h3>
           <p id="lobby-audiences-container" class="text-sm"></p>
           <div id="mandate-negotiation" class="hidden"><label>Bancada y concesión <select id="mandate-bloc" class="border rounded"></select></label><p id="mandate-deals" class="text-sm"></p></div>
-          <button onclick="window.holdHearing(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Reunirse con grupo de interés (8 h)</button>
+          <button id="gov-lobby-open" onclick="window.switchSubpanel('office', 'overview')" class="hidden px-3 py-2 rounded bg-blue-800 text-white">Abrir expediente y negociación</button>
+          <button id="legacy-hearing" onclick="window.holdHearing(false)" class="px-2 py-1 bg-blue-800 text-white rounded">Reunirse con grupo de interés (8 h)</button>
         </div>
 
         <div id="office-panel-bills" class="hidden bg-white border border-[#A89E88] p-4 rounded shadow-2xs space-y-3">

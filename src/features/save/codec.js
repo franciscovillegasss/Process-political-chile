@@ -1,3 +1,5 @@
+import { beginPromises } from '../career/promises.js';
+import { validateGovernance } from './governance.js';
 import { CLASSIC_PROFILE, RM_PROFILE, profileAllows, profileSeats } from '../elections/rm-profile.js';
 import { COUNCIL_BLOCS, MUNICIPAL_PROJECTS, councilDecision, municipalTerms } from '../career/municipal.js';
 import { firstRoundSnapshot } from '../elections/runoff.js';
@@ -59,14 +61,29 @@ export function decodeSave(raw) {
   }
   if (next.localElection !== null) {
     next.localElection = restore({
-      year: 0, office: 'concejal', pact: '', support: 0, campaignFunds: 0, campaignGrantWeek: 0, runoffWeek: 0, runoffRival: 0, runoffSnapshot: null, runoffEndorsements: [], firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '',
+      year: 0, office: 'concejal', pact: '', support: 0, campaignFunds: 0, campaignGrantWeek: 0, runoffWeek: 0, runoffRival: 0, runoffSnapshot: null, runoffEndorsements: [], firstRound: '', messages: newMessages(), revisions: 0, lastRevision: 0, result: '', pendingSummary: '', pendingWeek: 0, resolutionSeed: 0, countedVotes: null,
     }, next.localElection);
     if (next.localElection.office && (!profileAllows(next.profile, player.region, next.localElection.office) || !Object.hasOwn(OFFICES, next.localElection.office))) throw new Error('Cargo inválido');
     const election = next.localElection;
+    if (election.year === next.year && election.result.startsWith('Resultado pendiente')) {
+      election.pendingSummary = election.result;
+      election.pendingWeek = election.runoffWeek || electionWeek(election.year);
+      election.result = '';
+    }
+    if (!Number.isSafeInteger(election.resolutionSeed) || !bounded(election.resolutionSeed, 0, 4294967295) ||
+        !Number.isInteger(election.pendingWeek) || !bounded(election.pendingWeek, 0, next.week) ||
+        Boolean(election.pendingSummary) !== Boolean(election.pendingWeek) ||
+        (election.pendingSummary && (election.result || election.year !== next.year ||
+          election.pendingWeek !== (election.runoffWeek || electionWeek(election.year))))) throw new Error('Recuento inválido');
+    const frozen = election.countedVotes;
+    if (frozen !== null && (!Number.isSafeInteger(frozen?.player) || frozen.player < 0 || !Array.isArray(frozen.rivals) ||
+        !election.office || frozen.rivals.length !== (election.runoffWeek ? 1 : OFFICES[election.office].seats ? 12 : 4) ||
+        new Set(frozen.rivals.map(row => row?.slot)).size !== frozen.rivals.length ||
+        !frozen.rivals.every(row => Number.isInteger(row?.slot) && bounded(row.slot, 0, 11) && Number.isSafeInteger(row.votes) && row.votes >= 0))) throw new Error('Escrutinio inválido');
     if (!Number.isSafeInteger(election.campaignFunds) || election.campaignFunds < 0 ||
         !Number.isInteger(election.campaignGrantWeek) || !bounded(election.campaignGrantWeek, 0, 52) ||
         (election.result && election.campaignFunds)) throw new Error('Aporte electoral inválido');
-    if (election.office && !election.result && (election.year !== next.year ||
+    if (election.office && !election.result && !election.pendingSummary && (election.year !== next.year ||
         next.week < registrationWeek || next.week >= (election.runoffWeek || electionWeek(election.year)))) {
       throw new Error('Fecha de candidatura inválida');
     }
@@ -86,7 +103,7 @@ export function decodeSave(raw) {
         !election.runoffEndorsements.every(slot => election.runoffWeek && slots.includes(slot) && slot !== election.runoffRival)) {
       throw new Error('Respaldos inválidos');
     }
-    if (!Number.isInteger(election.year) || election.support < 0 ||
+    if (!Number.isInteger(election.year) || election.support < 0 || election.support > Number.MAX_SAFE_INTEGER / 100 ||
         !Number.isInteger(election.revisions) || election.revisions < 0 ||
         !Number.isInteger(election.lastRevision) || election.lastRevision < 0 || election.lastRevision > 52) {
       throw new Error('Elección inválida');
@@ -115,7 +132,7 @@ export function decodeSave(raw) {
   if (next.mandate) {
     const mandate = next.mandate;
     if (!next.player.officeId || !bounded(mandate.budget, 0, 12_000_000) || !bounded(mandate.hearings, 0, 2) ||
-      !bounded(mandate.completed, 0, 6) || (mandate.project &&
+      !Number.isSafeInteger(mandate.completed) || mandate.completed < 0 || (mandate.project &&
         (typeof mandate.project.name !== 'string' || !knownIssue(mandate.project.issue) ||
           typeof mandate.project.relevant !== 'boolean' || !Number.isInteger(mandate.project.due) || mandate.project.due < 0))) throw new Error('Mandato inválido');
   }
@@ -137,7 +154,7 @@ export function decodeSave(raw) {
         throw new Error('Acuerdo del concejo inválido');
       }
     }
-  } else if (project && next.profile === RM_PROFILE) throw new Error('Instrumento incompatible con el perfil RM');
+  } else if (project && !project.government && next.profile === RM_PROFILE) throw new Error('Instrumento incompatible con el perfil RM');
   if (next.mandate?.auditDue !== undefined &&
       (!Number.isSafeInteger(next.mandate.auditDue) || next.mandate.auditDue < 0 ||
         next.profile !== RM_PROFILE || !['alcalde','concejal'].includes(player.officeId))) throw new Error('Fiscalización inválida');
@@ -161,5 +178,7 @@ export function decodeSave(raw) {
     election.runoffSnapshot = firstRoundSnapshot(first.votes, first.rivals);
     election.firstRound += ' La base de votos se estimó a partir de este guardado anterior.';
   }
+  if (next.mandate && value.promises === undefined && next.promises.length === 0) beginPromises(next);
+  validateGovernance(next);
   return next;
 }
